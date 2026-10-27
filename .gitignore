@@ -16,3 +16,4 @@ out/sam/*
 !out/sam/*.json
 out/sam/*.frames.json
 *.egg-info/
+out/demo/
