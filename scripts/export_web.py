@@ -180,7 +180,9 @@ def reports_and_run(case):
         log_ids = {s.get('response_id') for s in json.loads((case.dir / 'agent_log.json').read_text())}
         rec = next((json.loads(p.read_text()) for p in reversed(runs)
                     if {s.get('response_id') for s in json.loads(p.read_text())['steps']} == log_ids), json.loads(runs[-1].read_text()))
-        out['run'] = {k: rec.get(k) for k in ('run_id', 'status', 'block', 'git', 'planner', 'planner_model', 'cost_usd', 'reports', 'history')}
+        out['run'] = {k: rec.get(k) for k in ('run_id', 'status', 'block', 'git', 'planner', 'planner_model', 'cost_usd', 'history')}
+        out['run']['reports'] = {lang: {k: v for k, v in r.items() if k != 'text'} for lang, r in (rec.get('reports') or {}).items()}
+        out['run']['resumed_from'], out['run']['notes'] = rec.get('resumed_from'), rec.get('notes')
         grade = ROOT / 'validation' / case.id / f"grade-{rec['run_id']}.json"
         if grade.exists():  # graded afterwards by scripts/grade.py; the agent never reads validation/
             g = json.loads(grade.read_text())

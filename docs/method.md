@@ -89,10 +89,12 @@ through the camera.
    reads. With three or more cameras, one whose speed sits more than 3σ from the median of the others (σ at least 5% of
    that median) is left out of the speed and named: its clock, not the path, is the likely fault.
 5. **Nearly parallel planes.** Two cameras whose planes cross under 10° add little convergence to each other, and in a
-   joint least-squares fit their many rays can pull the line along their shared plane. In Chelyabinsk's Monte Carlo the
-   Kamensk-Uralskiy and Tyumen planes, 7.5° apart, come as close as 3.7°, and with all three cameras some draws slide to
-   headings near 245° while Kamensk-Uralskiy and Korkino stay put. So the weaker camera of such a pair, the one that
-   crosses the rest less widely, may leave the fit; it stays a check (`scripts/holdout.py`).
+   joint least-squares fit their many rays can pull the line along their shared plane. In Chelyabinsk the
+   Kamensk-Uralskiy and Tyumen planes cross at 7.5°, and as close as 3.7° in some Monte Carlo draws: with all three
+   cameras, 62 of 200 draws slide more than 10° off the fit's heading or below a 12° slope, against 4 of 500 for
+   Kamensk-Uralskiy and Korkino alone. So the weaker camera of such a pair, the one that crosses the rest less widely,
+   may leave the fit; it stays a check (`scripts/holdout.py`: Tyumen's rays miss the two-camera line by 0.45°, median,
+   and its own clock gives 19.17 ± 0.08 km/s).
 
 ## 6. Uncertainty (`scripts/montecarlo.py`)
 

@@ -1,0 +1,80 @@
+{
+ "draws": 200,
+ "stations": [
+  "chelyabinsk-2013-2",
+  "chelyabinsk-2013-10",
+  "chelyabinsk-2013-48"
+ ],
+ "stats": {
+  "azimuth": {
+   "median": 277.04,
+   "1sigma": [
+    260.91,
+    281.14
+   ],
+   "2sigma": [
+    241.65,
+    284.56
+   ],
+   "cbet": 279.5,
+   "cbet_within_1sigma": true,
+   "cbet_within_2sigma": true
+  },
+  "slope": {
+   "median": 16.45,
+   "1sigma": [
+    12.48,
+    17.19
+   ],
+   "2sigma": [
+    4.92,
+    17.82
+   ],
+   "cbet": 16.5,
+   "cbet_within_1sigma": true,
+   "cbet_within_2sigma": true
+  },
+  "speed": {
+   "median": 19.09,
+   "1sigma": [
+    17.23,
+    22.93
+   ],
+   "2sigma": [
+    14.23,
+    29.88
+   ],
+   "cbet": 17.5,
+   "cbet_within_1sigma": true,
+   "cbet_within_2sigma": true
+  },
+  "flare_h_km": {
+   "median": 30.26,
+   "1sigma": [
+    24.84,
+    45.06
+   ],
+   "2sigma": [
+    22.03,
+    68.56
+   ],
+   "cbet": 31.73,
+   "cbet_within_1sigma": true,
+   "cbet_within_2sigma": true
+  },
+  "end_off_km": {
+   "median": 10.75,
+   "1sigma": [
+    5.84,
+    67.97
+   ],
+   "2sigma": [
+    2.93,
+    131.32
+   ],
+   "cbet": 0.0,
+   "cbet_within_1sigma": false,
+   "cbet_within_2sigma": false
+  }
+ }
+}

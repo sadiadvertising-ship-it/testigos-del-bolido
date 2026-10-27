@@ -4,35 +4,40 @@ import pathlib
 
 import pytest
 
+from testigos import agent
 from testigos.verify import check_report
 
 EVENTS = pathlib.Path(__file__).resolve().parents[1] / 'events'
 
 
-def _case(event):
+def _case(event, lang='es'):
+    """A committed report's text without the code's verdict line, and the facts the agent wrote it from."""
     d = EVENTS / event
-    log = json.loads((d / 'agent_log.json').read_text())
-    facts = [s['result'] for s in log] + [json.loads((d / 'event.json').read_text())]
-    return (d / 'agent_report_es.md').read_text(), facts
+    case = agent.Case(event)
+    case.log = json.loads((d / 'agent_log.json').read_text())
+    case.final = {k: v for k, v in json.loads((d / 'final_solution.json').read_text()).items() if k != 'run_id'}
+    verdict = 'none' if case.final.get('insufficient_geometry') else case.final.get('verdict')
+    return agent.Case._body((d / f'agent_report_{lang}.md').read_text()), case.report_facts(), verdict
 
 
+@pytest.mark.parametrize('lang', ['es', 'en'])
 @pytest.mark.parametrize('event', ['chelyabinsk-2013', 'colombia-2025-07-30'])
-def test_committed_reports_trace_every_figure(event):
-    text, facts = _case(event)
-    r = check_report(text, facts)
+def test_committed_reports_trace_every_figure(event, lang):
+    text, facts, verdict = _case(event, lang)
+    r = check_report(text, facts, verdict=verdict)
     assert r['passed'], r
     assert r['numbers'] >= 5
 
 
 def test_an_invented_figure_and_a_swapped_hemisphere_are_caught():
-    text, facts = _case('chelyabinsk-2013')  # whatever the current wording, an added false sentence must be caught
+    text, facts, _ = _case('chelyabinsk-2013')  # whatever the current wording, an added false sentence must be caught
     r = check_report(text + '\nRumbo 987,6 grados; final en 54,914 S.', facts)
     assert not r['passed'] and '987,6' in r['orphans']
     assert any(m.startswith('54,914 S') for m in r['hemisphere_mismatches'])
 
 
 def test_a_changed_satellite_position_is_caught():
-    text, facts = _case('colombia-2025-07-30')
+    text, facts, _ = _case('colombia-2025-07-30')
     r = check_report(text + ' El satélite lo ubicó en 6,64 N.', facts)
     assert not r['passed'] and '6,64' in r['orphans']
 

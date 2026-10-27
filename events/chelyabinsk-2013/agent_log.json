@@ -1,52 +1,14 @@
 [
  {
   "step": 1,
-  "action": "read_witness",
-  "clip": "10",
-  "clips": null,
-  "args": {
-   "clip": "10",
-   "why": "Complete witness reads so all clips have context before solving."
-  },
-  "why": "Complete witness reads so all clips have context before solving.",
-  "result": {
-   "clip_kind": "dashcam_parked",
-   "camera_moves": false,
-   "multiple_cuts": false,
-   "clock": "15.02.2013 09:42:55",
-   "fireball_s": [
-    0.8,
-    7.7
-   ],
-   "landmarks": [
-    "single-storey building on left side of road (building, conf 0.4)"
-   ],
-   "model_says_usable": true
-  },
-  "model": "muse-spark-1.3",
-  "response_id": "resp_6ae0ec55fc349f12112d4e78",
-  "usage": {
-   "input_tokens": 2246,
-   "input_tokens_details": {
-    "cached_tokens": 0
-   },
-   "output_tokens": 190,
-   "output_tokens_details": {
-    "reasoning_tokens": 94
-   },
-   "total_tokens": 2436
-  }
- },
- {
-  "step": 2,
   "action": "calibration",
   "clip": "2",
   "clips": null,
   "args": {
    "clip": "2",
-   "why": "Check orientation quality and residual for final selection."
+   "why": "Verify orientation and residual for Kamensk-Uralskiy before solving."
   },
-  "why": "Check orientation quality and residual for final selection.",
+  "why": "Verify orientation and residual for Kamensk-Uralskiy before solving.",
   "result": {
    "calibrated": true,
    "lens": "pinhole with radial k1",
@@ -56,29 +18,29 @@
    "fit_rms_deg": 0.065
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae0ec748afd1a5455ed4df6",
+  "response_id": "resp_6ae1351fd333a326ea2943ca",
   "usage": {
-   "input_tokens": 2429,
+   "input_tokens": 2855,
    "input_tokens_details": {
     "cached_tokens": 0
    },
-   "output_tokens": 204,
+   "output_tokens": 223,
    "output_tokens_details": {
-    "reasoning_tokens": 109
+    "reasoning_tokens": 127
    },
-   "total_tokens": 2633
+   "total_tokens": 3078
   }
  },
  {
-  "step": 3,
+  "step": 2,
   "action": "calibration",
   "clip": "48",
   "clips": null,
   "args": {
    "clip": "48",
-   "why": "Check orientation quality and residual for final selection."
+   "why": "Verify orientation and residual for Tyumen before solving."
   },
-  "why": "Check orientation quality and residual for final selection.",
+  "why": "Verify orientation and residual for Tyumen before solving.",
   "result": {
    "calibrated": true,
    "lens": "pinhole with radial k1",
@@ -88,29 +50,29 @@
    "fit_rms_deg": 0.031
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae0ec75614cc12445cb4e5c",
+  "response_id": "resp_6ae13520e067987edda24d37",
   "usage": {
-   "input_tokens": 2626,
+   "input_tokens": 3056,
    "input_tokens_details": {
-    "cached_tokens": 2417
+    "cached_tokens": 0
    },
-   "output_tokens": 155,
+   "output_tokens": 113,
    "output_tokens_details": {
-    "reasoning_tokens": 65
+    "reasoning_tokens": 24
    },
-   "total_tokens": 2781
+   "total_tokens": 3169
   }
  },
  {
-  "step": 4,
+  "step": 3,
   "action": "calibration",
   "clip": "10",
   "clips": null,
   "args": {
    "clip": "10",
-   "why": "Check whether clip 10 can be oriented before solving."
+   "why": "Verify orientation and residual for Korkino before solving."
   },
-  "why": "Check whether clip 10 can be oriented before solving.",
+  "why": "Verify orientation and residual for Korkino before solving.",
   "result": {
    "calibrated": true,
    "lens": "wide pinhole with radial k1",
@@ -120,28 +82,28 @@
    "fit_rms_deg": 0.065
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae0ec778098c25d94844b0e",
+  "response_id": "resp_6ae13522dc57ae8d36094514",
   "usage": {
-   "input_tokens": 2768,
+   "input_tokens": 3199,
    "input_tokens_details": {
-    "cached_tokens": 2161
+    "cached_tokens": 0
    },
    "output_tokens": 67,
    "output_tokens_details": {
     "reasoning_tokens": 0
    },
-   "total_tokens": 2835
+   "total_tokens": 3266
   }
  },
  {
-  "step": 5,
+  "step": 4,
   "action": "planes",
   "clip": null,
   "clips": null,
   "args": {
-   "why": "Measure pair angles to choose geometry that triangulates well."
+   "why": "Measure pair crossing angles to assess triangulation geometry."
   },
-  "why": "Measure pair angles to choose geometry that triangulates well.",
+  "why": "Measure pair crossing angles to assess triangulation geometry.",
   "result": {
    "calibrated_clips": [
     "2",
@@ -173,42 +135,42 @@
    ]
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae0ec796ca2756fae6e419e",
+  "response_id": "resp_6ae135222eb22dc7bb694835",
   "usage": {
-   "input_tokens": 2965,
+   "input_tokens": 3396,
    "input_tokens_details": {
-    "cached_tokens": 0
+    "cached_tokens": 2801
    },
-   "output_tokens": 110,
+   "output_tokens": 80,
    "output_tokens_details": {
-    "reasoning_tokens": 34
+    "reasoning_tokens": 6
    },
-   "total_tokens": 3075
+   "total_tokens": 3476
   }
  },
  {
-  "step": 6,
+  "step": 5,
   "action": "solve",
   "clip": null,
   "clips": [
    "2",
-   "10",
-   "48"
+   "48",
+   "10"
   ],
   "args": {
    "clips": [
     "2",
-    "10",
-    "48"
+    "48",
+    "10"
    ],
-   "why": "Triangulate all oriented cameras to see residuals and verdict."
+   "why": "Test three-camera solution and check residuals and Monte Carlo speed range."
   },
-  "why": "Triangulate all oriented cameras to see residuals and verdict.",
+  "why": "Test three-camera solution and check residuals and Monte Carlo speed range.",
   "result": {
    "clips": [
     "2",
-    "10",
-    "48"
+    "48",
+    "10"
    ],
    "q_max_deg": 66.3,
    "warnings": [],
@@ -219,36 +181,102 @@
    "end": "54.822 N, 60.540 E, 12.2 km",
    "speed_kms": 19.49,
    "speed_sigma_kms": 1.53,
+   "speed_sigma_formal_kms": 0.07,
+   "speed_spread_kms": 1.53,
+   "speed_band_95_kms": [
+    14.23,
+    29.88
+   ],
+   "speed_band_source": "Monte Carlo, 200 draws",
+   "uncertainty": {
+    "source": "montecarlo-2-10-48.json",
+    "draws": 200,
+    "azimuth_deg": {
+     "median": 277.04,
+     "1sigma": [
+      260.91,
+      281.14
+     ],
+     "2sigma": [
+      241.65,
+      284.56
+     ]
+    },
+    "slope_deg": {
+     "median": 16.45,
+     "1sigma": [
+      12.48,
+      17.19
+     ],
+     "2sigma": [
+      4.92,
+      17.82
+     ]
+    },
+    "speed_kms": {
+     "median": 19.09,
+     "1sigma": [
+      17.23,
+      22.93
+     ],
+     "2sigma": [
+      14.23,
+      29.88
+     ]
+    },
+    "end_h_km": {
+     "median": 12.34,
+     "1sigma": [
+      10.24,
+      20.28
+     ],
+     "2sigma": [
+      8.96,
+      48.38
+     ]
+    },
+    "begin_h_km": {
+     "median": 81.58,
+     "1sigma": [
+      73.15,
+      90.89
+     ],
+     "2sigma": [
+      66.55,
+      105.1
+     ]
+    }
+   },
    "speed_per_camera": {
     "2": 19.09,
-    "10": 14.77,
-    "48": 19.59
+    "48": 19.59,
+    "10": 14.77
    },
    "residual_rms_deg": {
     "2": 0.715,
-    "10": 0.931,
-    "48": 0.312
+    "48": 0.312,
+    "10": 0.931
    },
    "verdict": "natural",
-   "verdict_reason": "19.5 ± 1.5 km/s is above escape speed",
-   "verdict_rule": "natural if v - 2 sigma > 11 km/s (Earth escape speed is 11.2 km/s); re-entry if v + 2 sigma < 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise"
+   "verdict_reason": "19.5 km/s, 95% range 14.2 to 29.9 km/s (Monte Carlo, 200 draws) is above escape speed",
+   "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae0ec7bdf2f1e8fa32a4685",
+  "response_id": "resp_6ae13525129c28db659340d5",
   "usage": {
-   "input_tokens": 3114,
+   "input_tokens": 3543,
    "input_tokens_details": {
-    "cached_tokens": 2673
+    "cached_tokens": 3185
    },
-   "output_tokens": 205,
+   "output_tokens": 373,
    "output_tokens_details": {
-    "reasoning_tokens": 102
+    "reasoning_tokens": 268
    },
-   "total_tokens": 3319
+   "total_tokens": 3916
   }
  },
  {
-  "step": 7,
+  "step": 6,
   "action": "solve",
   "clip": null,
   "clips": [
@@ -260,9 +288,9 @@
     "2",
     "10"
    ],
-   "why": "Compare two-camera residual to test if third camera degrades it."
+   "why": "Compare Kamensk-Korkino pair geometry and residuals without Tyumen."
   },
-  "why": "Compare two-camera residual to test if third camera degrades it.",
+  "why": "Compare Kamensk-Korkino pair geometry and residuals without Tyumen.",
   "result": {
    "clips": [
     "2",
@@ -277,6 +305,72 @@
    "end": "54.914 N, 60.615 E, 11.4 km",
    "speed_kms": 19.65,
    "speed_sigma_kms": 0.29,
+   "speed_sigma_formal_kms": 0.15,
+   "speed_spread_kms": 0.29,
+   "speed_band_95_kms": [
+    12.11,
+    23.72
+   ],
+   "speed_band_source": "Monte Carlo, 500 draws",
+   "uncertainty": {
+    "source": "montecarlo-2-10.json",
+    "draws": 500,
+    "azimuth_deg": {
+     "median": 279.34,
+     "1sigma": [
+      275.8,
+      282.57
+     ],
+     "2sigma": [
+      272.97,
+      284.44
+     ]
+    },
+    "slope_deg": {
+     "median": 17.01,
+     "1sigma": [
+      16.45,
+      17.57
+     ],
+     "2sigma": [
+      15.9,
+      17.95
+     ]
+    },
+    "speed_kms": {
+     "median": 17.59,
+     "1sigma": [
+      14.91,
+      20.31
+     ],
+     "2sigma": [
+      12.11,
+      23.72
+     ]
+    },
+    "end_h_km": {
+     "median": 11.88,
+     "1sigma": [
+      10.26,
+      13.66
+     ],
+     "2sigma": [
+      8.86,
+      15.8
+     ]
+    },
+    "begin_h_km": {
+     "median": 81.93,
+     "1sigma": [
+      69.89,
+      97.88
+     ],
+     "2sigma": [
+      58.05,
+      116.59
+     ]
+    }
+   },
    "speed_per_camera": {
     "2": 19.65,
     "10": 19.07
@@ -286,110 +380,68 @@
     "10": 0.824
    },
    "verdict": "natural",
-   "verdict_reason": "19.6 ± 0.3 km/s is above escape speed",
-   "verdict_rule": "natural if v - 2 sigma > 11 km/s (Earth escape speed is 11.2 km/s); re-entry if v + 2 sigma < 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise"
+   "verdict_reason": "19.6 km/s, 95% range 12.1 to 23.7 km/s (Monte Carlo, 500 draws) is above escape speed",
+   "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae0ec7e372a3da182d0468e",
+  "response_id": "resp_6ae13528333d4a5166cd4101",
   "usage": {
-   "input_tokens": 3486,
+   "input_tokens": 4259,
    "input_tokens_details": {
-    "cached_tokens": 2929
+    "cached_tokens": 3441
    },
-   "output_tokens": 300,
+   "output_tokens": 402,
    "output_tokens_details": {
-    "reasoning_tokens": 204
+    "reasoning_tokens": 302
    },
-   "total_tokens": 3786
+   "total_tokens": 4661
   }
  },
  {
-  "step": 8,
-  "action": "solve",
-  "clip": null,
-  "clips": [
-   "48",
-   "10"
-  ],
-  "args": {
-   "clips": [
-    "48",
-    "10"
-   ],
-   "why": "Test alternate pair to confirm best two-camera choice."
-  },
-  "why": "Test alternate pair to confirm best two-camera choice.",
-  "result": {
-   "clips": [
-    "48",
-    "10"
-   ],
-   "q_max_deg": 58.9,
-   "warnings": [],
-   "seen_for_s": 10.3,
-   "azimuth_deg": 282.4,
-   "slope_deg": 17.18,
-   "begin": "54.521 N, 63.561 E, 72.5 km",
-   "end": "54.837 N, 61.258 E, 22.9 km",
-   "speed_kms": 19.1,
-   "speed_sigma_kms": 1.77,
-   "speed_per_camera": {
-    "48": 19.1,
-    "10": 15.56
-   },
-   "residual_rms_deg": {
-    "48": 0.059,
-    "10": 0.823
-   },
-   "verdict": "natural",
-   "verdict_reason": "19.1 ± 1.8 km/s is above escape speed",
-   "verdict_rule": "natural if v - 2 sigma > 11 km/s (Earth escape speed is 11.2 km/s); re-entry if v + 2 sigma < 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise"
-  },
-  "model": "muse-spark-1.3",
-  "response_id": "resp_6ae0ec8222adb4d8a0fc4112",
-  "usage": {
-   "input_tokens": 3837,
-   "input_tokens_details": {
-    "cached_tokens": 3057
-   },
-   "output_tokens": 609,
-   "output_tokens_details": {
-    "reasoning_tokens": 504
-   },
-   "total_tokens": 4446
-  }
- },
- {
-  "step": 9,
+  "step": 7,
   "action": "drop_clip",
   "clip": "48",
   "clips": null,
   "args": {
    "clip": "48",
-   "reason": "Pair Q 7.5 deg with clip 2 is under 10 deg and adding it raises residuals from 0.687 to 0.715 deg (clip 2) and 0.824 to 0.931 deg (clip 10)",
-   "why": "Exclude clip 48 now because its narrow geometry degrades the wide-pair solution."
+   "criterion": "near_parallel_pair",
+   "reason": "Tyumen parallels Kamensk-Uralskiy at 7.5 deg while Kamensk crosses Korkino at 66.3 deg.",
+   "why": "Tyumen and Kamensk planes are near-parallel so the better-placed one stays."
   },
-  "why": "Exclude clip 48 now because its narrow geometry degrades the wide-pair solution.",
+  "why": "Tyumen and Kamensk planes are near-parallel so the better-placed one stays.",
   "result": {
+   "accepted": true,
    "dropped": "48",
-   "reason": "Pair Q 7.5 deg with clip 2 is under 10 deg and adding it raises residuals from 0.687 to 0.715 deg (clip 2) and 0.824 to 0.931 deg (clip 10)"
+   "criterion": "near_parallel_pair",
+   "measured": {
+    "near_parallel_with": {
+     "2": {
+      "q_deg_with_it": 7.5,
+      "its_widest_q_deg": 66.3,
+      "this_widest_q_deg": 58.9
+     }
+    },
+    "threshold_deg": 10,
+    "rule": "of two cameras whose planes cross under 10 deg, the one that crosses the rest more widely stays"
+   },
+   "reason": "Tyumen parallels Kamensk-Uralskiy at 7.5 deg while Kamensk crosses Korkino at 66.3 deg."
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae0ec8578a0e62c80bf4282",
+  "response_id": "resp_6ae1352d77da060488204cab",
   "usage": {
-   "input_tokens": 4185,
+   "input_tokens": 4952,
    "input_tokens_details": {
-    "cached_tokens": 3441
+    "cached_tokens": 4209
    },
-   "output_tokens": 653,
+   "output_tokens": 1197,
    "output_tokens_details": {
-    "reasoning_tokens": 486
+    "reasoning_tokens": 1037
    },
-   "total_tokens": 4838
+   "total_tokens": 6149
   }
  },
  {
-  "step": 10,
+  "step": 8,
   "action": "finalize",
   "clip": null,
   "clips": [
@@ -401,9 +453,9 @@
     "2",
     "10"
    ],
-   "why": "Close with the widest pair after excluding the geometry-poor camera."
+   "why": "Submit the wide-pair Kamensk-Korkino solution after the accepted drop."
   },
-  "why": "Close with the widest pair after excluding the geometry-poor camera.",
+  "why": "Submit the wide-pair Kamensk-Korkino solution after the accepted drop.",
   "result": {
    "accepted": true,
    "final": {
@@ -420,6 +472,72 @@
     "end": "54.914 N, 60.615 E, 11.4 km",
     "speed_kms": 19.65,
     "speed_sigma_kms": 0.29,
+    "speed_sigma_formal_kms": 0.15,
+    "speed_spread_kms": 0.29,
+    "speed_band_95_kms": [
+     12.11,
+     23.72
+    ],
+    "speed_band_source": "Monte Carlo, 500 draws",
+    "uncertainty": {
+     "source": "montecarlo-2-10.json",
+     "draws": 500,
+     "azimuth_deg": {
+      "median": 279.34,
+      "1sigma": [
+       275.8,
+       282.57
+      ],
+      "2sigma": [
+       272.97,
+       284.44
+      ]
+     },
+     "slope_deg": {
+      "median": 17.01,
+      "1sigma": [
+       16.45,
+       17.57
+      ],
+      "2sigma": [
+       15.9,
+       17.95
+      ]
+     },
+     "speed_kms": {
+      "median": 17.59,
+      "1sigma": [
+       14.91,
+       20.31
+      ],
+      "2sigma": [
+       12.11,
+       23.72
+      ]
+     },
+     "end_h_km": {
+      "median": 11.88,
+      "1sigma": [
+       10.26,
+       13.66
+      ],
+      "2sigma": [
+       8.86,
+       15.8
+      ]
+     },
+     "begin_h_km": {
+      "median": 81.93,
+      "1sigma": [
+       69.89,
+       97.88
+      ],
+      "2sigma": [
+       58.05,
+       116.59
+      ]
+     }
+    },
     "speed_per_camera": {
      "2": 19.65,
      "10": 19.07
@@ -429,60 +547,62 @@
      "10": 0.824
     },
     "verdict": "natural",
-    "verdict_reason": "19.6 ± 0.3 km/s is above escape speed",
-    "verdict_rule": "natural if v - 2 sigma > 11 km/s (Earth escape speed is 11.2 km/s); re-entry if v + 2 sigma < 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise"
+    "verdict_reason": "19.6 km/s, 95% range 12.1 to 23.7 km/s (Monte Carlo, 500 draws) is above escape speed",
+    "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
    }
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae0ec885b0a8885670f402b",
+  "response_id": "resp_6ae1352f2eac089f6edc40d1",
   "usage": {
-   "input_tokens": 4410,
+   "input_tokens": 5237,
    "input_tokens_details": {
-    "cached_tokens": 4081
+    "cached_tokens": 0
    },
-   "output_tokens": 383,
+   "output_tokens": 164,
    "output_tokens_details": {
-    "reasoning_tokens": 274
+    "reasoning_tokens": 54
    },
-   "total_tokens": 4793
+   "total_tokens": 5401
   }
  },
  {
-  "step": 11,
+  "step": 9,
   "action": "write_report",
   "clip": null,
   "clips": null,
   "args": {
-   "why": "Write the bilingual report from the accepted solution."
+   "why": "Write the Spanish-English report from the accepted Kamensk-Korkino solution."
   },
-  "why": "Write the bilingual report from the accepted solution.",
+  "why": "Write the Spanish-English report from the accepted Kamensk-Korkino solution.",
   "result": {
    "reports": {
     "es": {
-     "figures": 17,
-     "traced": 17,
-     "passed": true
+     "figures": 24,
+     "traced": 24,
+     "passed": true,
+     "refused_drafts": 0
     },
     "en": {
-     "figures": 16,
-     "traced": 16,
-     "passed": true
+     "figures": 28,
+     "traced": 28,
+     "passed": true,
+     "refused_drafts": 0
     }
    },
    "status": "awaiting_review"
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae0ec8a8742f75c6b964b50",
+  "response_id": "resp_6ae13532d62bb26357534122",
   "usage": {
-   "input_tokens": 4775,
+   "input_tokens": 5944,
    "input_tokens_details": {
-    "cached_tokens": 0
+    "cached_tokens": 3313
    },
-   "output_tokens": 248,
+   "output_tokens": 551,
    "output_tokens_details": {
-    "reasoning_tokens": 167
+    "reasoning_tokens": 464
    },
-   "total_tokens": 5023
+   "total_tokens": 6495
   }
  }
 ]

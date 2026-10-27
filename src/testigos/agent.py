@@ -438,6 +438,12 @@ class Case:
             return text.split('\n\n', 1)[1] if '\n\n' in text else ''
         return text
 
+    def report_facts(self):
+        """What the report may say: the case summary, then every step's result. The check reads the same list."""
+        summary = {'event': self.event.get('id'), 'event_utc': self.event.get('utc'), 'event_local': self._local_time(),
+                   'clips': [self.inventory(c) for c in self.clip_ids()], 'final': self.final}
+        return [summary] + [{k: v for k, v in step.items() if k in ('action', 'clip', 'clips', 'result')} for step in self.log]
+
     def write_report(self, **_):
         if self.final is None:
             return {'error': 'refused: finalize the solution first'}
@@ -448,9 +454,7 @@ class Case:
             if missing:
                 return {'accepted': False, 'problems': missing}
         verdict = 'none' if self.final.get('insufficient_geometry') else self.final.get('verdict')
-        summary = {'event': self.event.get('id'), 'event_utc': self.event.get('utc'), 'event_local': self._local_time(),
-                   'clips': [self.inventory(c) for c in self.clip_ids()], 'final': self.final}
-        facts = [summary] + [{k: v for k, v in step.items() if k in ('action', 'clip', 'clips', 'result')} for step in self.log]
+        facts = self.report_facts()
         facts_json = json.dumps(facts, default=str, ensure_ascii=False)[:20000]
         out = {}
         for lang, name in (('es', 'Spanish'), ('en', 'English')):
@@ -708,7 +712,8 @@ class Case:
         rows = [json.loads(l) for l in api.LEDGER.read_text().splitlines()] if api.LEDGER.exists() else []
         self.record.update(finished=dt.datetime.now().isoformat(timespec='seconds'), status=self.status, block=self.block,
                            final=self.final, dropped=self.dropped, steps=self.log,
-                           reports={k: {'check': v['check'], 'drafts': v.get('drafts', [])} for k, v in self.reports.items()},
+                           reports={k: {'check': v['check'], 'drafts': v.get('drafts', []), 'text': v['text']}
+                                    for k, v in self.reports.items()},
                            cost_usd=round(sum(r['usd'] for r in rows if r.get('run_id') == self.run_id), 4))
         if self.replaying:
             return
@@ -747,8 +752,14 @@ def replay(event_id, run_id, echo=None):
     rec = json.loads((ROOT / 'events' / event_id / 'runs' / f'{run_id}.json').read_text())
     case = Case(event_id)
     case.replaying, case.run_id = True, run_id
-    case.reports = {lang: {'text': (case.dir / f'agent_report_{lang}.md').read_text()}
-                    for lang in ('es', 'en') if (case.dir / f'agent_report_{lang}.md').exists()}
+    # the report texts come from the record; records made before 28 October lack them, so the files stand in only
+    # while they are still that run's (final_solution.json names the run whose report is current)
+    current = (case.dir / 'final_solution.json').exists() and \
+        json.loads((case.dir / 'final_solution.json').read_text()).get('run_id') == run_id
+    case.reports = {lang: {'text': v['text']} for lang, v in (rec.get('reports') or {}).items() if v.get('text') is not None}
+    if not case.reports and current:
+        case.reports = {lang: {'text': (case.dir / f'agent_report_{lang}.md').read_text()}
+                        for lang in ('es', 'en') if (case.dir / f'agent_report_{lang}.md').exists()}
     diffs = []
     for step in rec['steps']:
         if step['action'] in ('no_tool_call', 'done'):
@@ -758,9 +769,9 @@ def replay(event_id, run_id, echo=None):
         if echo:
             echo({**step, 'result': got})
         if step['action'] == 'write_report':
-            passed = {lang: v['check']['passed'] for lang, v in case.reports.items()}
-            if not all(passed.values()):
-                diffs.append({'step': step['step'], 'action': 'write_report', 'report_check': passed})
+            passed = {lang: (v.get('check') or {}).get('passed') for lang, v in case.reports.items()}
+            if 'reports' not in got or not passed or not all(passed.values()):
+                diffs.append({'step': step['step'], 'action': 'write_report', 'replayed': got, 'report_check': passed})
         elif not _same(got, step['result']):
             diffs.append({'step': step['step'], 'action': step['action'], 'recorded': step['result'], 'replayed': got})
     return {'run_id': run_id, 'steps': len(rec['steps']), 'differences': diffs}

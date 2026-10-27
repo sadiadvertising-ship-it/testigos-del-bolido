@@ -1,11 +1,11 @@
-Case Report - Event of July 31, 2025 at 03:50 UTC
+Verdict, written by the code: none. Fewer than two cameras could be oriented, so there is no trajectory and no speed to judge.
 
-On July 31, 2025 at 03:50 UTC an event was reported over Colombia with two submitted views from Bucaramanga and Medellin. No camera could be oriented, so no triangulated trajectory, altitude, speed or ground position can be confirmed.
+Event on 2025-07-30 22:50 (UTC-5, Colombia time), 2025-07-31T03:50:24Z in UTC.
 
-What is solid is limited to the reported time and the existence of the two video files as submitted.
+Witness video exists for Medellín (basketball court), about 373 kilometers from the flash. No witness video exists for Bucaramanga, about 124 kilometers from the flash, account suspended.
 
-What is uncertain is everything geometric: without an oriented view, direction of travel, entry angle and brightness profile remain unverified.
+Solid: an independent space-based lightning sensor recorded a Bolide at the same time at 6.460 N, 72.212 W, lasting 1.047533 seconds and rated Fairly Bright.
 
-What is missing explains why: the Bucaramanga clip had no trimmed video available for analysis, the Medellin clip's motion has not yet been measured, and neither view has a confirmed surveyed landmark or reference line to orient the cameras. With zero oriented views the geometry is insufficient to close a solution.
+Uncertain: no camera could be oriented because no surveyed landmark was confirmed and the Medellín filming spot is unknown, so geometry is insufficient and no trajectory or speed range can be given.
 
-Next steps are to obtain trimmed, measurable video for both sites and identifiable ground references that would allow orientation, after which re-analysis could be attempted.
+Missing: a second oriented view to close the geometry. The closest useful towns are Málaga (63 kilometers, look direction 114.5 degrees, flash 31.6-51.1 degrees up) and Saravena (66 kilometers, look direction 214.5 degrees, flash 30.4-49.7 degrees up).

@@ -1,5 +1,5 @@
 {
- "run_id": "20261027T132419-a996",
+ "run_id": "20261027T183453-9c57",
  "clips": [
   "2",
   "10"
@@ -13,6 +13,72 @@
  "end": "54.914 N, 60.615 E, 11.4 km",
  "speed_kms": 19.65,
  "speed_sigma_kms": 0.29,
+ "speed_sigma_formal_kms": 0.15,
+ "speed_spread_kms": 0.29,
+ "speed_band_95_kms": [
+  12.11,
+  23.72
+ ],
+ "speed_band_source": "Monte Carlo, 500 draws",
+ "uncertainty": {
+  "source": "montecarlo-2-10.json",
+  "draws": 500,
+  "azimuth_deg": {
+   "median": 279.34,
+   "1sigma": [
+    275.8,
+    282.57
+   ],
+   "2sigma": [
+    272.97,
+    284.44
+   ]
+  },
+  "slope_deg": {
+   "median": 17.01,
+   "1sigma": [
+    16.45,
+    17.57
+   ],
+   "2sigma": [
+    15.9,
+    17.95
+   ]
+  },
+  "speed_kms": {
+   "median": 17.59,
+   "1sigma": [
+    14.91,
+    20.31
+   ],
+   "2sigma": [
+    12.11,
+    23.72
+   ]
+  },
+  "end_h_km": {
+   "median": 11.88,
+   "1sigma": [
+    10.26,
+    13.66
+   ],
+   "2sigma": [
+    8.86,
+    15.8
+   ]
+  },
+  "begin_h_km": {
+   "median": 81.93,
+   "1sigma": [
+    69.89,
+    97.88
+   ],
+   "2sigma": [
+    58.05,
+    116.59
+   ]
+  }
+ },
  "speed_per_camera": {
   "2": 19.65,
   "10": 19.07
@@ -22,6 +88,6 @@
   "10": 0.824
  },
  "verdict": "natural",
- "verdict_reason": "19.6 ± 0.3 km/s is above escape speed",
- "verdict_rule": "natural if v - 2 sigma > 11 km/s (Earth escape speed is 11.2 km/s); re-entry if v + 2 sigma < 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise"
+ "verdict_reason": "19.6 km/s, 95% range 12.1 to 23.7 km/s (Monte Carlo, 500 draws) is above escape speed",
+ "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
 }
