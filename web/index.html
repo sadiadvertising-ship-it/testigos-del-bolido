@@ -27,10 +27,10 @@
     <h2>How the agent works</h2>
     <ol class="method">
       <li><b>Muse Spark</b> watches each video: camera type, edits, on-screen clock, when the fireball shows, and landmarks a map could locate.</li>
-      <li><b>SAM 3.1</b> follows the fireball frame by frame from the phrase "bright light".</li>
-      <li>Each camera is oriented against OpenStreetMap landmarks and street lines, so every pixel becomes a direction in the sky.</li>
-      <li>One camera's lines of sight form a plane; two planes from different sides cross in the trajectory. Speed comes from each video's own frame times.</li>
-      <li>Muse plans every step and writes the report. Tools return measured numbers, and geometry rules override the model.</li>
+      <li><b>SAM 3.1</b> follows the fireball frame by frame from the phrase "bright light" (run by a script, then cached).</li>
+      <li>A person marks street lines and landmarks; the code fits each camera to them and to OpenStreetMap, so every pixel becomes a direction in the sky. This step is still human work.</li>
+      <li>The agent, Muse Spark 1.3 calling tools in a loop, compares the cameras' planes of sight, solves, drops cameras, finalizes, writes the report or asks for missing evidence. Two planes from different sides cross in the trajectory; speed comes from each video's own frame times.</li>
+      <li>The code checks what matters: it re-solves the chosen cameras and refuses unjustified choices, refuses any figure in the report that no tool returned, and stops the run for a person, who signs the report off or supplies the evidence. The published answer sits where the agent cannot read it; a separate script grades the run.</li>
     </ol>
   </section>
   <section id="log"></section>

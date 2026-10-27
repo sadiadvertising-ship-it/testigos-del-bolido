@@ -150,9 +150,15 @@ def reports_and_run(case):
     if (case.dir / 'agent_report_en.md').exists():
         out['report_en'] = (case.dir / 'agent_report_en.md').read_text()
     runs = sorted((case.dir / 'runs').glob('*.json')) if (case.dir / 'runs').exists() else []
-    if runs:
-        rec = json.loads(runs[-1].read_text())
+    if runs:  # the run whose log and report are current
+        log_ids = {s.get('response_id') for s in json.loads((case.dir / 'agent_log.json').read_text())}
+        rec = next((json.loads(p.read_text()) for p in reversed(runs)
+                    if {s.get('response_id') for s in json.loads(p.read_text())['steps']} == log_ids), json.loads(runs[-1].read_text()))
         out['run'] = {k: rec.get(k) for k in ('run_id', 'status', 'block', 'git', 'planner', 'planner_model', 'cost_usd', 'reports', 'history')}
+        grade = ROOT / 'validation' / case.id / f"grade-{rec['run_id']}.json"
+        if grade.exists():  # graded afterwards by scripts/grade.py; the agent never reads validation/
+            g = json.loads(grade.read_text())
+            out['grade'] = {'passed': g['passed'], 'gate': g['gate']}
     return out
 
 

@@ -228,16 +228,18 @@ function name(d, id) {
 function leadSolved(d) {
   const s = d.solution, mc = d.montecarlo && d.montecarlo.stats;
   const [a, b] = s.clips.map(id => d.stations.find(x => x.id === id));
-  const oriented = d.stations.filter(x => x.rays).length;
+  const oriented = d.stations.filter(x => x.rays).length, dropped = d.stations.filter(x => x.status === 'dropped');
   const top = s.path[0][2] / 1000, low = s.path[s.path.length - 1][2] / 1000, dur = s.times[s.times.length - 1];
   const speed = mc ? `Speed ${fmt(s.speed_kms, 1)} km/s by the fit; the Monte Carlo puts it at ${fmt(mc.speed.median, 1)} km/s `
     + `(1σ ${span(...mc.speed['1sigma'])}). Satellites and rocket stages re-enter at under 8 km/s, and even the low end of our 2σ range, `
     + `${fmt(mc.speed['2sigma'][0], 1)} km/s, is above Earth's 11.2 km/s escape speed: <b>a natural meteor</b>.`
     : `Speed ${fmt(s.speed_kms, 1)} km/s: ${esc(s.verdict_reason)}.`;
   return `<p class="when">${esc(d.when)} · validation case</p>
-    <p>The agent got the ${d.stations.length} witness videos as anyone would find them online. ${oriented} of the cameras could be oriented
-    against map landmarks and street lines; it compared their planes of sight and kept the widest pair, <b>${esc(a.site)}</b> and
-    <b>${esc(b.site)}</b>, ${Math.round(km(a.lonlat, b.lonlat))} km apart, whose planes cross at ${fmt(s.q_deg, 0)}°.</p>
+    <p>${d.stations.length} witness videos, as anyone finds them online. A person marked street lines and landmarks in ${oriented} of
+    them so those cameras could be oriented, and SAM 3.1 tracked the fireball in each. The agent took it from there: it compared the
+    cameras' planes of sight, tried ${d.tried.length} combinations${dropped.length ? `, dropped ${dropped.map(x => esc(x.site)).join(', ')} citing its numbers` : ''},
+    and chose <b>${esc(a.site)}</b> and <b>${esc(b.site)}</b>, ${Math.round(km(a.lonlat, b.lonlat))} km apart, whose planes cross at
+    ${fmt(s.q_deg, 0)}°. The code re-solved that choice before accepting it.</p>
     <p class="big">Heading <span class="num">${fmt(s.azimuth_deg, 1)}°</span> (${dir(s.azimuth_deg)}), descending at
     <span class="num">${fmt(s.slope_deg, 1)}°</span>, from <span class="num">${fmt(top, 0)}</span> km down to
     <span class="num">${fmt(low, 0)}</span> km in <span class="num">${fmt(dur, 1)}</span> s.</p>
@@ -271,7 +273,8 @@ function compareSolved(d) {
     ${row('Speed, km/s', 'speed', s.speed_kms, 'speed_kms', '')}
     <tr class="src"><th scope="row">From</th><td class="r">2 cameras${mc ? `, ${d.montecarlo.draws} Monte Carlo draws` : ''}</td>
     <td class="r">${esc(cbet.how)}</td><td class="r">${esc(zul.how)}</td></tr></tbody></table>
-    <p class="note" style="margin-top:8px">${notes.join(' ')} The agent never saw these published values.</p>
+    <p class="note" style="margin-top:8px">${notes.join(' ')} The agent never saw these published values${d.grade ? `: a separate
+    script graded the run afterwards, ${esc(d.grade.passed)} criteria (${Object.entries(d.grade.gate).map(([k, v]) => `${k.replace(/_/g, ' ')} ${v ? 'passes' : 'fails'}`).join(', ')})` : ''}.</p>
     <p class="note">${d.published.values.map(v => esc(v.who)).join('. ')}.</p>`;
 }
 
@@ -283,7 +286,8 @@ function leadOpen(d) {
     recorded a ${fmt(g.duration_s, 2)} s flash at <span class="num">${latlon(g.lonlat)}</span>, ${nearest.km} km from ${esc(nearest.city)}.</p>
     <p>The only witness video still online was filmed in Medellín${med ? `, ${med.km} km away` : ''}. Muse read it: nothing in view is on a map,
     and the clip replays the moment in cuts, so the camera cannot be oriented. With fewer than two oriented cameras there is no
-    trajectory, and the agent says so instead of guessing.</p>
+    trajectory, and the agent says so instead of guessing${d.run && d.run.block && d.run.block.request ? `: it asked for videos from
+    ${esc((d.run.block.request.towns || []).join(', '))}, and the run stays blocked until they arrive` : ''}.</p>
     <p class="big">Phones in the towns marked in blue would have seen the flash 10° to 60° above the horizon. Two of those videos,
     from different sides, would give its path, its speed, and whether it was a meteor or a re-entering satellite.</p>`;
 }
@@ -376,7 +380,13 @@ function result(d, s) {
     case 'planes': return `Angle between planes: ${r.pairs.map(p => `${n(p.pair[0])}–${n(p.pair[1])} <span class="num">${fmt(p.q_deg, 1)}°</span>`).join(', ')}`;
     case 'solve': return `Heading <span class="num">${fmt(r.azimuth_deg, 1)}°</span>, slope <span class="num">${fmt(r.slope_deg, 1)}°</span>,
       <span class="num">${fmt(r.speed_kms, 2)}</span> km/s; per camera ${Object.entries(r.speed_per_camera || {}).map(([k, v]) => `${n(k)} <span class="num">${fmt(v, 2)}</span>`).join(', ')}`;
-    case 'drop_clip': return `Dropped ${n(r.dropped)}.`;
+    case 'drop_clip': return `Dropped ${n(r.dropped)}: ${esc(r.reason || '')}`;
+    case 'finalize': return r.accepted
+      ? `<b>Accepted by the code</b>${r.insufficient_geometry ? ': fewer than two oriented cameras, so insufficient geometry is recorded' : '.'}`
+      : `<b>Refused by the code</b>: ${esc((r.problems || []).join('; '))}`;
+    case 'request_evidence': return r.accepted
+      ? `<b>Request recorded</b>; the run stops until a person supplies it (${esc((r.request.towns || []).join(', ') || r.request.kind)}).`
+      : `<b>Refused by the code</b>: ${esc((r.problems || []).join('; '))}`;
     case 'check_satellite': return r.detections && r.detections.length
       ? r.detections.map(g => `${esc(g.class || 'Detection')} at ${esc(g.utc)}, ${esc(g.where || `${g.lat}, ${g.lon}`)}, ${fmt(g.duration_s, 2)} s`).join('; ')
       : `No detection. ${esc(r.note || '')}`;
@@ -384,16 +394,23 @@ function result(d, s) {
       fireball from ${fmt(r.fireball_s[0], 1)} to ${fmt(r.fireball_s[1], 1)} s; ${r.landmarks.length} landmark guesses`;
     case 'calibration': return r.calibrated ? `Oriented (${esc(r.lens)}, ${fmt(r.hfov, 1)}° wide)` : `Not oriented: ${esc(r.why)}`;
     case 'missing_views': return `Best towns: ${r.best_towns.slice(0, 5).map(t => esc(t.split(' (')[0])).join(', ')}`;
-    case 'write_report': return 'Wrote the report below.';
+    case 'write_report': return r.reports ? `Report written; every figure checked against the tool results: `
+      + Object.entries(r.reports).filter(([, v]) => v && v.figures !== undefined).map(([lang, v]) => `${lang} ${v.traced} of ${v.figures}${v.passed ? '' : ' (refused)'}`).join(', ')
+      : 'Wrote the report below.';
     default: return '';
   }
 }
 
 function drawLog(el, d) {
   const target = s => (s.clips && s.clips.length ? s.clips : s.clip ? [s.clip] : []).map(id => esc(name(d, id))).join(' + ');
+  const run = d.run || {}, label = {awaiting_review: 'waiting for a person to sign the report off', approved: 'report signed off',
+    blocked: run.block && run.block.reason === 'missing_evidence' ? 'blocked, waiting for the evidence it asked for' : 'blocked for a person',
+    failed: 'failed'}[run.status] || run.status;
   el.innerHTML = `<h2>What the agent did</h2>
-    <p class="note">Muse Spark chose each of these ${d.agent_log.length} steps and said why; Python ran the tool and returned the numbers.
-    ${d.tried ? 'Hover a solve step to see that solution on the map.' : ''}</p>
+    <p class="note">Muse Spark 1.3 chose each of these ${d.agent_log.length} steps by calling a tool and said why; the code ran the tool,
+    checked what had to be checked and kept the record. ${d.tried ? 'Hover a solve step to see that solution on the map.' : ''}</p>
+    ${run.run_id ? `<p class="note">Run <span class="num">${esc(run.run_id)}</span>: ${esc(label)}${run.history && run.history.length ? ` (${esc(run.history[run.history.length - 1].by || '')})` : ''}.
+    Code ${esc((run.git || {}).commit || '')}${(run.git || {}).dirty ? ' with local changes' : ''}, API cost US$ <span class="num">${fmt(run.cost_usd || 0, 2)}</span>.</p>` : ''}
     <ol class="steps">${d.agent_log.map(s => `<li data-step="${s.step}" class="${s.action === 'solve' ? 'solve' : ''}" ${s.action === 'solve' ? 'tabindex="0"' : ''}>
       <span class="action">${esc(s.action)}</span><span class="clips">${target(s)}</span>
       <div class="why">${esc(s.why)}</div><div class="result">${result(d, s)}</div></li>`).join('')}</ol>`;
@@ -496,7 +513,8 @@ async function show(id) {
   $('#compare').innerHTML = d.solution ? compareSolved(d) : compareOpen(d);
   if (d.solution) drawChart($('#chart'), d); else $('#chart').innerHTML = '';
   drawLog($('#log'), d);
-  $('#report').innerHTML = `<details><summary>The agent's report, as Muse Spark wrote it (Spanish)</summary>
+  $('#report').innerHTML = (d.report_en ? `<details><summary>The agent's report, as Muse Spark wrote it</summary>
+    <div class="report">${md(d.report_en)}</div></details>` : '') + `<details><summary>${d.report_en ? 'El mismo reporte en español' : "The agent's report, as Muse Spark wrote it (Spanish)"}</summary>
     <div class="report">${md(d.report_es)}</div></details>`;
   $('#hud').hidden = !d.solution;
   $('#play').textContent = 'Replay';
