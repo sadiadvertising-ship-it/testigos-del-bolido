@@ -11,3 +11,4 @@ out/frames/
 out/cache/
 .DS_Store
 .venv-tools/
+out/sam/

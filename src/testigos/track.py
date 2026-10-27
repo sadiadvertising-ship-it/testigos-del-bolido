@@ -15,7 +15,9 @@ from . import api
 
 FRAME = re.compile(r'<(\d+)f>')
 RECORD = re.compile(r'(\d+)<\|box;([^|]*)\|>')
-PHRASES = ('fireball', 'meteor', 'bright light', 'light streak')
+# On six Chelyabinsk clips only 'bright light' found the fireball; 'fireball', 'meteor' and 'light streak'
+# returned nothing, so they are not tried by default.
+PHRASES = ('bright light',)
 
 
 def parse(text):
@@ -41,11 +43,8 @@ def dominant(frames):
 
 def bright_centroid(gray, box, pct=95.0):
     """Intensity-weighted centroid of the brightest pixels inside a SAM box, in this frame's pixels."""
-    h, w = gray.shape
-    sx, sy = w / box.get('w', w), h / box.get('h', h)
-    x1, y1 = max(int(box['x1'] * sx), 0), max(int(box['y1'] * sy), 0)
-    x2, y2 = min(int(np.ceil((box['x2'] + 1) * sx)), w), min(int(np.ceil((box['y2'] + 1) * sy)), h)
-    crop = gray[y1:y2, x1:x2].astype(float)
+    crop, x1, y1 = _crop(gray, box)
+    crop = crop.astype(float)
     if crop.size == 0:
         return None
     weights = np.where(crop >= np.percentile(crop, pct), crop, 0.0)
@@ -53,6 +52,97 @@ def bright_centroid(gray, box, pct=95.0):
         return None
     ys, xs = np.indices(crop.shape)
     return np.array([x1 + (xs * weights).sum() / weights.sum(), y1 + (ys * weights).sum() / weights.sum()])
+
+
+def _crop(gray, box):
+    h, w = gray.shape
+    sx, sy = w / box.get('w', w), h / box.get('h', h)
+    x1, y1 = max(int(box['x1'] * sx), 0), max(int(box['y1'] * sy), 0)
+    x2, y2 = min(int(np.ceil((box['x2'] + 1) * sx)), w), min(int(np.ceil((box['y2'] + 1) * sy)), h)
+    return gray[y1:y2, x1:x2], x1, y1
+
+
+def head_point(gray, box, direction=None, lead_frac=0.1, streak_ratio=3.0):
+    """The fireball's head inside a SAM box.
+
+    A streak (head plus a train as bright as the head, as in daylight) is measured at its leading end along
+    the motion; a round glow (the flare) is measured at its centre, since the glow surrounds the head.
+    """
+    crop, x1, y1 = _crop(gray, box)
+    if crop.size == 0:
+        return None
+    crop = crop.astype(float)
+    thr = max(np.percentile(crop, 99), 0.9 * crop.max())
+    ys, xs = np.nonzero(crop >= thr)
+    if len(xs) == 0:
+        return None
+    if direction is not None and len(xs) > 3:
+        ev = np.linalg.eigvalsh(np.cov(np.vstack([xs, ys]).astype(float)) + 1e-6 * np.eye(2))
+        if np.sqrt(ev[1] / ev[0]) >= streak_ratio:
+            proj = xs * direction[0] + ys * direction[1]
+            lead = proj >= np.percentile(proj, 100 * (1 - lead_frac))
+            xs, ys = xs[lead], ys[lead]
+    return np.array([x1 + xs.mean(), y1 + ys.mean()])
+
+
+def contrast(gray, box, pad=0.5, min_pad_px=20):
+    """Box peak minus the median sky in a ring around the box."""
+    h, w = gray.shape
+    crop, x1, y1 = _crop(gray, box)
+    if crop.size == 0:
+        return 0.0
+    bh, bw = crop.shape
+    px, py = max(int(bw * pad), min_pad_px), max(int(bh * pad), min_pad_px)
+    X1, Y1, X2, Y2 = max(x1 - px, 0), max(y1 - py, 0), min(x1 + bw + px, w), min(y1 + bh + py, h)
+    ring = gray[Y1:Y2, X1:X2].astype(float).copy()
+    ring[y1 - Y1:y1 - Y1 + bh, x1 - X1:x1 - X1 + bw] = np.nan
+    sky = np.nanmedian(ring) if np.isfinite(ring).any() else 0.0
+    return float(crop.max()) - float(sky)
+
+
+def motion_direction(track_):
+    """Unit image-space direction of travel, from the first to the last box centre."""
+    ks = sorted(track_)
+    if len(ks) < 2:
+        return None
+    d = _center(track_[ks[-1]]) - _center(track_[ks[0]])
+    n = np.linalg.norm(d)
+    return d / n if n > 0 else None
+
+
+def measure(track_, grays, min_contrast=30.0, max_resid_px=15.0, min_step_px=0.5):
+    """Head point per frame from a SAM track.
+
+    Drops frames whose box holds nothing brighter than the sky, points off a smooth path in time
+    (cubic per axis, iterated), and a static tail where SAM held on to a pole after the fireball faded.
+    """
+    direction = motion_direction(track_)
+    pts = {}
+    for k in sorted(track_):
+        if k >= len(grays):
+            continue
+        if contrast(grays[k], track_[k]) < min_contrast:
+            continue
+        p = head_point(grays[k], track_[k], direction)
+        if p is not None:
+            pts[k] = p
+    for _ in range(4):
+        if len(pts) < 8:
+            break
+        ks = np.array(sorted(pts))
+        P = np.array([pts[k] for k in ks])
+        t = ks.astype(float)
+        resid = np.zeros(len(ks))
+        for axis in (0, 1):
+            resid = np.maximum(resid, np.abs(P[:, axis] - np.polyval(np.polyfit(t, P[:, axis], 3), t)))
+        keep = resid <= max(max_resid_px, 3 * float(np.median(resid)))
+        if keep.all():
+            break
+        pts = {int(k): pts[int(k)] for k, ok in zip(ks, keep) if ok}
+    ks = sorted(pts)
+    while len(ks) > 10 and np.linalg.norm(pts[ks[-1]] - pts[ks[-6]]) < 5 * min_step_px:
+        ks.pop()
+    return {k: pts[k] for k in ks}
 
 
 def blob_track(frames, min_level=200, min_area=3):
@@ -77,16 +167,55 @@ def coverage(frames, n_frames):
     return len(frames) / max(n_frames, 1)
 
 
-def track_fireball(file_id, n_frames, phrases=PHRASES, min_coverage=0.8, purpose=''):
-    """Try each phrase until one object covers enough frames; returns (phrase, {frame: box}, coverage)."""
+def objects(frames):
+    """{id: {frame: box}} from parsed SAM output."""
+    out = {}
+    for f, recs in frames.items():
+        for r in recs:
+            out.setdefault(r['id'], {})[f] = r
+    return out
+
+
+def _center(b):
+    return np.array([(b['x1'] + b['x2']) / 2, (b['y1'] + b['y2']) / 2])
+
+
+def pick_moving(frames, min_frames=10):
+    """The object that travels farthest across the image: headlights and street lamps stay put, a fireball does not.
+
+    Returns (id, {frame: box}, travel_px) or (None, {}, 0.0).
+    """
     best = (None, {}, 0.0)
+    for oid, track_ in objects(frames).items():
+        if len(track_) < min_frames:
+            continue
+        ks = sorted(track_)
+        travel = float(np.linalg.norm(_center(track_[ks[-1]]) - _center(track_[ks[0]])))
+        if travel > best[2]:
+            best = (oid, dict(sorted(track_.items())), travel)
+    return best
+
+
+def track_fireball(file_id, n_frames, phrases=PHRASES, min_span_coverage=0.8, min_travel_px=50,
+                   purpose='', cache_prefix=None):
+    """Try each phrase until a moving object is tracked through most of its span.
+
+    Returns a dict with the phrase, every object SAM returned, and the chosen object's track.
+    """
+    best = None
     for phrase in phrases:
         text = api.sam_video(file_id, phrase, n_frames, metadata={'include_confidence': 'true'},
-                             purpose=f'{purpose} {phrase}'.strip())
-        frames = dominant(parse(text))
-        cov = coverage(frames, n_frames)
-        if cov > best[2]:
-            best = (phrase, frames, cov)
-        if cov >= min_coverage:
+                             purpose=f'{purpose} {phrase}'.strip(),
+                             cache_key=f'{cache_prefix}-{phrase.replace(" ", "_")}' if cache_prefix else None)
+        frames = parse(text)
+        oid, chosen, travel = pick_moving(frames)
+        ks = sorted(chosen)
+        span_cov = len(ks) / (ks[-1] - ks[0] + 1) if ks else 0.0
+        result = {'phrase': phrase, 'objects': len(objects(frames)), 'id': oid, 'track': chosen,
+                  'travel_px': round(travel, 1), 'span_coverage': round(span_cov, 3),
+                  'coverage_of_clip': round(coverage(chosen, n_frames), 3)}
+        if best is None or result['travel_px'] * result['span_coverage'] > best['travel_px'] * best['span_coverage']:
+            best = result
+        if span_cov >= min_span_coverage and travel >= min_travel_px:
             break
     return best

@@ -1,0 +1,114 @@
+{
+ "note": "SAM 3.1 video tracking with the phrase \"bright light\"; head points measured inside each box (track.measure). Proof sheets were checked by eye; the model-free blob tracker is not a fair baseline in daylight and is omitted.",
+ "costs_usd": 1.326,
+ "clips": [
+  {
+   "clip": "chelyabinsk-2013-2",
+   "phrase": "bright light",
+   "objects": 9,
+   "chosen_id": 3,
+   "travel_px": 1022.7,
+   "frames": 540,
+   "sam_frames": 422,
+   "detected": 410,
+   "coverage_of_clip": 0.781,
+   "first_last": [
+    103,
+    515
+   ],
+   "coverage_of_span": 0.993,
+   "duplicates": 0,
+   "visual_check": "tracked from first light to the end"
+  },
+  {
+   "clip": "chelyabinsk-2013-14",
+   "phrase": "bright light",
+   "objects": 1,
+   "chosen_id": 1,
+   "travel_px": 142.7,
+   "frames": 360,
+   "sam_frames": 302,
+   "detected": 286,
+   "coverage_of_clip": 0.839,
+   "first_last": [
+    58,
+    344
+   ],
+   "coverage_of_span": 0.997,
+   "duplicates": 0,
+   "visual_check": "tracked; first 2 s missed while the fireball was a faint dot"
+  },
+  {
+   "clip": "chelyabinsk-2013-48",
+   "phrase": "bright light",
+   "objects": 4,
+   "chosen_id": 1,
+   "travel_px": 430.2,
+   "frames": 450,
+   "sam_frames": 345,
+   "detected": 223,
+   "coverage_of_clip": 0.767,
+   "first_last": [
+    105,
+    413
+   ],
+   "coverage_of_span": 0.722,
+   "duplicates": 0,
+   "visual_check": "tracked, including the flare"
+  },
+  {
+   "clip": "chelyabinsk-2013-81",
+   "phrase": "bright light",
+   "objects": 1,
+   "chosen_id": 0,
+   "travel_px": 272.2,
+   "frames": 600,
+   "sam_frames": 267,
+   "detected": 207,
+   "coverage_of_clip": 0.445,
+   "first_last": [
+    117,
+    350
+   ],
+   "coverage_of_span": 0.885,
+   "duplicates": 0,
+   "visual_check": "tracked along the top edge of a wide-angle frame"
+  },
+  {
+   "clip": "chelyabinsk-2013-257",
+   "phrase": "bright light",
+   "objects": 2,
+   "chosen_id": 0,
+   "travel_px": 251.4,
+   "frames": 420,
+   "sam_frames": 397,
+   "detected": 132,
+   "coverage_of_clip": 0.945,
+   "first_last": [
+    239,
+    417
+   ],
+   "coverage_of_span": 0.737,
+   "duplicates": 0,
+   "visual_check": "tracked inside a circular fisheye frame"
+  },
+  {
+   "clip": "chelyabinsk-2013-15",
+   "phrase": "bright light",
+   "objects": 3,
+   "chosen_id": 0,
+   "travel_px": 77.6,
+   "frames": 660,
+   "sam_frames": 151,
+   "detected": 84,
+   "coverage_of_clip": 0.229,
+   "first_last": [
+    122,
+    259
+   ],
+   "coverage_of_span": 0.609,
+   "duplicates": 0,
+   "visual_check": "lost: the fireball is saturated and fills the frame"
+  }
+ ]
+}

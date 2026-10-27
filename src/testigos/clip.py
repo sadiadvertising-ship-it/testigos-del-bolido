@@ -32,7 +32,8 @@ def probe(path):
 def frame_times(path):
     out = _run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries',
                 'frame=best_effort_timestamp_time', '-of', 'csv=p=0', str(path)])
-    return np.array([float(x) for x in out.split() if x.strip() not in ('', 'N/A')])
+    fields = (line.split(',')[0].strip() for line in out.splitlines())
+    return np.array([float(x) for x in fields if x not in ('', 'N/A')])
 
 
 def normalize(src, dst, start=None, end=None, max_height=720):
@@ -41,7 +42,7 @@ def normalize(src, dst, start=None, end=None, max_height=720):
     if start is not None:
         args += ['-ss', f'{start:.3f}']
     if end is not None:
-        args += ['-to', f'{end:.3f}']
+        args += ['-t', f'{end - (start or 0):.3f}']
     args += ['-i', str(src), '-vf', f"scale=-2:'min({max_height},ih)'", '-c:v', 'libx264', '-preset', 'veryfast',
              '-crf', '18', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', str(dst)]
     subprocess.run(args, check=True)

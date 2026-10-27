@@ -6,6 +6,7 @@ Every billable call is priced before it is sent and refused if today's spend wou
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import os
 import pathlib
@@ -17,6 +18,7 @@ import uuid
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 BASE = 'https://api.meta.ai/v1'
 LEDGER = ROOT / 'out' / 'costs.jsonl'
+CACHE = ROOT / 'out' / 'cache'
 
 SPARK_IN, SPARK_OUT = 1.25 / 1e6, 4.25 / 1e6  # USD per token
 SAM_VIDEO_FRAME = 0.0002  # USD per tracked frame, 50-frame minimum per request
@@ -71,12 +73,27 @@ def _request(path, data, headers, timeout):
             raise RuntimeError(f'{path} HTTP {e.code}: {body}') from None
 
 
-def upload(path, expires_days=7):
+def file_sha(path):
+    return hashlib.sha1(pathlib.Path(path).read_bytes()).hexdigest()[:16]
+
+
+def upload(path):
+    """Upload once per file content; later calls reuse the file id."""
     path = pathlib.Path(path)
+    index = CACHE / 'uploads.json'
+    known = json.loads(index.read_text()) if index.exists() else {}
+    sha = file_sha(path)
+    if sha in known:
+        return known[sha]
+    file_id = _upload(path)
+    CACHE.mkdir(parents=True, exist_ok=True)
+    index.write_text(json.dumps({**known, sha: file_id}, indent=1))
+    return file_id
+
+
+def _upload(path):
     boundary = uuid.uuid4().hex
-    parts = [('purpose', 'user_data'), ('expires_after[anchor]', 'created_at'),
-             ('expires_after[seconds]', str(expires_days * 86400))]
-    body = b''.join(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode() for k, v in parts)
+    body = f'--{boundary}\r\nContent-Disposition: form-data; name="purpose"\r\n\r\nuser_data\r\n'.encode()
     body += (f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="{path.name}"\r\n'
              f'Content-Type: video/mp4\r\n\r\n').encode() + path.read_bytes() + f'\r\n--{boundary}--\r\n'.encode()
     return _request('/files', body, {'Content-Type': f'multipart/form-data; boundary={boundary}'}, 300)['id']
@@ -104,8 +121,14 @@ def spark(content, schema=None, model='muse-spark-1.2', max_output_tokens=8000, 
     return json.loads(text) if schema else text
 
 
-def sam_video(file_id, prompt, frames_guess, metadata=None, purpose=''):
-    """Track a concept (short noun phrase) or box/point prompts through a video; returns the raw token text."""
+def sam_video(file_id, prompt, frames_guess, metadata=None, purpose='', cache_key=None):
+    """Track a concept (short noun phrase) or box/point prompts through a video; returns the raw token text.
+
+    With a cache_key the raw answer is kept in out/cache, so the same clip and prompt are never paid twice.
+    """
+    cached = CACHE / f'sam-{cache_key}.txt' if cache_key else None
+    if cached and cached.exists():
+        return cached.read_text()
     _guard(max(frames_guess, 50) * SAM_VIDEO_FRAME)
     body = {'model': 'sam-3.1', 'input': [{'type': 'message', 'role': 'user', 'content': [
         {'type': 'input_text', 'text': prompt}, {'type': 'input_video', 'file_id': file_id}]}]}
@@ -114,7 +137,10 @@ def sam_video(file_id, prompt, frames_guess, metadata=None, purpose=''):
     t0 = time.time()
     resp = _request('/responses', json.dumps(body).encode(), {'Content-Type': 'application/json'}, 900)
     text = text_of(resp)
-    frames = max(text.count('f>'), 0)
-    _log('sam_video', max(frames, 50) * SAM_VIDEO_FRAME, prompt=prompt[:60], purpose=purpose,
-         frames=frames, seconds=round(time.time() - t0, 1))
+    billed = max(frames_guess, 50)  # billed per frame processed, not per frame with a detection
+    _log('sam_video', billed * SAM_VIDEO_FRAME, prompt=prompt[:60], purpose=purpose, frames_billed=billed,
+         frames_with_output=text.count('f>'), seconds=round(time.time() - t0, 1))
+    if cached:
+        CACHE.mkdir(parents=True, exist_ok=True)
+        cached.write_text(text)
     return text

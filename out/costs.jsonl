@@ -1,0 +1,13 @@
+{"ts": "2026-10-26T20:49:34", "kind": "sam_video", "usd": 0.072, "prompt": "fireball", "purpose": "chelyabinsk-2013-14 fireball", "frames": 0, "seconds": 12.8, "frames_billed": 360}
+{"ts": "2026-10-26T20:49:46", "kind": "sam_video", "usd": 0.072, "prompt": "meteor", "purpose": "chelyabinsk-2013-14 meteor", "frames": 0, "seconds": 12.1, "frames_billed": 360}
+{"ts": "2026-10-26T20:50:07", "kind": "sam_video", "usd": 0.072, "prompt": "bright light", "purpose": "chelyabinsk-2013-14 bright light", "frames": 302, "seconds": 21.2, "frames_billed": 360}
+{"ts": "2026-10-26T20:51:43", "kind": "sam_video", "usd": 0.108, "prompt": "bright light", "purpose": "chelyabinsk-2013-2 bright light", "frames_billed": 540, "frames_with_output": 540, "seconds": 29.3}
+{"ts": "2026-10-26T20:53:50", "kind": "sam_video", "usd": 0.108, "prompt": "bright light", "purpose": "chelyabinsk-2013-2 bright light", "frames_billed": 540, "frames_with_output": 540, "seconds": 34.2}
+{"ts": "2026-10-26T20:55:33", "kind": "sam_video", "usd": 0.072, "prompt": "bright light", "purpose": "chelyabinsk-2013-14 bright light", "frames_billed": 360, "frames_with_output": 302, "seconds": 20.1}
+{"ts": "2026-10-26T20:58:51", "kind": "sam_video", "usd": 0.09, "prompt": "bright light", "purpose": "chelyabinsk-2013-48 bright light", "frames_billed": 450, "frames_with_output": 450, "seconds": 23.9}
+{"ts": "2026-10-26T20:59:52", "kind": "sam_video", "usd": 0.132, "prompt": "bright light", "purpose": "chelyabinsk-2013-15 bright light", "frames_billed": 660, "frames_with_output": 189, "seconds": 41.3}
+{"ts": "2026-10-26T21:00:11", "kind": "sam_video", "usd": 0.132, "prompt": "fireball", "purpose": "chelyabinsk-2013-15 fireball", "frames_billed": 660, "frames_with_output": 0, "seconds": 18.8}
+{"ts": "2026-10-26T21:00:30", "kind": "sam_video", "usd": 0.132, "prompt": "meteor", "purpose": "chelyabinsk-2013-15 meteor", "frames_billed": 660, "frames_with_output": 0, "seconds": 18.8}
+{"ts": "2026-10-26T21:00:49", "kind": "sam_video", "usd": 0.132, "prompt": "light streak", "purpose": "chelyabinsk-2013-15 light streak", "frames_billed": 660, "frames_with_output": 0, "seconds": 18.9}
+{"ts": "2026-10-26T21:01:38", "kind": "sam_video", "usd": 0.12, "prompt": "bright light", "purpose": "chelyabinsk-2013-81 bright light", "frames_billed": 600, "frames_with_output": 267, "seconds": 24.3}
+{"ts": "2026-10-26T21:02:25", "kind": "sam_video", "usd": 0.084, "prompt": "bright light", "purpose": "chelyabinsk-2013-257 bright light", "frames_billed": 420, "frames_with_output": 397, "seconds": 27.2}
