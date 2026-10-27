@@ -1,0 +1,77 @@
+{
+ "camera_moves": false,
+ "clip_kind": "dashcam_parked",
+ "edits": {
+  "cropped_or_zoomed": false,
+  "mirrored": false,
+  "multiple_cuts": false,
+  "music_overlay": false,
+  "slow_motion": false
+ },
+ "fireball": {
+  "color": "white - bright yellow-white at peak flare, then orange-red tail after flare",
+  "enters_from": "top left edge, outside frame ~ outside top border",
+  "exits_to": "descends to horizon behind tree line near center to center-right, slightly above horizon, trail remains visible after head disappears",
+  "first_s": 3.5,
+  "flare_times_s": [
+   8.5,
+   10.5
+  ],
+  "fragments": true,
+  "last_s": 16.5
+ },
+ "landmarks": [
+  {
+   "confidence": 0.9,
+   "distance_guess_m": 250,
+   "frame_s": 1.0,
+   "kind": "church",
+   "name_guess": "orthodox chapel / church with single gilded dome and bell tower",
+   "osm_hint": "orthodox church with cupola and bell tower",
+   "x_frac": 0.89,
+   "y_frac": 0.27
+  },
+  {
+   "confidence": 0.5,
+   "distance_guess_m": 30,
+   "frame_s": 1.0,
+   "kind": "street_lamp",
+   "name_guess": "street lamp pole line along road",
+   "osm_hint": "street lamp",
+   "x_frac": 0.44,
+   "y_frac": 0.32
+  }
+ ],
+ "location_hints": [
+  {
+   "source": "overlay",
+   "text": "snow covered road, dawn twilight, trolleybus overhead wires, Russian dashcam date format"
+  },
+  {
+   "source": "overlay",
+   "text": "Top right overlay 'TEISET' and bottom right date 2013/02/15 indicates Russia - Chelyabinsk meteor event 2013-02-15"
+  },
+  {
+   "source": "speech",
+   "text": "Russian speech"
+  },
+  {
+   "source": "skyline",
+   "text": "orthodox church with onion/gilded dome on right side of intersection"
+  }
+ ],
+ "onscreen_clock": {
+  "at_video_s": 0.0,
+  "text": "2013/02/15 09:20:18 bottom right + 000km/h + top right 000000000 TEISET"
+ },
+ "reason": "Camera is parked (0 km/h overlay) and completely static throughout fireball, fireball streak is bright, long and clearly visible against fixed references (church tower, lamp posts, overhead wires), peak is saturated but trajectory before and after flare remains measurable. No cuts or motion blur from camera movement.",
+ "sound": [
+  {
+   "confidence": 0.6,
+   "kind": "speech",
+   "t_s": 16.5
+  }
+ ],
+ "transcript": "[16.8s-19.5s] male off-camera: \"Нихуя себе, что это такое?\" [Russian, exclamation]  [18.5s-22.0s] female automated voice (GPS navigator) overlapping: \"Внимание...\" // audio low quality, second phrase truncated",
+ "usable_for_geometry": true
+}

@@ -31,6 +31,23 @@ def test_calibration_recovers_pointing_and_field_of_view():
     assert cal.rms_deg < 0.3 and cal.loo_deg is not None and cal.loo_deg < 0.5
 
 
+def test_fisheye_round_trip_beyond_ninety_degrees():
+    cam = Camera(960, 720, yaw=30, pitch=20, roll=4, hfov=185, k1=0.03, fisheye=True)
+    for az, el in [(30, 20), (110, 5), (-50, 40), (30, -60)]:
+        v = azel_to_enu(az, el)
+        assert angle_between(cam.unproject(cam.project(v)), v) < 1e-6
+
+
+def test_fisheye_calibration_from_directions():
+    rng = np.random.default_rng(5)
+    truth = Camera(960, 720, yaw=40.0, pitch=15.0, roll=-3.0, hfov=180.0, fisheye=True)
+    dirs = [('azel', a, e) for a, e in [(-30, 2), (10, 6), (60, 1), (95, 4), (40, 45)]]
+    lms = [(d, truth.project_azel(d[1], d[2]) + rng.normal(0, 1.5, 2)) for d in dirs]
+    cal = calibrate(960, 720, STATIONS['south'], lms, hfov_guess=170.0, fisheye=True)
+    assert abs(cal.camera.yaw - truth.yaw) < 0.5 and abs(cal.camera.hfov - truth.hfov) < 2.0
+    assert cal.rms_deg < 0.5
+
+
 def test_two_landmarks_fit_exactly_and_have_no_leave_one_out():
     pos = STATIONS['south']
     truth = Camera(1280, 720, yaw=40.0, pitch=10.0, roll=0.0, hfov=55.0)

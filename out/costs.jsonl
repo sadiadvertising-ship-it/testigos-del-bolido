@@ -11,3 +11,4 @@
 {"ts": "2026-10-26T21:00:49", "kind": "sam_video", "usd": 0.132, "prompt": "light streak", "purpose": "chelyabinsk-2013-15 light streak", "frames_billed": 660, "frames_with_output": 0, "seconds": 18.9}
 {"ts": "2026-10-26T21:01:38", "kind": "sam_video", "usd": 0.12, "prompt": "bright light", "purpose": "chelyabinsk-2013-81 bright light", "frames_billed": 600, "frames_with_output": 267, "seconds": 24.3}
 {"ts": "2026-10-26T21:02:25", "kind": "sam_video", "usd": 0.084, "prompt": "bright light", "purpose": "chelyabinsk-2013-257 bright light", "frames_billed": 420, "frames_with_output": 397, "seconds": 27.2}
+{"ts": "2026-10-26T21:06:46", "kind": "spark", "usd": 0.01313, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013-2 witness read", "seconds": 12.6, "input_tokens": 3350, "output_tokens": 2104}
