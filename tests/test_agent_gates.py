@@ -212,8 +212,21 @@ def test_the_tool_calling_loop_runs_until_review_and_replays(case_with, monkeypa
     record = json.loads((case.dir / 'runs' / f'{case.run_id}.json').read_text())
     assert record['status'] == 'awaiting_review' and record['planner'] == 'native' and len(record['steps']) == 3
     assert agent.replay('synthetic', case.run_id)['differences'] == []
+    assert agent.rejection_notes('synthetic', case.run_id) is None
     approved = agent.review('synthetic', case.run_id, approve=True, by='Diego')
     assert approved['status'] == 'approved' and approved['history'][-1]['by'] == 'Diego'
+
+
+def test_a_rejected_report_resumes_with_the_reviewers_notes(case_with, monkeypatch):
+    monkeypatch.setattr(agent.api, 'spark', _report_from_facts)
+    case = case_with(oriented={'chelyabinsk', 'south'})
+    case._start(None, None, 'json')
+    case.call('finalize', {'clips': ['chelyabinsk', 'south'], 'why': 'x'})
+    case.call('write_report', {'why': 'x'})
+    case._finish()
+    rejected = agent.review('synthetic', case.run_id, approve=False, notes='Quiten la frase sobre la base corta.', by='Diego')
+    assert rejected['status'] == 'rejected'
+    assert agent.rejection_notes('synthetic', case.run_id) == 'Quiten la frase sobre la base corta.'
 
 
 def test_no_agent_code_reads_the_published_answer():

@@ -93,6 +93,8 @@ def main(argv=None):
         _ended(case)
     elif a.cmd == 'resume':
         changed = agent.changed_inputs(a.event, a.run_id)
+        if not a.notes:  # a report sent back with `review --reject --notes` resumes with those notes
+            a.notes = agent.rejection_notes(a.event, a.run_id)
         if not changed and not a.notes:
             print(f'nothing changed since run {a.run_id} and no reviewer notes: the run stays blocked, no model call')
             return 1

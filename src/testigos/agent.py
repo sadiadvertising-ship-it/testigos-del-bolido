@@ -755,6 +755,13 @@ def review(event_id, run_id, approve, notes=None, by=None):
     return rec
 
 
+def rejection_notes(event_id, run_id):
+    """The reviewer's notes when the run's last review sent its report back, else None."""
+    rec = json.loads((ROOT / 'events' / event_id / 'runs' / f'{run_id}.json').read_text())
+    last = (rec.get('history') or [{}])[-1]
+    return last.get('notes') if last.get('review') == 'rejected' else None
+
+
 def changed_inputs(event_id, run_id):
     """Inputs whose content changed since the run; a blocked run resumes only when something did."""
     rec = json.loads((ROOT / 'events' / event_id / 'runs' / f'{run_id}.json').read_text())
