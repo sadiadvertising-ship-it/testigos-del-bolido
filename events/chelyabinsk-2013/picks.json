@@ -215,6 +215,22 @@
     "k1": 0.5999999999999998
    },
    "verdict": "rejected: k1 ran to its +0.6 bound and hfov to its 70 deg bound, so the constraints conflict; next is two independent annotations of several straight edges and poles, as for Tyumen, and a synthetic test of the self-calibrating triangulation before trusting it"
+  },
+  "lines": "events/chelyabinsk-2013/lines-10.json (two annotators; 11 alley-parallel, 7 vertical, 3 other straight; the thin pole left out)",
+  "alley_bearing_deg": 122.0,
+  "camera": {
+   "yaw": 122.81987586743917,
+   "pitch": 1.3258274694186076,
+   "roll": 0.6608035404209797,
+   "hfov": 91.92,
+   "k1": -0.09335975231818215
+  },
+  "camera_note": "yaw, pitch, roll, k1 from the lines at each candidate hfov; hfov 91.9 from three-station self-calibration (Kamensk, Tyumen, Korkino), no CBET input",
+  "check_against_cbet_v2": {
+   "frames": 68,
+   "median_deg": -0.56,
+   "p10_deg": -1.4,
+   "p90_deg": 0.76
   }
  }
 }

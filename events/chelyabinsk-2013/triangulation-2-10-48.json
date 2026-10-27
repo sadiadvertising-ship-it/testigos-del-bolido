@@ -1,0 +1,56 @@
+{
+ "note": "adding Tyumen (1 deg bias) pulls the azimuth further off",
+ "stations": [
+  "chelyabinsk-2013-2",
+  "chelyabinsk-2013-10",
+  "chelyabinsk-2013-48"
+ ],
+ "q_max_deg": 63.1,
+ "warnings": [],
+ "residual_rms_deg": {
+  "chelyabinsk-2013-2": 1.029,
+  "chelyabinsk-2013-10": 0.991,
+  "chelyabinsk-2013-48": 1.007
+ },
+ "azimuth_deg": [
+  272.68,
+  279.5
+ ],
+ "slope_deg": [
+  15.85,
+  16.5
+ ],
+ "speed_kms": [
+  19.14,
+  17.5
+ ],
+ "speed_sigma_kms": 3.27,
+ "station_speeds_kms": {
+  "chelyabinsk-2013-2": 14.27,
+  "chelyabinsk-2013-10": 8.35,
+  "chelyabinsk-2013-48": 19.69
+ },
+ "flare_point_off_our_line_km": 9.3,
+ "our_height_near_flare_km": [
+  33.05,
+  31.73
+ ],
+ "cbet_end_point_off_our_line_km": 15.89,
+ "our_last_point_vs_cbet_end_km": 18.56,
+ "begin": [
+  54.6578,
+  63.6088,
+  76.42
+ ],
+ "end": [
+  54.7853,
+  60.4419,
+  14.37
+ ],
+ "gate": {
+  "azimuth": false,
+  "slope": true,
+  "flare_height": true,
+  "end_point": false
+ }
+}

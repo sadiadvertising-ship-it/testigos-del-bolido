@@ -1,0 +1,771 @@
+{
+ "note": "two independent annotators, sub-pixel profiles",
+ "a": {
+  "lines": [
+   {
+    "name": "left_garage_roof_silhouette",
+    "kind": "along_alley",
+    "points": [
+     [
+      6,
+      50.9
+     ],
+     [
+      40,
+      70.3
+     ],
+     [
+      88,
+      98.7
+     ],
+     [
+      112,
+      112.4
+     ],
+     [
+      136,
+      127.3
+     ],
+     [
+      160,
+      141.6
+     ]
+    ]
+   },
+   {
+    "name": "left_garage_eave_underside_wall_top",
+    "kind": "along_alley",
+    "points": [
+     [
+      18,
+      95.4
+     ],
+     [
+      42,
+      104.7
+     ],
+     [
+      66,
+      115
+     ],
+     [
+      90,
+      124.7
+     ],
+     [
+      114,
+      134.6
+     ],
+     [
+      138,
+      144.9
+     ]
+    ]
+   },
+   {
+    "name": "left_door1_top_lintel",
+    "kind": "along_alley",
+    "points": [
+     [
+      46,
+      144.4
+     ],
+     [
+      54,
+      146
+     ],
+     [
+      62,
+      147.6
+     ],
+     [
+      70,
+      149.4
+     ]
+    ]
+   },
+   {
+    "name": "left_door2_top_lintel",
+    "kind": "along_alley",
+    "points": [
+     [
+      128,
+      161.6
+     ],
+     [
+      130,
+      161.7
+     ],
+     [
+      132,
+      162.2
+     ],
+     [
+      134,
+      162.5
+     ],
+     [
+      136,
+      163.3
+     ]
+    ]
+   },
+   {
+    "name": "right_fence_base_meets_road",
+    "kind": "along_alley",
+    "points": [
+     [
+      262,
+      198.6
+     ],
+     [
+      278,
+      208.1
+     ],
+     [
+      298,
+      218.4
+     ],
+     [
+      318,
+      230.3
+     ],
+     [
+      338,
+      240.8
+     ],
+     [
+      358,
+      251.2
+     ],
+     [
+      378,
+      261.4
+     ]
+    ]
+   },
+   {
+    "name": "far_left_row_white_eave_band",
+    "kind": "along_alley",
+    "points": [
+     [
+      165,
+      177.7
+     ],
+     [
+      168,
+      178.1
+     ],
+     [
+      180,
+      180.2
+     ],
+     [
+      186,
+      181.1
+     ],
+     [
+      192,
+      182
+     ]
+    ]
+   },
+   {
+    "name": "left_door1_left_jamb",
+    "kind": "vertical",
+    "points": [
+     [
+      43.4,
+      150
+     ],
+     [
+      41.7,
+      170
+     ],
+     [
+      41.2,
+      190
+     ],
+     [
+      41,
+      210
+     ],
+     [
+      42.5,
+      230
+     ],
+     [
+      42.8,
+      250
+     ]
+    ]
+   },
+   {
+    "name": "left_door1_right_jamb",
+    "kind": "vertical",
+    "points": [
+     [
+      75.2,
+      160
+     ],
+     [
+      74.6,
+      170
+     ],
+     [
+      74.2,
+      180
+     ],
+     [
+      73.8,
+      190
+     ],
+     [
+      74,
+      200
+     ],
+     [
+      73.9,
+      210
+     ],
+     [
+      74,
+      220
+     ],
+     [
+      74.7,
+      230
+     ]
+    ]
+   },
+   {
+    "name": "left_door2_left_jamb",
+    "kind": "vertical",
+    "points": [
+     [
+      126.3,
+      170
+     ],
+     [
+      126.3,
+      180
+     ],
+     [
+      126,
+      190
+     ],
+     [
+      125.8,
+      200
+     ],
+     [
+      125.2,
+      210
+     ],
+     [
+      125.3,
+      220
+     ]
+    ]
+   },
+   {
+    "name": "left_door2_right_jamb",
+    "kind": "vertical",
+    "points": [
+     [
+      139.6,
+      170
+     ],
+     [
+      138.7,
+      180
+     ],
+     [
+      138.4,
+      190
+     ],
+     [
+      138.3,
+      200
+     ],
+     [
+      138.3,
+      210
+     ],
+     [
+      138.1,
+      220
+     ]
+    ]
+   },
+   {
+    "name": "thin_pole_far_left",
+    "kind": "vertical",
+    "points": [
+     [
+      173.3,
+      104
+     ],
+     [
+      173.2,
+      108
+     ],
+     [
+      172.8,
+      120
+     ],
+     [
+      172.5,
+      128
+     ],
+     [
+      172.2,
+      136
+     ],
+     [
+      171.5,
+      140
+     ],
+     [
+      171.6,
+      156
+     ],
+     [
+      171.9,
+      160
+     ]
+    ]
+   },
+   {
+    "name": "far_building_roof_top_edge",
+    "kind": "straight_other",
+    "points": [
+     [
+      214,
+      166.7
+     ],
+     [
+      222,
+      166.5
+     ],
+     [
+      230,
+      166.5
+     ],
+     [
+      258,
+      168
+     ],
+     [
+      270,
+      168.4
+     ],
+     [
+      282,
+      168.6
+     ],
+     [
+      290,
+      168.8
+     ]
+    ]
+   },
+   {
+    "name": "far_building_roof_eave_bottom",
+    "kind": "straight_other",
+    "points": [
+     [
+      210,
+      175.7
+     ],
+     [
+      218,
+      175.7
+     ],
+     [
+      226,
+      176
+     ],
+     [
+      234,
+      176.3
+     ],
+     [
+      242,
+      176.5
+     ],
+     [
+      250,
+      176.8
+     ],
+     [
+      258,
+      176.8
+     ]
+    ]
+   }
+  ],
+  "notes": "I marked 13 lines on kork-t2.png: 5 vertical, 6 along_alley and 2 straight_other. Every point comes from a subpixel measurement on the grey-level pixel values (crossing halfway between the two sides of an edge, or the centre of a thin dark or bright line), not from reading the zoomed crops by eye.\n\nAccuracy of each line:\n- **Left garage roof silhouette:** the roof edge is corrugated, so the points follow the tooth tops. On the far left the teeth are about 5 px tall, so expect up to about 1 px of error there.\n- **Left garage eave underside:** this edge is soft, but it measures clean and fits close to y = 0.41x + 89.\n- **Door 1 jambs:** low contrast. The left jamb bows to the left by about 2 px in the middle. That fits barrel distortion, but it may also be noise. The right jamb has about 1 px of scatter.\n- **Pole:** almost saturated against the bright sky. The points drift about 2 px left between y 104 and 160, so the pole may be leaning; give this line less weight.\n- **Right fence base:** I skipped x 282-294, where the edge looked disturbed.\n- **Far-left row band:** this tracks the centre of a thin bright band, likely a white eave. It is short (x 165-192).\n- **Far building roof lines:** roof top points between x 234 and 250 are left out because a tree covers them, and the eave bottom is blocked by the right-hand row beyond x 258.\n\nRough check: the left roof, the eave underside and the right fence base meet near (231, 183), and both door lintels have the slope that point predicts.\n\nLeft out because I could not confirm they are straight or measure them well:\n- the arched, snow-covered roofs of the right-hand row\n- the right-hand row's railing, which jumps about 1.3 px at x \u2248 386\n- the top of the blue fence, which only shows in colour, and colour is stored at lower resolution than brightness\n- the left wall base, which is too dark\n- the end corner of the left garage and the corners of the far building, which are unclear\n\nWorking files, including the crops and the measuring scripts (load.py, edge.py), are in the annotator's scratch folder korkino-ann-a (not kept in the repository)."
+ },
+ "b": {
+  "lines": [
+   {
+    "name": "left_garage_roof_edge",
+    "kind": "along_alley",
+    "points": [
+     [
+      6,
+      52.6
+     ],
+     [
+      30,
+      66.3
+     ],
+     [
+      55,
+      79
+     ],
+     [
+      80,
+      94
+     ],
+     [
+      105,
+      108.7
+     ],
+     [
+      130,
+      123.5
+     ],
+     [
+      155,
+      138.2
+     ]
+    ]
+   },
+   {
+    "name": "left_garage_fascia_bottom",
+    "kind": "along_alley",
+    "points": [
+     [
+      92,
+      125.6
+     ],
+     [
+      100,
+      128.4
+     ],
+     [
+      108,
+      131.6
+     ],
+     [
+      116,
+      134.5
+     ],
+     [
+      124,
+      138.4
+     ],
+     [
+      132,
+      142.5
+     ],
+     [
+      140,
+      146.1
+     ],
+     [
+      148,
+      149.7
+     ]
+    ]
+   },
+   {
+    "name": "door1_top_edge",
+    "kind": "along_alley",
+    "points": [
+     [
+      46,
+      144.6
+     ],
+     [
+      50,
+      145.5
+     ],
+     [
+      54,
+      146.3
+     ],
+     [
+      58,
+      147.3
+     ],
+     [
+      62,
+      148.2
+     ],
+     [
+      66,
+      148.8
+     ],
+     [
+      70,
+      149.7
+     ]
+    ]
+   },
+   {
+    "name": "door2_top_edge",
+    "kind": "along_alley",
+    "points": [
+     [
+      128,
+      161.8
+     ],
+     [
+      130,
+      162.2
+     ],
+     [
+      132,
+      162.6
+     ],
+     [
+      134,
+      162.8
+     ],
+     [
+      136,
+      163.5
+     ]
+    ]
+   },
+   {
+    "name": "right_row_light_rail",
+    "kind": "along_alley",
+    "points": [
+     [
+      342,
+      185.1
+     ],
+     [
+      354,
+      185.5
+     ],
+     [
+      366,
+      186.3
+     ],
+     [
+      378,
+      186
+     ],
+     [
+      390,
+      187
+     ],
+     [
+      408,
+      186.7
+     ],
+     [
+      426,
+      186.3
+     ],
+     [
+      438,
+      186.7
+     ]
+    ]
+   },
+   {
+    "name": "door1_right_edge",
+    "kind": "vertical",
+    "points": [
+     [
+      75.4,
+      152
+     ],
+     [
+      74.7,
+      164
+     ],
+     [
+      74.3,
+      176
+     ],
+     [
+      73.7,
+      188
+     ],
+     [
+      73.8,
+      200
+     ],
+     [
+      74,
+      212
+     ],
+     [
+      74.1,
+      224
+     ],
+     [
+      74.5,
+      236
+     ]
+    ]
+   },
+   {
+    "name": "door2_left_edge",
+    "kind": "vertical",
+    "points": [
+     [
+      127,
+      166
+     ],
+     [
+      126.6,
+      174
+     ],
+     [
+      126.3,
+      182
+     ],
+     [
+      126.2,
+      190
+     ],
+     [
+      125.8,
+      198
+     ],
+     [
+      125.5,
+      206
+     ],
+     [
+      125.5,
+      214
+     ],
+     [
+      125.5,
+      222
+     ]
+    ]
+   },
+   {
+    "name": "door2_right_edge",
+    "kind": "vertical",
+    "points": [
+     [
+      139.2,
+      166
+     ],
+     [
+      138.9,
+      174
+     ],
+     [
+      138.6,
+      182
+     ],
+     [
+      138.5,
+      190
+     ],
+     [
+      138.6,
+      198
+     ],
+     [
+      138.2,
+      206
+     ],
+     [
+      138.3,
+      214
+     ],
+     [
+      137.8,
+      222
+     ]
+    ]
+   },
+   {
+    "name": "far_left_pole",
+    "kind": "vertical",
+    "points": [
+     [
+      173.2,
+      108
+     ],
+     [
+      172.4,
+      120
+     ],
+     [
+      172.5,
+      132
+     ],
+     [
+      171.3,
+      140
+     ],
+     [
+      168.8,
+      186
+     ],
+     [
+      169.5,
+      198
+     ],
+     [
+      169.1,
+      210
+     ]
+    ]
+   },
+   {
+    "name": "far_building_eave",
+    "kind": "straight_other",
+    "points": [
+     [
+      216,
+      175.6
+     ],
+     [
+      222,
+      175.8
+     ],
+     [
+      228,
+      176.2
+     ],
+     [
+      234,
+      176.4
+     ],
+     [
+      240,
+      176.5
+     ],
+     [
+      246,
+      176.7
+     ],
+     [
+      252,
+      176.9
+     ],
+     [
+      258,
+      176.8
+     ]
+    ]
+   }
+  ],
+  "notes": "I marked 10 lines: 4 vertical, 5 along_alley and 1 straight_other. Each point is a sub-pixel measurement from intensity profiles of kork-t2.png: the peak of the gradient, or the minimum of a dark line, refined with a parabola. The points are not smoothed.\n\nAll along_alley lines meet near (235, 185.5). The lines I measured cross there by extrapolation, which supports the classification.\n\nCaveats:\n- Left roof edge: the metal sheet is corrugated, so its outline against the sky is a sawtooth with a period of about 8 px. Each point is the mean edge over one period, centred on the given x. The line may sit about 1 px off the true eave, but it should stay parallel to it.\n- Left fascia bottom (where the eave meets the wall): this is a soft shading edge, so its accuracy is about 1-1.5 px.\n- Door1 right edge: contrast drops in the lower half, so treat the points below y=200 as accurate to about 1 px.\n- Door2 top edge: it is short, spanning only x 128-136.\n- Pole: the sky behind it is nearly saturated (246 against 251) and the pole is hidden between y=145 and 185. The two visible segments were joined as one line.\n- Right-row light rail: it lies almost on the horizon. It is close to flat, at y 185-187.\n\nEdges I skipped:\n- The arched roofs of the right-hand row: their outlines are arch profiles, not straight lines.\n- The tops of the right-hand blue fence panels: the panels are not at one height and their slopes do not agree with each other.\n- The left wall base: it is hidden by snow and shadow.\n- The left wall corner, downpipe and door1 left edge: too weak or ambiguous.\n- The far left-row roof: jittery and close to the vanishing point.\n- The ridge line of the far building: it steps near x=245, so it may not be one straight line.\n\nThe scratch files are in the annotator's scratch folder korkino-ann-b (not kept in the repository)."
+ }
+}
