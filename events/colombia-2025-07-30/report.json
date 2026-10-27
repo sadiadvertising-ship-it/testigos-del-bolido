@@ -1,0 +1,189 @@
+{
+ "event": "Green fireball over Colombia, 2025-07-30 about 22:50 local (2025-07-31 03:50 UTC)",
+ "satellite": {
+  "source": "NASA neo-bolide catalog (GOES-19 GLM), event 688ceb919d34489b2a74aa5f, human classification \"Bolide\", published 2025-08-13",
+  "start_utc": "2025-07-31T03:50:23.732Z",
+  "end_utc": "2025-07-31T03:50:24.780Z",
+  "duration_s": 1.048,
+  "lat": 6.460453033447266,
+  "lon": -72.21210098266602,
+  "extent_deg": [
+   0.07312393188476562,
+   0.14422225952148438
+  ],
+  "brightness": "Fairly Bright",
+  "confidence": "medium",
+  "lightcurve": "very good",
+  "note": "GLM places light at cloud-top height, so a flash 30-50 km up can sit a few km off its ground position; the detection marks the brightest second, not the whole path"
+ },
+ "witness_videos": [
+  {
+   "place": "Medellín (basketball court)",
+   "source": "https://x.com/GarcesUwu/status/1950801729752093064",
+   "status": "downloaded for analysis",
+   "muse_reading": {
+    "clip_kind": "phone_handheld",
+    "edits": {
+     "cropped_or_zoomed": false,
+     "mirrored": false,
+     "multiple_cuts": true,
+     "music_overlay": false,
+     "slow_motion": false
+    },
+    "fireball": {
+     "color": "bright green/white-green head with long green tail",
+     "enters_from": "top center, slightly left of center (~behind roof truss)",
+     "exits_to": "center, slightly left of basketball backboard, above tree line",
+     "first_s": 2.2,
+     "flare_times_s": [
+      2.6
+     ],
+     "fragments": false,
+     "last_s": 3.2
+    }
+   },
+   "usable_for_geometry": false,
+   "why": "only near, unmapped objects (backboard, roof truss, a pole) and an unknown filming spot; Muse called it usable, but with no surveyed landmark the camera cannot be oriented, so the rule overrides the model"
+  },
+  {
+   "place": "Bucaramanga",
+   "source": "https://x.com/JDhrdz_/status/1950772263856590912",
+   "status": "account suspended; video unavailable"
+  },
+  {
+   "place": "Floridablanca",
+   "source": "https://x.com/andrestor82/status/1950769357039997226",
+   "status": "text only, no video"
+  }
+ ],
+ "written_reports": [
+  "Bogotá (Colina)",
+  "Bucaramanga",
+  "Floridablanca",
+  "Girón",
+  "Cúcuta",
+  "Villavicencio"
+ ],
+ "geometry": {
+  "status": "insufficient: no calibratable video",
+  "cities": [
+   {
+    "city": "Málaga",
+    "km": 63,
+    "look_az_deg": 114.5,
+    "el_at_40km_deg": 31.6,
+    "el_at_80km_deg": 51.1
+   },
+   {
+    "city": "Saravena",
+    "km": 66,
+    "look_az_deg": 214.5,
+    "el_at_40km_deg": 30.4,
+    "el_at_80km_deg": 49.7
+   },
+   {
+    "city": "San Gil",
+    "km": 103,
+    "look_az_deg": 95.9,
+    "el_at_40km_deg": 20.6,
+    "el_at_80km_deg": 37.2
+   },
+   {
+    "city": "Pamplona",
+    "km": 112,
+    "look_az_deg": 154.6,
+    "el_at_40km_deg": 18.8,
+    "el_at_80km_deg": 34.6
+   },
+   {
+    "city": "Sogamoso",
+    "km": 114,
+    "look_az_deg": 43.8,
+    "el_at_40km_deg": 18.5,
+    "el_at_80km_deg": 34.2
+   },
+   {
+    "city": "Duitama",
+    "km": 115,
+    "look_az_deg": 52.3,
+    "el_at_40km_deg": 18.4,
+    "el_at_80km_deg": 34.0
+   },
+   {
+    "city": "Floridablanca",
+    "km": 118,
+    "look_az_deg": 124.5,
+    "el_at_40km_deg": 18.0,
+    "el_at_80km_deg": 33.3
+   },
+   {
+    "city": "Bucaramanga",
+    "km": 124,
+    "look_az_deg": 125.8,
+    "el_at_40km_deg": 17.0,
+    "el_at_80km_deg": 31.9
+   },
+   {
+    "city": "Yopal",
+    "km": 126,
+    "look_az_deg": 9.2,
+    "el_at_40km_deg": 16.8,
+    "el_at_80km_deg": 31.6
+   },
+   {
+    "city": "Cúcuta",
+    "km": 162,
+    "look_az_deg": 168.3,
+    "el_at_40km_deg": 12.9,
+    "el_at_80km_deg": 25.3
+   },
+   {
+    "city": "Tunja",
+    "km": 164,
+    "look_az_deg": 51.3,
+    "el_at_40km_deg": 12.8,
+    "el_at_80km_deg": 25.0
+   },
+   {
+    "city": "Arauca",
+    "km": 175,
+    "look_az_deg": 246.9,
+    "el_at_40km_deg": 11.9,
+    "el_at_80km_deg": 23.5
+   },
+   {
+    "city": "Barrancabermeja",
+    "km": 193,
+    "look_az_deg": 110.1,
+    "el_at_40km_deg": 10.6,
+    "el_at_80km_deg": 21.3
+   },
+   {
+    "city": "Bogotá (Colina)",
+    "km": 280,
+    "look_az_deg": 46.8,
+    "el_at_40km_deg": 6.7,
+    "el_at_80km_deg": 14.5
+   },
+   {
+    "city": "Villavicencio",
+    "km": 301,
+    "look_az_deg": 31.4,
+    "el_at_40km_deg": 6.1,
+    "el_at_80km_deg": 13.4
+   },
+   {
+    "city": "Medellín",
+    "km": 373,
+    "look_az_deg": 86.1,
+    "el_at_40km_deg": 4.3,
+    "el_at_80km_deg": 10.3
+   }
+  ],
+  "best_views": "Málaga and Saravena (60-70 km, flash 30-50 deg up), then San Gil, Pamplona, Sogamoso, Duitama, Bucaramanga, Yopal (100-130 km, 17-34 deg up). Views from opposite sides (for example Bucaramanga looking 126 deg plus Sogamoso or Duitama looking 44-52 deg, or Yopal looking 9 deg) cross at wide angles and would fix the path."
+ },
+ "verdict": {
+  "kind": "inconclusive",
+  "reason": "no speed can be measured without two calibrated views; NASA analysts classified the GLM detection as a bolide"
+ }
+}

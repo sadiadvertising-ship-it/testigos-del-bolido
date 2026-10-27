@@ -69,10 +69,12 @@ reconstruction. Report only what you can see or hear; do not guess the trajector
 - location_hints: signs, language, skyline or speech that hint where the camera is.
 - sound: times of a boom, rumble, shouts or speech; "none" if the video is silent.
 - transcript: what people say, in the original language.
-- usable_for_geometry: false if the fireball is never clearly visible or the camera moves throughout; say why in reason."""
+- usable_for_geometry: false if the fireball is never clearly visible or the camera moves throughout; say why in reason.
+Keep lists short: at most 8 landmarks, 8 location hints, 10 sound events and 10 flare times. If the same moment is
+replayed, report it once and set multiple_cuts."""
 
 
 def read(file_id, video_s, purpose=''):
     content = [{'type': 'input_text', 'text': PROMPT}, {'type': 'input_video', 'file_id': file_id}]
-    return api.spark(content, schema=SCHEMA, max_output_tokens=6000, input_tokens_guess=int(4000 + 1500 * video_s),
+    return api.spark(content, schema=SCHEMA, max_output_tokens=9000, input_tokens_guess=int(4000 + 1500 * video_s),
                      purpose=purpose or 'witness read')

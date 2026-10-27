@@ -118,7 +118,16 @@ def spark(content, schema=None, model='muse-spark-1.2', max_output_tokens=8000, 
     _log('spark', usd, model=model, purpose=purpose, seconds=round(time.time() - t0, 1),
          input_tokens=u.get('input_tokens'), output_tokens=u.get('output_tokens'))
     text = text_of(resp)
-    return json.loads(text) if schema else text
+    if not schema:
+        return text
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        bad = CACHE / f"spark-unparsed-{dt.datetime.now().strftime('%H%M%S')}.txt"
+        CACHE.mkdir(parents=True, exist_ok=True)
+        bad.write_text(text)
+        raise RuntimeError(f'Muse Spark returned {len(text)} chars that are not valid JSON '
+                           f'(status {resp.get("status")}, output tokens {u.get("output_tokens")}); saved to {bad}') from None
 
 
 def sam_video(file_id, prompt, frames_guess, metadata=None, purpose='', cache_key=None):

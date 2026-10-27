@@ -14,3 +14,5 @@
 {"ts": "2026-10-26T21:06:46", "kind": "spark", "usd": 0.01313, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013-2 witness read", "seconds": 12.6, "input_tokens": 3350, "output_tokens": 2104}
 {"ts": "2026-10-26T21:53:15", "kind": "sam_video", "usd": 0.0516, "prompt": "bright light", "purpose": "chelyabinsk-2013-238 bright light", "frames_billed": 258, "frames_with_output": 108, "seconds": 11.3}
 {"ts": "2026-10-26T22:02:08", "kind": "sam_video", "usd": 0.048, "prompt": "bright light", "purpose": "chelyabinsk-2013-10 bright light", "frames_billed": 240, "frames_with_output": 240, "seconds": 23.7}
+{"ts": "2026-10-26T22:57:25", "kind": "spark", "usd": 0.02866, "model": "muse-spark-1.2", "purpose": "colombia-2025-07-30 medellin witness read", "seconds": 16.2, "input_tokens": 2530, "output_tokens": 6000}
+{"ts": "2026-10-26T22:57:59", "kind": "spark", "usd": 0.01292, "model": "muse-spark-1.2", "purpose": "colombia-2025-07-30 medellin witness read (retry)", "seconds": 11.1, "input_tokens": 2573, "output_tokens": 2283}

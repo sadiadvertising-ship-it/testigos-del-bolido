@@ -1,0 +1,114 @@
+[
+ {
+  "city": "Málaga",
+  "km": 63,
+  "look_az_deg": 114.5,
+  "el_at_40km_deg": 31.6,
+  "el_at_80km_deg": 51.1
+ },
+ {
+  "city": "Saravena",
+  "km": 66,
+  "look_az_deg": 214.5,
+  "el_at_40km_deg": 30.4,
+  "el_at_80km_deg": 49.7
+ },
+ {
+  "city": "San Gil",
+  "km": 103,
+  "look_az_deg": 95.9,
+  "el_at_40km_deg": 20.6,
+  "el_at_80km_deg": 37.2
+ },
+ {
+  "city": "Pamplona",
+  "km": 112,
+  "look_az_deg": 154.6,
+  "el_at_40km_deg": 18.8,
+  "el_at_80km_deg": 34.6
+ },
+ {
+  "city": "Sogamoso",
+  "km": 114,
+  "look_az_deg": 43.8,
+  "el_at_40km_deg": 18.5,
+  "el_at_80km_deg": 34.2
+ },
+ {
+  "city": "Duitama",
+  "km": 115,
+  "look_az_deg": 52.3,
+  "el_at_40km_deg": 18.4,
+  "el_at_80km_deg": 34.0
+ },
+ {
+  "city": "Floridablanca",
+  "km": 118,
+  "look_az_deg": 124.5,
+  "el_at_40km_deg": 18.0,
+  "el_at_80km_deg": 33.3
+ },
+ {
+  "city": "Bucaramanga",
+  "km": 124,
+  "look_az_deg": 125.8,
+  "el_at_40km_deg": 17.0,
+  "el_at_80km_deg": 31.9
+ },
+ {
+  "city": "Yopal",
+  "km": 126,
+  "look_az_deg": 9.2,
+  "el_at_40km_deg": 16.8,
+  "el_at_80km_deg": 31.6
+ },
+ {
+  "city": "Cúcuta",
+  "km": 162,
+  "look_az_deg": 168.3,
+  "el_at_40km_deg": 12.9,
+  "el_at_80km_deg": 25.3
+ },
+ {
+  "city": "Tunja",
+  "km": 164,
+  "look_az_deg": 51.3,
+  "el_at_40km_deg": 12.8,
+  "el_at_80km_deg": 25.0
+ },
+ {
+  "city": "Arauca",
+  "km": 175,
+  "look_az_deg": 246.9,
+  "el_at_40km_deg": 11.9,
+  "el_at_80km_deg": 23.5
+ },
+ {
+  "city": "Barrancabermeja",
+  "km": 193,
+  "look_az_deg": 110.1,
+  "el_at_40km_deg": 10.6,
+  "el_at_80km_deg": 21.3
+ },
+ {
+  "city": "Bogotá (Colina)",
+  "km": 280,
+  "look_az_deg": 46.8,
+  "el_at_40km_deg": 6.7,
+  "el_at_80km_deg": 14.5
+ },
+ {
+  "city": "Villavicencio",
+  "km": 301,
+  "look_az_deg": 31.4,
+  "el_at_40km_deg": 6.1,
+  "el_at_80km_deg": 13.4
+ },
+ {
+  "city": "Medellín",
+  "km": 373,
+  "look_az_deg": 86.1,
+  "el_at_40km_deg": 4.3,
+  "el_at_80km_deg": 10.3
+ }
+]
