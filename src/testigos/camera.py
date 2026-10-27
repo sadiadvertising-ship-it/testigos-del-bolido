@@ -135,7 +135,7 @@ def _wrap(deg):
     return (deg + 180.0) % 360.0 - 180.0
 
 
-def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.0,
+def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.0, straight=(),
         free=('yaw', 'pitch', 'roll', 'hfov', 'k1')):
     """Least-squares camera fit from mixed evidence; returns (camera, report).
 
@@ -145,9 +145,12 @@ def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.
             A vertical line keeps one azimuth seen from the camera, so the spread of azimuths along it
             measures roll and lens distortion.
     horizon: [(x, y)] pixels on a flat, distant horizon, all at elevation horizon_el.
+    straight: [[(x, y), ...]] pixels along any straight edge (a roof line, a kerb): its rays must share one plane
+            through the camera, which pins the lens distortion even where no pole stands.
     All residuals are in pixels so the groups weigh alike.
     """
     hz = [np.asarray(p, float) for p in horizon]
+    edges = [np.asarray(l, float) for l in straight if len(l) >= 3]
     pts_azel = [(landmark_azel(cam_pos, w), np.asarray(px, float)) for w, px in points]
     xo_azel = [(landmark_azel(cam_pos, w), float(x)) for w, x in x_only]
     lines = [np.asarray(l, float) for l in plumb if len(l) >= 2]
@@ -158,7 +161,11 @@ def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.
         return replace(seed, **dict(zip(free, x)))
 
     def groups(cam):
-        g = {'points': [], 'x_only': [], 'plumb': [], 'horizon': []}
+        g = {'points': [], 'x_only': [], 'plumb': [], 'horizon': [], 'straight': []}
+        for line in edges:
+            rays = np.array([cam.unproject(p) for p in line])
+            n = np.linalg.svd(rays)[2][-1]
+            g['straight'].extend((rays @ n) * cam.focal)
         for p in hz:
             r = cam.unproject(p)
             g['horizon'].append((np.arcsin(np.clip(r[2], -1, 1)) - np.radians(horizon_el)) * cam.focal)
@@ -178,7 +185,7 @@ def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.
 
     def resid(x):
         g = groups(build(x))
-        return np.array(g['points'] + g['x_only'] + g['plumb'] + g['horizon'])
+        return np.array(g['points'] + g['x_only'] + g['plumb'] + g['horizon'] + g['straight'])
 
     sol = least_squares(resid, [getattr(seed, n) for n in free],
                         bounds=([lo[n] for n in free], [hi[n] for n in free]), loss='soft_l1', f_scale=3.0)

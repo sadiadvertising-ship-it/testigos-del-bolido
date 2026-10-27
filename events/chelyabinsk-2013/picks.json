@@ -178,5 +178,43 @@
    "median_deg": 9.33,
    "diagnosis": "not usable: a 9 deg miss is an identification error, not a parameter error. The track sits about 10 deg higher and further west than CBET predicts, so the tower or chimney is probably a different OSM object, or the catalog position is not where this camera stood"
   }
+ },
+ "chelyabinsk-2013-10": {
+  "camera_pos": [
+   54.89095,
+   61.39951,
+   1.3
+  ],
+  "image": [
+   480,
+   360
+  ],
+  "lens": "wide pinhole with radial k1",
+  "landmarks": [
+   {
+    "what": "vanishing point of the garage alley",
+    "azel": [
+     122.0,
+     0.0
+    ],
+    "px": [
+     240.5,
+     190.5
+    ],
+    "source": "OSM garage rows 831121056/831121057 (bearings 121.7, 120.9) and track 831121038 (122.9); pixel by eye"
+   }
+  ],
+  "straight": "left garage roof edge, 20 points detected automatically (sky-to-roof edge)",
+  "plumb": "near pole at x~172, 8 points (one outlier at y=148)",
+  "selfcal_attempt": {
+   "camera": {
+    "yaw": 121.75984390564855,
+    "pitch": 1.7413807252121745,
+    "roll": 5.127136328623512,
+    "hfov": 70.06768880385769,
+    "k1": 0.5999999999999998
+   },
+   "verdict": "rejected: k1 ran to its +0.6 bound and hfov to its 70 deg bound, so the constraints conflict; next is two independent annotations of several straight edges and poles, as for Tyumen, and a synthetic test of the self-calibrating triangulation before trusting it"
+  }
  }
 }

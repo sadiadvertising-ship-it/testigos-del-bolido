@@ -122,6 +122,22 @@
       "lens": "wide, 4:3 picture pillarboxed in 16:9",
       "landmarks_seen": "tower and mast of an industrial site on the horizon, a smoking chimney, fence",
       "on_screen_clock": false
+    },
+    {
+      "catalog_no": 10,
+      "site": "Korkino",
+      "lat": 54.89095,
+      "lon": 61.39951,
+      "camera": "standing car",
+      "source": "https://www.youtube.com/watch?v=odKjwrjIM-k",
+      "window_s": [
+        1.0,
+        9.0
+      ],
+      "file_fps": 29.97,
+      "lens": "wide, strong vignetting; YouTube copy is 480x360",
+      "landmarks_seen": "garage alley (vanishing point), end building, a near pole; horizon hidden",
+      "on_screen_clock": true
     }
   ],
   "unavailable": [
