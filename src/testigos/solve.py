@@ -174,10 +174,23 @@ def solve(stations, min_q=5.0, warn_q=10.0):
         fit = _fit_speed(st.times, along[st.name])
         if fit:
             speeds[st.name] = (fit[0] / 1000.0, fit[1] / 1000.0)
+    # A camera whose speed sits far from the others points to its clock (dropped or doubled frames), not to the
+    # path: with three or more cameras it is left out of the speed, while the geometry still uses its rays.
+    outliers = set()
+    if len(speeds) >= 3:
+        for name, (s, e) in speeds.items():
+            others = np.array([o for n, (o, _) in speeds.items() if n != name])
+            med = float(np.median(others))
+            spread = max(float(np.std(others, ddof=1)), e, 0.05 * abs(med))
+            if abs(s - med) > 3 * spread:
+                outliers.add(name)
+                warnings.append(f'{name}: {s:.1f} km/s is more than 3 sigma from the other cameras ({med:.1f} km/s); '
+                                'left out of the speed')
+    used = {k: x for k, x in speeds.items() if k not in outliers}
     v = sigma = None
-    if speeds:
-        vals = np.array([s for s, _ in speeds.values()])
-        errs = np.array([max(e, 0.05) for _, e in speeds.values()])
+    if used:
+        vals = np.array([s for s, _ in used.values()])
+        errs = np.array([max(e, 0.05) for _, e in used.values()])
         w = 1 / errs ** 2
         v, sigma = float(np.sum(w * vals) / np.sum(w)), float(np.sqrt(1 / np.sum(w)))
         if len(vals) > 1:

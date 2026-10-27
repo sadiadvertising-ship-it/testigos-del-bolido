@@ -103,8 +103,14 @@ class Case:
         if not e or 'camera' not in e:
             return {'calibrated': False, 'why': 'no surveyed landmark or line set confirmed for this camera'}
         c = e['camera']
-        return {'calibrated': True, 'lens': e.get('lens', 'pinhole'), 'hfov': round(c['hfov'], 1), 'k1': round(c.get('k1', 0.0), 3),
-                'evidence': (e.get('camera_note') or e.get('lines') or 'landmarks')[:200]}
+        out = {'calibrated': True, 'lens': e.get('lens', 'pinhole'), 'hfov': round(c['hfov'], 1), 'k1': round(c.get('k1', 0.0), 3),
+               'evidence': (e.get('camera_note') or e.get('lines') or 'landmarks')[:200]}
+        fits = self.dir / 'calibration.json'  # fit residuals, written by scripts/calibration_report.py
+        if fits.exists():
+            fit = json.loads(fits.read_text()).get(clip)
+            if fit:
+                out['fit_rms_deg'] = fit['rms_deg']
+        return out
 
     def _stations(self, clips):
         from .camera import Camera
@@ -135,26 +141,42 @@ class Case:
         from .solve import solve
         from .verdict import decide
         clips = [c for c in (clips or []) if c not in self.dropped]
-        sol = solve(self._stations(clips))
+        stations = self._stations(clips)
+        sol = solve(stations)
         self.last_solution = sol
-        v = decide(sol.speed_kms, sol.speed_sigma or 1.0, end_height_km=sol.end[2] / 1000)
-        return {'clips': clips, 'q_max_deg': round(sol.q_max, 1), 'warnings': sol.warnings,
+        seen_s = max(float(st.times.max() - st.times.min()) if len(st.times) else 0.0 for st in stations)
+        if sol.speed_kms is None:
+            verdict, reason = 'inconclusive', 'no camera gave a speed'
+        else:  # slope and duration let a slow, long passage read as a re-entry
+            v = decide(sol.speed_kms, sol.speed_sigma or 1.0, duration_s=seen_s, slope_deg=sol.slope,
+                       end_height_km=sol.end[2] / 1000)
+            verdict, reason = v.kind, v.reason
+        return {'clips': clips, 'q_max_deg': round(sol.q_max, 1), 'warnings': sol.warnings, 'seen_for_s': round(seen_s, 1),
                 'azimuth_deg': round(sol.azimuth, 2), 'slope_deg': round(sol.slope, 2),
                 'begin': f'{_latlon(sol.begin[0], sol.begin[1])}, {sol.begin[2] / 1000:.1f} km',
                 'end': f'{_latlon(sol.end[0], sol.end[1])}, {sol.end[2] / 1000:.1f} km',
                 'speed_kms': round(sol.speed_kms, 2) if sol.speed_kms else None,
                 'speed_per_camera': {k: round(s, 2) for k, (s, _) in sol.station_speeds.items()},
                 'residual_rms_deg': {k: round(r, 3) for k, r in sol.residual_rms_deg.items()},
-                'verdict': v.kind, 'verdict_reason': v.reason}
+                'verdict': verdict, 'verdict_reason': reason}
 
     def check_satellite(self, **_):
         import datetime as dt
-        f = ROOT / 'out' / 'cache' / 'glm-bolides.json'
-        if not f.exists():
-            return {'error': 'GLM catalog not downloaded'}
+        window = self.dir / 'glm-window.json'  # the committed excerpt, so the check works without the 30 MB catalog
+        catalog = ROOT / 'out' / 'cache' / 'glm-bolides.json'
+        if window.exists():
+            events = json.loads(window.read_text())['events']
+        elif catalog.exists():
+            events = json.loads(catalog.read_text())['data']
+        else:
+            return {'error': 'GLM catalog not downloaded (run scripts/fetch_glm.py)'}
         t0 = dt.datetime.fromisoformat(self.event['utc'].replace('Z', '+00:00')).timestamp()
-        hits = [e for e in json.loads(f.read_text())['data'] if abs(e['datetime'] / 1000 - t0) < 1800]
-        return {'detections': [{'utc': dt.datetime.utcfromtimestamp(e['datetime'] / 1000).isoformat(timespec='seconds') + 'Z',
+        hits = [e for e in events if abs(e['datetime'] / 1000 - t0) < 1800]
+
+        def utc(ms):
+            return dt.datetime.fromtimestamp(ms / 1000, dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        return {'detections': [{'utc': utc(e['datetime']),
                                 'where': _latlon(e['latitude'], e['longitude']),
                                 'class': e.get('humanClassification'), 'brightness': list((e.get('brightness') or {}).values())[:1],
                                 'duration_s': e.get('duration')} for e in hits][:5],

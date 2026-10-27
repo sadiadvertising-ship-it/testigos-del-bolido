@@ -85,3 +85,13 @@ def test_two_cameras_under_the_ground_track_are_refused():
         stations.append(Station(name, pos, t[keep], v[keep]))
     with pytest.raises(GeometryError):
         solve(stations)
+
+
+def test_a_camera_with_a_wrong_clock_is_left_out_of_the_speed():
+    t, pts = path()
+    stations = [exact_station(n, t, pts) for n in STATIONS]
+    slow = stations[0]
+    stations[0] = Station(slow.name, slow.pos, slow.times * 1.3, slow.rays_enu)  # its clock runs 30 % slow
+    sol = solve(stations)
+    assert any(slow.name in w and 'left out of the speed' in w for w in sol.warnings)
+    assert abs(sol.speed_kms - true_speed_kms()) < 0.3

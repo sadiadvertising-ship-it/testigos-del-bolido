@@ -1,0 +1,122 @@
+{
+ "source": "https://neo-bolide.ndc.nasa.gov/service/event/public",
+ "catalog_downloaded": "2026-10-27",
+ "catalog_events": 11611,
+ "event_utc": "2025-07-31T03:50:24Z",
+ "window_s": 1800,
+ "events": [
+  {
+   "_id": "688ceb919d34489b2a74aa5f",
+   "status": "PUBLISHED",
+   "datetime": 1753933824256,
+   "dayTime": 1753920000000,
+   "name": "",
+   "description": "",
+   "latitude": 6.460453033447266,
+   "longitude": -72.21210098266602,
+   "latitudeDelta": 0.07312393188476562,
+   "longitudeDelta": 0.14422225952148438,
+   "lastModifiedBy": "jdotson",
+   "lastModifiedDate": "2025-08-13T22:34:13.385Z",
+   "createdBy": "auto",
+   "createdDate": "2025-08-01T09:30:09.189Z",
+   "submittedBy": "rlongenb",
+   "submittedDate": "2025-08-06T20:43:33.370Z",
+   "publishedBy": "jdotson",
+   "publishedDate": "2025-08-13T22:34:13.385Z",
+   "detectedBy": "GLM-19",
+   "howFound": {
+    "GLM-19": [
+     "forest"
+    ]
+   },
+   "groundTrack": {
+    "GLM-19": {
+     "category": "Multi-Pixel",
+     "value": 0
+    }
+   },
+   "confidenceRating": "medium",
+   "lightcurveStructure": "very good",
+   "nearbyLightningActivity": "not isolated",
+   "otherDetectingSources": "",
+   "otherInformation": "",
+   "humanClassification": "Bolide",
+   "reason": "",
+   "rejectedBy": "",
+   "rejectedDate": null,
+   "duration": 1.047533,
+   "beginningAltitude": "",
+   "brightness": {
+    "GLM-19": {
+     "category": "Fairly Bright",
+     "value": 9.722628516243302e-12
+    }
+   },
+   "attachments": [
+    {
+     "location": {
+      "coordinates": [
+       -72.06875610351562,
+       6.386629581451416
+      ],
+      "type": "Point"
+     },
+     "geoData": [],
+     "netCdfFilename": [
+      "OR_GLM-L2-LCFA_G19_s20252120350200_e20252120350400_c20252120350417.nc"
+     ],
+     "title": "",
+     "startTime": "2025-07-31T03:50:23.732Z",
+     "endTime": "2025-07-31T03:50:24.780Z",
+     "duration": 1.048,
+     "energy": 6.851019529585515e-16,
+     "platformId": "G19",
+     "satellite": {
+      "height": 35786.0234375,
+      "latitude": 0,
+      "longitude": -75.19999694824219
+     }
+    }
+   ],
+   "isManuallyGenerated": false,
+   "isPipelineIssue": false,
+   "files": [
+    "G19_2025-07-31_03h50m24.199_6.460_-72.142_1920252120350241001.pdf"
+   ],
+   "location": {
+    "coordinates": [
+     -72.21210098266602,
+     6.460453033447266
+    ],
+    "type": "Point"
+   },
+   "images": [
+    {
+     "name": "Map",
+     "url": "/img/OR_GLM-L2-LCFA_G19_s20252120350200_e20252120350400_c20252120350417.nc_Map.png"
+    },
+    {
+     "name": "Energy Chart",
+     "url": "/img/OR_GLM-L2-LCFA_G19_s20252120350200_e20252120350400_c20252120350417.nc_EChart.png"
+    },
+    {
+     "name": "Trajectory Chart",
+     "url": "/img/OR_GLM-L2-LCFA_G19_s20252120350200_e20252120350400_c20252120350417.nc_TChart.png"
+    }
+   ],
+   "csv": [
+    "/csv/OR_GLM-L2-LCFA_G19_s20252120350200_e20252120350400_c20252120350417.nc.csv"
+   ],
+   "pdfFilenames": [
+    "G19_2025-07-31_03h50m24.199_6.460_-72.142_1920252120350241001.pdf"
+   ],
+   "checkout_time": -444,
+   "assessmentScore": {
+    "score": 0.8520058989524841,
+    "assessment": "candidate"
+   },
+   "dataProductFile": ""
+  }
+ ]
+}

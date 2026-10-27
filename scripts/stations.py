@@ -46,7 +46,7 @@ def kamensk_camera(rng=None, vp_px_sigma=0.0, chapel_px_sigma=0.0, bearing_sigma
     return cal.camera, pos
 
 
-def korkino_camera(hfov, rng=None, line_px_sigma=0.0, bearing_sigma=0.0, k1=-0.15):
+def korkino_camera(hfov, rng=None, line_px_sigma=0.0, bearing_sigma=0.0, k1=-0.15, with_report=False):
     e = PICKS['chelyabinsk-2013-10']
     bearing = e['alley_bearing_deg'] + (rng.normal(0, bearing_sigma) if rng is not None else 0.0)
     par, plumb, straight = [], [], []
@@ -68,15 +68,15 @@ def korkino_camera(hfov, rng=None, line_px_sigma=0.0, bearing_sigma=0.0, k1=-0.1
     # either bound. So k1 is a nuisance with a typical wide-dashcam value, varied in the Monte Carlo,
     # and the lines fix only the pointing.
     seed = Camera(480, 360, yaw=bearing, pitch=1.0, roll=0.0, hfov=hfov, k1=k1)
-    cam, _ = fit(seed, pos, plumb=plumb, straight=straight, parallel=par, free=('yaw', 'pitch', 'roll'))
-    return cam, pos
+    cam, report = fit(seed, pos, plumb=plumb, straight=straight, parallel=par, free=('yaw', 'pitch', 'roll'))
+    return (cam, pos, report) if with_report else (cam, pos)
 
 
 LINES_2 = json.loads((EVENT / 'lines-2.json').read_text())
 PLUMB_48 = json.loads((EVENT / 'plumb-48.json').read_text())
 
 
-def kamensk_camera_v2(rng=None, line_px_sigma=0.0, chapel_px_sigma=0.0, bearing_sigma=0.0, pos_sigma_m=0.0):
+def kamensk_camera_v2(rng=None, line_px_sigma=0.0, chapel_px_sigma=0.0, bearing_sigma=0.0, pos_sigma_m=0.0, with_report=False):
     """Kamensk from annotated lines (avenue and cross street bearings from OSM) plus the chapel."""
     e = PICKS['chelyabinsk-2013-2']
     lat, lon, h = e['camera_pos']
@@ -98,11 +98,11 @@ def kamensk_camera_v2(rng=None, line_px_sigma=0.0, chapel_px_sigma=0.0, bearing_
     pos = (lat, lon, h)
     c = e['camera']
     seed = Camera(1280, 720, yaw=c['yaw'], pitch=c['pitch'], roll=c['roll'], hfov=c['hfov'], k1=c['k1'])
-    cam, _ = fit(seed, pos, plumb=plumb, parallel=par, points=[((56.4142, 61.917691, 0.0), ch_px)], bounds={'k1': (-0.45, 0.0)})
-    return cam, pos
+    cam, report = fit(seed, pos, plumb=plumb, parallel=par, points=[((56.4142, 61.917691, 0.0), ch_px)], bounds={'k1': (-0.45, 0.0)})
+    return (cam, pos, report) if with_report else (cam, pos)
 
 
-def tyumen_camera(rng=None, line_px_sigma=0.0, vp_px_sigma=0.0, tower_px_sigma=0.0, bearing_sigma=0.0):
+def tyumen_camera(rng=None, line_px_sigma=0.0, vp_px_sigma=0.0, tower_px_sigma=0.0, bearing_sigma=0.0, with_report=False):
     e = PICKS['chelyabinsk-2013-48']
     pos = tuple(e['camera_pos'])
     vp_az, vp_px = 235.9, np.array([595.0, 345.0])
@@ -120,5 +120,5 @@ def tyumen_camera(rng=None, line_px_sigma=0.0, vp_px_sigma=0.0, tower_px_sigma=0
             lines.append(pts)
     c = e['camera']
     seed = Camera(1280, 720, yaw=c['yaw'], pitch=c['pitch'], roll=c['roll'], hfov=c['hfov'], k1=c['k1'])
-    cam, _ = fit(seed, pos, points=[(('azel', vp_az, 0.0), vp_px)], x_only=[((57.2026, 65.6031095, 38.0), tower_x)], plumb=lines)
-    return cam, pos
+    cam, report = fit(seed, pos, points=[(('azel', vp_az, 0.0), vp_px)], x_only=[((57.2026, 65.6031095, 38.0), tower_x)], plumb=lines)
+    return (cam, pos, report) if with_report else (cam, pos)

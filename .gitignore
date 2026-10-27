@@ -11,4 +11,7 @@ out/frames/
 out/cache/
 .DS_Store
 .venv-tools/
-out/sam/
+# SAM pixel tracks are committed (they are what the solver reads); trimmed clips, proof sheets and raw object lists are not
+out/sam/*
+!out/sam/*.json
+out/sam/*.frames.json

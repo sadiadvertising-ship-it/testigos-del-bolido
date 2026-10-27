@@ -22,3 +22,38 @@ def test_scripted_case_runs_tools_and_logs_reasons(tmp_path, monkeypatch):
     assert 'error' in log[1]['result']  # a failed tool is reported back, not raised
     assert case.dropped == {'2': 'no surveyed landmark'}
     assert json.loads((ev / 'agent_log.json').read_text())[2]['why'] == 'clip 2 has no landmarks'
+
+
+def test_solve_hands_slope_and_duration_to_the_verdict(tmp_path, monkeypatch):
+    """A slow, long passage reads as a re-entry; without slope and duration the agent could only say inconclusive."""
+    import numpy as np
+    from synth import BEGIN, END, STATIONS, exact_station
+    from testigos.geo import to_ecef
+
+    ev = tmp_path / 'events' / 'slow'
+    ev.mkdir(parents=True)
+    (ev / 'event.json').write_text(json.dumps({'id': 'slow', 'utc': '2025-07-31T03:50:24Z', 'clips': [{'id': n} for n in STATIONS]}))
+    monkeypatch.setattr(agent, 'ROOT', tmp_path)
+    t = np.linspace(0.0, 40.0, 160)
+    b, e = to_ecef(*BEGIN), to_ecef(*END)
+    pts = b + (e - b) * (t / t[-1])[:, None]  # about 6 km/s for 40 s, like a decaying satellite
+    case = agent.Case('slow')
+    monkeypatch.setattr(case, '_stations', lambda clips: [exact_station(n, t, pts) for n in clips])
+    r = case.solve(clips=list(STATIONS))
+    assert r['verdict'] == 'reentry', r['verdict_reason']
+    assert r['seen_for_s'] > 20
+
+
+def test_check_satellite_reads_the_committed_window(tmp_path, monkeypatch):
+    import datetime as dt
+    ev = tmp_path / 'events' / 'glm'
+    ev.mkdir(parents=True)
+    (ev / 'event.json').write_text(json.dumps({'id': 'glm', 'utc': '2025-07-31T03:50:24Z', 'clips': []}))
+    flash = dt.datetime(2025, 7, 31, 3, 50, 23, 700000, tzinfo=dt.timezone.utc)
+    hit = {'datetime': flash.timestamp() * 1000, 'latitude': 6.46, 'longitude': -72.212, 'humanClassification': 'Bolide',
+           'brightness': {}, 'duration': 1.05}
+    (ev / 'glm-window.json').write_text(json.dumps({'events': [hit]}))
+    monkeypatch.setattr(agent, 'ROOT', tmp_path)  # no out/cache catalog under tmp_path: only the window can answer
+    r = agent.Case('glm').check_satellite()
+    assert r['detections'][0]['utc'] == '2025-07-31T03:50:23Z'
+    assert r['detections'][0]['where'] == '6.460 N, 72.212 W'

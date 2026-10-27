@@ -1,0 +1,86 @@
+{
+ "2": {
+  "evidence": {
+   "points": {
+    "residuals": 2,
+    "rms_px": 1.84,
+    "rms_deg": 0.108
+   },
+   "plumb": {
+    "residuals": 116,
+    "rms_px": 0.53,
+    "rms_deg": 0.031
+   },
+   "parallel": {
+    "residuals": 13,
+    "rms_px": 3.04,
+    "rms_deg": 0.178
+   }
+  },
+  "rms_px": 1.1,
+  "rms_deg": 0.065,
+  "refit_minus_picks": {
+   "yaw": 0.0,
+   "pitch": 0.0,
+   "roll": 0.0,
+   "hfov": 0.0,
+   "k1": 0.0
+  }
+ },
+ "10": {
+  "evidence": {
+   "plumb": {
+    "residuals": 50,
+    "rms_px": 0.25,
+    "rms_deg": 0.049
+   },
+   "straight": {
+    "residuals": 22,
+    "rms_px": 0.15,
+    "rms_deg": 0.03
+   },
+   "parallel": {
+    "residuals": 68,
+    "rms_px": 0.41,
+    "rms_deg": 0.082
+   }
+  },
+  "rms_px": 0.33,
+  "rms_deg": 0.065,
+  "refit_minus_picks": {
+   "yaw": 0.0,
+   "pitch": 0.0,
+   "roll": 0.0,
+   "hfov": 0.0,
+   "k1": 0.0
+  }
+ },
+ "48": {
+  "evidence": {
+   "points": {
+    "residuals": 2,
+    "rms_px": 0.01,
+    "rms_deg": 0.001
+   },
+   "x_only": {
+    "residuals": 1,
+    "rms_px": 0.05,
+    "rms_deg": 0.003
+   },
+   "plumb": {
+    "residuals": 86,
+    "rms_px": 0.57,
+    "rms_deg": 0.031
+   }
+  },
+  "rms_px": 0.56,
+  "rms_deg": 0.031,
+  "refit_minus_picks": {
+   "yaw": -0.001,
+   "pitch": 0.0,
+   "roll": 0.0,
+   "hfov": -0.011,
+   "k1": 0.0
+  }
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "source": "https://neo-bolide.ndc.nasa.gov/service/event/public",
+ "catalog_downloaded": "2026-10-27",
+ "catalog_events": 11611,
+ "event_utc": "2013-02-15T03:20:20Z",
+ "window_s": 1800,
+ "events": []
+}
