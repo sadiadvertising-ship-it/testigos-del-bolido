@@ -1,0 +1,13 @@
+[project]
+name = "testigos"
+version = "0.1.0"
+description = "Rebuild a fireball's trajectory from witness videos with Muse Spark and SAM 3.1"
+requires-python = ">=3.9"
+dependencies = ["numpy", "scipy"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
