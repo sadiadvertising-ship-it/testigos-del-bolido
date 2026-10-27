@@ -48,6 +48,25 @@ def test_fisheye_calibration_from_directions():
     assert cal.rms_deg < 0.5
 
 
+def test_plumb_lines_recover_roll_and_barrel_distortion():
+    rng = np.random.default_rng(21)
+    pos = STATIONS['northeast']
+    truth = Camera(1280, 720, yaw=236.0, pitch=-1.2, roll=2.5, hfov=82.0, k1=-0.09)
+    lines = []
+    for az in [200, 210, 222, 247, 258, 268, 274]:
+        line = [truth.project_azel(az, el) for el in np.linspace(-6, 18, 5)]
+        lines.append([p + rng.normal(0, 1.0, 2) for p in line if p is not None])
+    vp = ('azel', 235.9, 0.0)
+    tower = landmark(pos, 279.5, 12.0, 0.135)
+    from testigos.camera import fit
+    seed = Camera(1280, 720, yaw=239.0, pitch=-1.0, roll=0.0, hfov=80.0, k1=0.0)
+    cam, report = fit(seed, pos, points=[(vp, truth.project_azel(235.9, 0.0))],
+                      x_only=[(tower, truth.project_azel(*azel_between(pos, tower))[0])], plumb=lines)
+    assert abs(cam.roll - truth.roll) < 0.4 and abs(cam.k1 - truth.k1) < 0.03
+    assert abs(cam.yaw - truth.yaw) < 0.3 and abs(cam.hfov - truth.hfov) < 1.5
+    assert report['plumb']['rms_px'] < 2.0
+
+
 def test_two_landmarks_fit_exactly_and_have_no_leave_one_out():
     pos = STATIONS['south']
     truth = Camera(1280, 720, yaw=40.0, pitch=10.0, roll=0.0, hfov=55.0)

@@ -63,7 +63,7 @@
    1280,
    720
   ],
-  "lens": "pinhole, distortion not yet fitted",
+  "lens": "pinhole with radial k1",
   "landmarks": [
    {
     "what": "vanishing point of ulitsa Shcherbakova heading south-west",
@@ -78,13 +78,14 @@
     "source": "OSM way 53795778 (bearing 55.2, driven the other way)"
    },
    {
-    "what": "lattice power tower, x only",
+    "what": "lattice power tower top, x only (height taken as 38 m)",
     "pos": [
      57.2026,
-     65.6031095
+     65.6031095,
+     38.0
     ],
-    "px_x": 1267,
-    "source": "OSM power=tower, 135 m"
+    "px_x": 1258.2,
+    "source": "OSM power=tower, 135 m; x from both annotators"
    }
   ],
   "camera_v1": {
@@ -99,6 +100,25 @@
    "p10_deg": 2.31,
    "p90_deg": 3.77,
    "diagnosis": "not usable yet: poles near the edges bow like barrel distortion, which a pinhole without k1 and with roll fixed at 0 cannot follow; next is a plumb-line fit of k1 and roll from several poles; the tower top also suggests it is taller than the 30 m default"
+  },
+  "plumb_lines": "events/chelyabinsk-2013/plumb-48.json (18 lines, 86 residuals)",
+  "camera": {
+   "yaw": 238.29031266114652,
+   "pitch": -1.0070497047340214,
+   "roll": -4.381602334272699,
+   "hfov": 62.839869713886486,
+   "k1": -0.33163039077440604
+  },
+  "fit_report": {
+   "plumb_rms_px": 0.569,
+   "plumb_rms_deg": 0.031
+  },
+  "check_against_cbet_v2": {
+   "frames": 223,
+   "median_deg": 0.98,
+   "p10_deg": 0.79,
+   "p90_deg": 1.07,
+   "note": "down from 3.43 deg; a 1 deg bias remains, likely the vanishing-point pixel or k1-only distortion; no plumb lines exist left of x=250, where the fireball is"
   }
  }
 }

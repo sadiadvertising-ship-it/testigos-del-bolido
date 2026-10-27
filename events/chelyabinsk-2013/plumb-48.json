@@ -1,0 +1,463 @@
+{
+ "note": "two independent annotators (sub-pixel profiles on 4x crops); used together as plumb lines",
+ "a": {
+  "lines": [
+   {
+    "name": "lamp_post_left_x250",
+    "points": [
+     [
+      249.3,
+      165
+     ],
+     [
+      250.5,
+      215
+     ],
+     [
+      252.8,
+      265
+     ],
+     [
+      256.1,
+      315
+     ],
+     [
+      258.7,
+      350
+     ]
+    ]
+   },
+   {
+    "name": "lamp_post_x382",
+    "points": [
+     [
+      381.9,
+      262
+     ],
+     [
+      383,
+      292
+     ],
+     [
+      384.2,
+      307
+     ],
+     [
+      385.3,
+      322
+     ]
+    ]
+   },
+   {
+    "name": "lamp_post_x448",
+    "points": [
+     [
+      447.5,
+      280
+     ],
+     [
+      448.6,
+      295
+     ],
+     [
+      450.3,
+      315
+     ],
+     [
+      451.4,
+      325
+     ]
+    ]
+   },
+   {
+    "name": "lamp_post_x638",
+    "points": [
+     [
+      637.3,
+      247
+     ],
+     [
+      639.2,
+      277
+     ],
+     [
+      640.9,
+      292
+     ],
+     [
+      641.6,
+      307
+     ]
+    ]
+   },
+   {
+    "name": "lamp_post_x675_tall",
+    "points": [
+     [
+      670.6,
+      175
+     ],
+     [
+      674.2,
+      215
+     ],
+     [
+      677.1,
+      255
+     ],
+     [
+      680.6,
+      295
+     ],
+     [
+      681.8,
+      315
+     ]
+    ]
+   },
+   {
+    "name": "pole_x870_behind_arrow_sign",
+    "points": [
+     [
+      864.8,
+      224
+     ],
+     [
+      868.2,
+      264
+     ],
+     [
+      871.3,
+      304
+     ],
+     [
+      873.6,
+      344
+     ],
+     [
+      876.4,
+      384
+     ]
+    ]
+   },
+   {
+    "name": "thin_far_pole_x942",
+    "points": [
+     [
+      940.5,
+      226
+     ],
+     [
+      942.1,
+      246
+     ],
+     [
+      943.4,
+      266
+     ],
+     [
+      947.1,
+      286
+     ],
+     [
+      949,
+      306
+     ]
+    ]
+   },
+   {
+    "name": "traffic_light_pole_x905",
+    "points": [
+     [
+      899.5,
+      200
+     ],
+     [
+      904.5,
+      230
+     ],
+     [
+      910.5,
+      290
+     ],
+     [
+      914.5,
+      350
+     ],
+     [
+      917.5,
+      410
+     ]
+    ]
+   },
+   {
+    "name": "utility_pole_x1005_tall",
+    "points": [
+     [
+      979.5,
+      10
+     ],
+     [
+      989.5,
+      70
+     ],
+     [
+      1002.5,
+      170
+     ],
+     [
+      1012,
+      250
+     ],
+     [
+      1015,
+      290
+     ],
+     [
+      1021.5,
+      410
+     ]
+    ]
+   }
+  ],
+  "tower_top": [
+   1258.3,
+   96.3
+  ],
+  "tower_lowest_visible": [
+   1272,
+   312
+  ],
+  "notes": "I measured 9 plumb lines with a script that reads intensity profiles row by row. For the thin posts it takes the darkest column (centroid). For the wide poles (traffic light, utility pole) it takes the midpoint between the left and right edges. Rows where the background confused the measurement (cars, trees, lamp heads) were dropped.\n\nAll lines tilt the same way, bottom further right than top, by about 0.05-0.10 px per px. That points to camera roll and/or perspective, not to individual poles leaning. The two tall right-hand poles are clearly curved, not straight. The utility pole's slope is about 0.17 near the top and about 0.05 near the bottom, and the traffic-light pole curves the same way. That looks like lens distortion and suits the calibration well.\n\nLeft side: there are no usable vertical objects left of x~245, only trees and a blurred fence and buildings. So the leftmost line is the lamp post at x~250.\n\nSkipped:\n- The '\u0421\u0422\u041e\u041f' sign post, as you asked. It measures 1182@170, 1186@200, 1190@230, 1194@260, 1197@290, 1202@350, 1204.5@380, 1205@410, 1206@440, 1206@470, which is the same curvature as the poles next to it, so it may be usable after all.\n- The arrow-sign post at x~803: the measurement was noisy because a traffic light is attached to it.\n- The leaning wooden pole in front of the tower (x 1217-1235): it really leans.\n- A small sign post at x~1217 (y 260-340): too blurry.\n\nTower: its top is at about (1258.3, 96.3). Only the left leg is in frame; the right side runs off the frame edge, so I gave no centre line for it. The lowest visible point is about (1272, 312), where it disappears behind the trees and buildings. Both tower points are good to about \u00b12-3 px.\n\nCrops and scripts are in the annotator's scratch folder ann-a (not kept in the repository)."
+ },
+ "b": {
+  "lines": [
+   {
+    "name": "lamp-post-left-x250",
+    "points": [
+     [
+      249.4,
+      165
+     ],
+     [
+      250.2,
+      210
+     ],
+     [
+      253.3,
+      270
+     ],
+     [
+      256.1,
+      315
+     ],
+     [
+      259.5,
+      360
+     ]
+    ]
+   },
+   {
+    "name": "lamp-post-x382",
+    "points": [
+     [
+      381.3,
+      240
+     ],
+     [
+      382.2,
+      270
+     ],
+     [
+      383.4,
+      300
+     ],
+     [
+      385,
+      320
+     ]
+    ]
+   },
+   {
+    "name": "lamp-post-x638",
+    "points": [
+     [
+      636.5,
+      242
+     ],
+     [
+      638.1,
+      262
+     ],
+     [
+      640.1,
+      282
+     ],
+     [
+      641,
+      302
+     ],
+     [
+      641.6,
+      322
+     ]
+    ]
+   },
+   {
+    "name": "lamp-post-x675",
+    "points": [
+     [
+      672.4,
+      180
+     ],
+     [
+      674.5,
+      210
+     ],
+     [
+      676,
+      240
+     ],
+     [
+      677.9,
+      270
+     ],
+     [
+      680.2,
+      300
+     ]
+    ]
+   },
+   {
+    "name": "blue-sign-post-x800",
+    "points": [
+     [
+      798.5,
+      230
+     ],
+     [
+      800.5,
+      260
+     ],
+     [
+      803,
+      300
+     ],
+     [
+      808,
+      380
+     ]
+    ]
+   },
+   {
+    "name": "thin-pole-x870",
+    "points": [
+     [
+      865.5,
+      230
+     ],
+     [
+      868.5,
+      270
+     ],
+     [
+      875.7,
+      360
+     ],
+     [
+      876.7,
+      395
+     ]
+    ]
+   },
+   {
+    "name": "traffic-light-pole-x905",
+    "points": [
+     [
+      896.5,
+      160
+     ],
+     [
+      904.5,
+      230
+     ],
+     [
+      911,
+      300
+     ],
+     [
+      914.2,
+      350
+     ],
+     [
+      919,
+      430
+     ]
+    ]
+   },
+   {
+    "name": "distant-utility-pole-x942",
+    "points": [
+     [
+      940.5,
+      225
+     ],
+     [
+      942.6,
+      250
+     ],
+     [
+      944.6,
+      280
+     ],
+     [
+      945.6,
+      300
+     ]
+    ]
+   },
+   {
+    "name": "concrete-pole-x1000",
+    "points": [
+     [
+      979.6,
+      10
+     ],
+     [
+      989.6,
+      70
+     ],
+     [
+      1000.6,
+      150
+     ],
+     [
+      1009.6,
+      230
+     ],
+     [
+      1015.8,
+      300
+     ],
+     [
+      1019.8,
+      360
+     ],
+     [
+      1023.1,
+      420
+     ]
+    ]
+   }
+  ],
+  "tower_top": [
+   1258,
+   95.5
+  ],
+  "tower_lowest_visible": [
+   1265.5,
+   293
+  ],
+  "notes": "I measured 9 objects using sub-pixel intensity profiles: the darkest point across thin posts, and the average of the left and right edges for wide poles. I checked them against 4x and 2x crops. Files are in the annotator's scratch folder ann-b (not kept in the repository).\n\nCoverage gap: nothing on the left is usable left of x=250, because there are only trees there. So the leftmost line is the lamp post at x 250.\n\nWhat the lines show: every one leans with the top to the left. The tilt is about 0.04-0.06 px/px near the image centre and grows to about 0.08-0.13 on the right. The long right-hand poles (the traffic-light pole at x 905 and the concrete pole at x 1000) have a slope that drops toward the bottom. On the concrete pole it is about 0.126 for y 10-290 and about 0.06 for y 300-420. This is consistent with lens distortion rather than one bad pole. Still, the concrete pole at x 1000 is the steepest line and could also lean a little in reality.\n\nLines with caveats:\n- Traffic-light pole: I left out y < 160, because the mounting bracket widens the edges there.\n- Blue-sign post at x 800: below y~300 a second pole carrying a traffic signal stands right behind it. From there on the two read as one, so the points at y >= 300 are less certain (+-1.5 px).\n- Thin pole at x 870: the point at y 360 sits on a dark tree background (+-1 px).\n\nObjects left out:\n- '\u0421\u0422\u041e\u041f' sign post: its slope bends from 0.13 to 0.03 along its length. Measured centres for reference: (1182.8,175), (1191.3,235), (1197.5,295), (1203.6,375), (1206.3,435), (1207.0,475).\n- Lamp at x 448: the segment is too short and noisy.\n- Wooden pole with a strut at x ~1245-1260: it leans.\n- The lattice tower itself: it tapers and its right side is cut off by the frame edge.\n\nTower points: the top is the tip at y 96. The lowest visible point is the left leg at y 293. Below that the leg disappears into the dark treeline."
+ }
+}
