@@ -1,0 +1,327 @@
+{
+ "run_id": "20261027T132635-5bd1",
+ "event": "colombia-2025-07-30",
+ "started": "2026-10-27T13:26:35",
+ "git": {
+  "commit": "ca005ff",
+  "dirty": true
+ },
+ "planner": "native",
+ "planner_model": "muse-spark-1.3",
+ "instructions_sha": "f2f24fc3feaa",
+ "tools_sha": "b096c9185f72",
+ "inputs": {
+  "events/colombia-2025-07-30/event.json": "59b0696c2c259067",
+  "events/colombia-2025-07-30/picks.json": null,
+  "events/colombia-2025-07-30/calibration.json": null,
+  "events/colombia-2025-07-30/glm-window.json": "4e2e336e009c9f4c",
+  "events/colombia-2025-07-30/city-geometry.json": "fd548e01b7976ab8",
+  "out/sam/colombia-2025-07-30-medellin.json": null,
+  "events/colombia-2025-07-30/witness/medellin.json": "8ef2983ad3401ed2",
+  "out/sam/colombia-2025-07-30-bucaramanga.json": null,
+  "events/colombia-2025-07-30/witness/bucaramanga.json": null
+ },
+ "resumed_from": null,
+ "notes": null,
+ "history": [],
+ "finished": "2026-10-27T13:27:33",
+ "status": "blocked",
+ "block": {
+  "reason": "report_refused",
+  "checks": {
+   "es": {
+    "figures": 24,
+    "traced": 24,
+    "passed": true
+   },
+   "en": {
+    "figures": 18,
+    "traced": 17,
+    "passed": false
+   }
+  }
+ },
+ "final": {
+  "insufficient_geometry": true,
+  "oriented_clips": []
+ },
+ "dropped": {},
+ "steps": [
+  {
+   "step": 1,
+   "action": "read_witness",
+   "clip": "bucaramanga",
+   "clips": null,
+   "args": {
+    "clip": "bucaramanga",
+    "why": "Need witness record for the unread clip before assessing usability."
+   },
+   "why": "Need witness record for the unread clip before assessing usability.",
+   "result": {
+    "error": "no trimmed video for clip bucaramanga"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ecdde76bc197ff6c4724",
+   "usage": {
+    "input_tokens": 2067,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 173,
+    "output_tokens_details": {
+     "reasoning_tokens": 73
+    },
+    "total_tokens": 2240
+   }
+  },
+  {
+   "step": 2,
+   "action": "track",
+   "clip": "medellin",
+   "clips": null,
+   "args": {
+    "clip": "medellin",
+    "why": "Need fireball track coverage to judge trajectory potential."
+   },
+   "why": "Need fireball track coverage to judge trajectory potential.",
+   "result": {
+    "error": "clip medellin has not been tracked yet"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ecdf892ef9c2097941e2",
+   "usage": {
+    "input_tokens": 2178,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 187,
+    "output_tokens_details": {
+     "reasoning_tokens": 90
+    },
+    "total_tokens": 2365
+   }
+  },
+  {
+   "step": 3,
+   "action": "calibration",
+   "clip": "medellin",
+   "clips": null,
+   "args": {
+    "clip": "medellin",
+    "why": "Check if Medellin camera can be oriented for triangulation."
+   },
+   "why": "Check if Medellin camera can be oriented for triangulation.",
+   "result": {
+    "calibrated": false,
+    "why": "no surveyed landmark or line set confirmed for this camera"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ece22b1e2991afb34797",
+   "usage": {
+    "input_tokens": 2279,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 202,
+    "output_tokens_details": {
+     "reasoning_tokens": 102
+    },
+    "total_tokens": 2481
+   }
+  },
+  {
+   "step": 4,
+   "action": "calibration",
+   "clip": "bucaramanga",
+   "clips": null,
+   "args": {
+    "clip": "bucaramanga",
+    "why": "Check second camera orientation status to confirm geometry count."
+   },
+   "why": "Check second camera orientation status to confirm geometry count.",
+   "result": {
+    "calibrated": false,
+    "why": "no surveyed landmark or line set confirmed for this camera"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ece55fcca88a40234767",
+   "usage": {
+    "input_tokens": 2392,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 291,
+    "output_tokens_details": {
+     "reasoning_tokens": 195
+    },
+    "total_tokens": 2683
+   }
+  },
+  {
+   "step": 5,
+   "action": "check_satellite",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "Rule out orbital debris with independent GLM detection check."
+   },
+   "why": "Rule out orbital debris with independent GLM detection check.",
+   "result": {
+    "detections": [
+     {
+      "utc": "2025-07-31T03:50:24Z",
+      "where": "6.460 N, 72.212 W",
+      "class": "Bolide",
+      "brightness": [
+       {
+        "category": "Fairly Bright",
+        "value": 9.722628516243302e-12
+       }
+      ],
+      "duration_s": 1.047533
+     }
+    ],
+    "note": "GLM covers the Americas from 2017; older or other-region events will show nothing"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ece7457647eae25c4a6b",
+   "usage": {
+    "input_tokens": 2505,
+    "input_tokens_details": {
+     "cached_tokens": 2033
+    },
+    "output_tokens": 199,
+    "output_tokens_details": {
+     "reasoning_tokens": 117
+    },
+    "total_tokens": 2704
+   }
+  },
+  {
+   "step": 6,
+   "action": "missing_views",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "Identify towns that would close geometry for evidence request."
+   },
+   "why": "Identify towns that would close geometry for evidence request.",
+   "result": {
+    "best_towns": [
+     "Málaga (63 km, look 114.5 deg, flash 31.6-51.1 deg up)",
+     "Saravena (66 km, look 214.5 deg, flash 30.4-49.7 deg up)",
+     "San Gil (103 km, look 95.9 deg, flash 20.6-37.2 deg up)",
+     "Pamplona (112 km, look 154.6 deg, flash 18.8-34.6 deg up)",
+     "Sogamoso (114 km, look 43.8 deg, flash 18.5-34.2 deg up)",
+     "Duitama (115 km, look 52.3 deg, flash 18.4-34.0 deg up)",
+     "Floridablanca (118 km, look 124.5 deg, flash 18.0-33.3 deg up)",
+     "Bucaramanga (124 km, look 125.8 deg, flash 17.0-31.9 deg up)"
+    ]
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0eceb7bb2a2677a3d41cd",
+   "usage": {
+    "input_tokens": 2689,
+    "input_tokens_details": {
+     "cached_tokens": 2161
+    },
+    "output_tokens": 595,
+    "output_tokens_details": {
+     "reasoning_tokens": 511
+    },
+    "total_tokens": 3284
+   }
+  },
+  {
+   "step": 7,
+   "action": "finalize",
+   "clip": null,
+   "clips": [],
+   "args": {
+    "clips": [],
+    "why": "No camera is oriented, so no triangulation is possible and insufficient geometry must be recorded."
+   },
+   "why": "No camera is oriented, so no triangulation is possible and insufficient geometry must be recorded.",
+   "result": {
+    "accepted": true,
+    "insufficient_geometry": true,
+    "oriented_clips": [],
+    "next": "write_report, then request_evidence for the views that would close the geometry"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0eced2a86d4ad68c74f31",
+   "usage": {
+    "input_tokens": 2990,
+    "input_tokens_details": {
+     "cached_tokens": 2161
+    },
+    "output_tokens": 411,
+    "output_tokens_details": {
+     "reasoning_tokens": 307
+    },
+    "total_tokens": 3401
+   }
+  },
+  {
+   "step": 8,
+   "action": "write_report",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "Record insufficient geometry report from tool results before requesting evidence."
+   },
+   "why": "Record insufficient geometry report from tool results before requesting evidence.",
+   "result": {
+    "reports": {
+     "es": {
+      "figures": 24,
+      "traced": 24,
+      "passed": true
+     },
+     "en": {
+      "figures": 18,
+      "traced": 17,
+      "passed": false
+     }
+    },
+    "status": "blocked"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ecee501c6f4524c84d15",
+   "usage": {
+    "input_tokens": 3126,
+    "input_tokens_details": {
+     "cached_tokens": 2417
+    },
+    "output_tokens": 99,
+    "output_tokens_details": {
+     "reasoning_tokens": 12
+    },
+    "total_tokens": 3225
+   }
+  }
+ ],
+ "reports": {
+  "es": {
+   "check": {
+    "passed": true,
+    "numbers": 24,
+    "traced": 24,
+    "orphans": [],
+    "hemisphere_mismatches": []
+   }
+  },
+  "en": {
+   "check": {
+    "passed": false,
+    "numbers": 18,
+    "traced": 17,
+    "orphans": [
+     "03"
+    ],
+    "hemisphere_mismatches": []
+   }
+  }
+ },
+ "cost_usd": 0.0697
+}

@@ -99,7 +99,9 @@ def test_the_tool_calling_loop_runs_until_review_and_replays(case_with, monkeypa
     log = case.run()
     assert [s['action'] for s in log] == ['planes', 'finalize', 'write_report']
     assert case.status == 'awaiting_review'
-    assert seen[1][0]['type'] == 'function_call_output' and seen[1][0]['call_id'] == 'call_1'
+    second = seen[1]  # the whole conversation goes with every turn: the call and its output, matched by call_id
+    assert [i.get('type') for i in second[1:3]] == ['function_call', 'function_call_output']
+    assert second[1]['call_id'] == second[2]['call_id'] == 'call_1'
     record = json.loads((case.dir / 'runs' / f'{case.run_id}.json').read_text())
     assert record['status'] == 'awaiting_review' and record['planner'] == 'native' and len(record['steps']) == 3
     assert agent.replay('synthetic', case.run_id)['differences'] == []

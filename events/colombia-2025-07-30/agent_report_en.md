@@ -1,7 +1,11 @@
-Case Report: Bolide on 2025-07-31T03:50:24Z
+Case Report - Event of July 31, 2025 at 03:50 UTC
 
-**Solid:** A GLM satellite detection at 2025-07-31T03:50:24Z located at 6.460 N, 72.212 W, classed as Bolide, category Fairly Bright with value 9.722628516243302e-12 and duration 1.047533 s. The GLM covers the Americas from 2017, consistent with this location.
+On July 31, 2025 at 03:50 UTC an event was reported over Colombia with two submitted views from Bucaramanga and Medellin. No camera could be oriented, so no triangulated trajectory, altitude, speed or ground position can be confirmed.
 
-**Uncertain:** Trajectory and orbit remain undetermined. Geometry is insufficient: oriented_clips is empty and both clips medellin and bucaramanga are uncalibrated.
+What is solid is limited to the reported time and the existence of the two video files as submitted.
 
-**Missing:** No surveyed landmark or line set confirmed for either camera, so calibration is false; clip medellin has not been tracked yet and clip bucaramanga has no trimmed video. To close geometry we need additional views. Best towns are Málaga (63 km, look 114.5 deg, flash 31.6-51.1 deg up) and Saravena (66 km, look 214.5 deg, flash 30.4-49.7 deg up), plus others out to 124 km.
+What is uncertain is everything geometric: without an oriented view, direction of travel, entry angle and brightness profile remain unverified.
+
+What is missing explains why: the Bucaramanga clip had no trimmed video available for analysis, the Medellin clip's motion has not yet been measured, and neither view has a confirmed surveyed landmark or reference line to orient the cameras. With zero oriented views the geometry is insufficient to close a solution.
+
+Next steps are to obtain trimmed, measurable video for both sites and identifiable ground references that would allow orientation, after which re-analysis could be attempted.

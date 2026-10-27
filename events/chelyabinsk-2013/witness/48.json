@@ -1,0 +1,92 @@
+{
+ "camera_moves": false,
+ "clip_kind": "dashcam_parked",
+ "edits": {
+  "cropped_or_zoomed": false,
+  "mirrored": false,
+  "multiple_cuts": false,
+  "music_overlay": false,
+  "slow_motion": false
+ },
+ "fireball": {
+  "color": "white to yellow-orange",
+  "enters_from": "left edge",
+  "exits_to": "left-center behind trees",
+  "first_s": 3.8,
+  "flare_times_s": [
+   10.0
+  ],
+  "fragments": false,
+  "last_s": 12.8
+ },
+ "landmarks": [
+  {
+   "confidence": 0.95,
+   "distance_guess_m": 10.0,
+   "frame_s": 1.0,
+   "kind": "traffic_light",
+   "name_guess": "nearby red traffic light pole",
+   "osm_hint": "traffic light pole at intersection",
+   "x_frac": 0.72,
+   "y_frac": 0.0
+  },
+  {
+   "confidence": 0.95,
+   "distance_guess_m": 10.0,
+   "frame_s": 1.0,
+   "kind": "other",
+   "name_guess": "СТОП road sign",
+   "osm_hint": "STOP road sign",
+   "x_frac": 0.885,
+   "y_frac": 0.18
+  },
+  {
+   "confidence": 0.8,
+   "distance_guess_m": 15.0,
+   "frame_s": 1.0,
+   "kind": "other",
+   "name_guess": "blue lane direction sign",
+   "osm_hint": "blue traffic direction sign",
+   "x_frac": 0.6,
+   "y_frac": 0.25
+  },
+  {
+   "confidence": 0.7,
+   "distance_guess_m": 50.0,
+   "frame_s": 1.0,
+   "kind": "street_lamp",
+   "name_guess": "left side street lamp",
+   "osm_hint": "street lamp along road",
+   "x_frac": 0.14,
+   "y_frac": 0.24
+  }
+ ],
+ "location_hints": [
+  {
+   "source": "sign",
+   "text": "СТОП"
+  },
+  {
+   "source": "language",
+   "text": "Russian Cyrillic road signage"
+  },
+  {
+   "source": "other",
+   "text": "snow-covered roadside in winter morning"
+  }
+ ],
+ "onscreen_clock": {
+  "at_video_s": 0.0,
+  "text": "2013/02/15 09:19:50"
+ },
+ "reason": "camera stationary waiting at red light, fireball clearly visible against sky for ~9s, fixed foreground objects usable for calibration",
+ "sound": [
+  {
+   "confidence": 1.0,
+   "kind": "none",
+   "t_s": 0.0
+  }
+ ],
+ "transcript": "",
+ "usable_for_geometry": true
+}

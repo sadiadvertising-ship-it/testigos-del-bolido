@@ -1,0 +1,27 @@
+{
+ "run_id": "20261027T132419-a996",
+ "clips": [
+  "2",
+  "10"
+ ],
+ "q_max_deg": 66.3,
+ "warnings": [],
+ "seen_for_s": 13.7,
+ "azimuth_deg": 282.12,
+ "slope_deg": 17.48,
+ "begin": "54.427 N, 64.101 E, 89.5 km",
+ "end": "54.914 N, 60.615 E, 11.4 km",
+ "speed_kms": 19.65,
+ "speed_sigma_kms": 0.29,
+ "speed_per_camera": {
+  "2": 19.65,
+  "10": 19.07
+ },
+ "residual_rms_deg": {
+  "2": 0.687,
+  "10": 0.824
+ },
+ "verdict": "natural",
+ "verdict_reason": "19.6 ± 0.3 km/s is above escape speed",
+ "verdict_rule": "natural if v - 2 sigma > 11 km/s (Earth escape speed is 11.2 km/s); re-entry if v + 2 sigma < 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise"
+}

@@ -79,7 +79,11 @@ def main(argv=None):
     if a.cmd == 'run':
         case = agent.Case(a.event)
         case.echo = echo
-        case.run(planner=agent.muse_planner if a.json_planner else None, max_steps=a.max_steps)
+        try:
+            case.run(planner=agent.muse_planner if a.json_planner else None, max_steps=a.max_steps)
+        except Exception as exc:
+            print(f'run {case.run_id} failed: {str(exc)[:300]}')
+            return 2
         _ended(case)
     elif a.cmd == 'resume':
         changed = agent.changed_inputs(a.event, a.run_id)

@@ -1,0 +1,408 @@
+{
+ "run_id": "20261027T132811-1934",
+ "event": "colombia-2025-07-30",
+ "started": "2026-10-27T13:28:12",
+ "git": {
+  "commit": "ca005ff",
+  "dirty": true
+ },
+ "planner": "native",
+ "planner_model": "muse-spark-1.3",
+ "instructions_sha": "f2f24fc3feaa",
+ "tools_sha": "b096c9185f72",
+ "inputs": {
+  "events/colombia-2025-07-30/event.json": "59b0696c2c259067",
+  "events/colombia-2025-07-30/picks.json": null,
+  "events/colombia-2025-07-30/calibration.json": null,
+  "events/colombia-2025-07-30/glm-window.json": "4e2e336e009c9f4c",
+  "events/colombia-2025-07-30/city-geometry.json": "fd548e01b7976ab8",
+  "out/sam/colombia-2025-07-30-medellin.json": null,
+  "events/colombia-2025-07-30/witness/medellin.json": "8ef2983ad3401ed2",
+  "out/sam/colombia-2025-07-30-bucaramanga.json": null,
+  "events/colombia-2025-07-30/witness/bucaramanga.json": null
+ },
+ "resumed_from": null,
+ "notes": null,
+ "history": [],
+ "finished": "2026-10-27T13:28:41",
+ "status": "blocked",
+ "block": {
+  "reason": "missing_evidence",
+  "request": {
+   "run_id": "20261027T132811-1934",
+   "at": "2026-10-27T13:28:41",
+   "kind": "videos_from_towns",
+   "why": "No oriented cameras exist so videos from towns that would see flash high up are needed.",
+   "clip": "medellin",
+   "towns": [
+    "Málaga",
+    "Saravena",
+    "San Gil"
+   ]
+  }
+ },
+ "final": {
+  "insufficient_geometry": true,
+  "oriented_clips": []
+ },
+ "dropped": {},
+ "steps": [
+  {
+   "step": 1,
+   "action": "read_witness",
+   "clip": "bucaramanga",
+   "clips": null,
+   "args": {
+    "clip": "bucaramanga",
+    "why": "Need witness summary for the unread Bucaramanga clip to assess usability."
+   },
+   "why": "Need witness summary for the unread Bucaramanga clip to assess usability.",
+   "result": {
+    "error": "no trimmed video for clip bucaramanga"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ed3de548ea4f9b1b451a",
+   "usage": {
+    "input_tokens": 2067,
+    "input_tokens_details": {
+     "cached_tokens": 2033
+    },
+    "output_tokens": 196,
+    "output_tokens_details": {
+     "reasoning_tokens": 90
+    },
+    "total_tokens": 2263
+   }
+  },
+  {
+   "step": 2,
+   "action": "track",
+   "clip": "medellin",
+   "clips": null,
+   "args": {
+    "clip": "medellin",
+    "why": "Need SAM track coverage for Medellin to judge triangulation suitability."
+   },
+   "why": "Need SAM track coverage for Medellin to judge triangulation suitability.",
+   "result": {
+    "error": "clip medellin has not been tracked yet"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ed3fbe655b117da04b82",
+   "usage": {
+    "input_tokens": 2181,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 224,
+    "output_tokens_details": {
+     "reasoning_tokens": 125
+    },
+    "total_tokens": 2405
+   }
+  },
+  {
+   "step": 3,
+   "action": "calibration",
+   "clip": "medellin",
+   "clips": null,
+   "args": {
+    "clip": "medellin",
+    "why": "Check if Medellin camera can be oriented from landmarks before solving."
+   },
+   "why": "Check if Medellin camera can be oriented from landmarks before solving.",
+   "result": {
+    "calibrated": false,
+    "why": "no surveyed landmark or line set confirmed for this camera"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ed400da27c3ce5424266",
+   "usage": {
+    "input_tokens": 2284,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 185,
+    "output_tokens_details": {
+     "reasoning_tokens": 87
+    },
+    "total_tokens": 2469
+   }
+  },
+  {
+   "step": 4,
+   "action": "calibration",
+   "clip": "bucaramanga",
+   "clips": null,
+   "args": {
+    "clip": "bucaramanga",
+    "why": "Check orientation status of second camera to confirm insufficient geometry."
+   },
+   "why": "Check orientation status of second camera to confirm insufficient geometry.",
+   "result": {
+    "calibrated": false,
+    "why": "no surveyed landmark or line set confirmed for this camera"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ed43d4e259aadbf54713",
+   "usage": {
+    "input_tokens": 2399,
+    "input_tokens_details": {
+     "cached_tokens": 2033
+    },
+    "output_tokens": 355,
+    "output_tokens_details": {
+     "reasoning_tokens": 257
+    },
+    "total_tokens": 2754
+   }
+  },
+  {
+   "step": 5,
+   "action": "finalize",
+   "clip": null,
+   "clips": [],
+   "args": {
+    "clips": [],
+    "why": "No oriented cameras exist so final solution must record insufficient geometry."
+   },
+   "why": "No oriented cameras exist so final solution must record insufficient geometry.",
+   "result": {
+    "accepted": true,
+    "insufficient_geometry": true,
+    "oriented_clips": [],
+    "next": "write_report, then request_evidence for the views that would close the geometry"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ed46baecd4c7ecd748cb",
+   "usage": {
+    "input_tokens": 2513,
+    "input_tokens_details": {
+     "cached_tokens": 2161
+    },
+    "output_tokens": 330,
+    "output_tokens_details": {
+     "reasoning_tokens": 232
+    },
+    "total_tokens": 2843
+   }
+  },
+  {
+   "step": 6,
+   "action": "write_report",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "Record insufficient geometry report from tool results before requesting evidence."
+   },
+   "why": "Record insufficient geometry report from tool results before requesting evidence.",
+   "result": {
+    "reports": {
+     "es": {
+      "figures": 10,
+      "traced": 10,
+      "passed": true
+     },
+     "en": {
+      "figures": 8,
+      "traced": 8,
+      "passed": true
+     },
+     "next": "request_evidence for the views that would close the geometry"
+    },
+    "status": "running"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ed47e968b43d4f3f45b4",
+   "usage": {
+    "input_tokens": 2644,
+    "input_tokens_details": {
+     "cached_tokens": 2033
+    },
+    "output_tokens": 130,
+    "output_tokens_details": {
+     "reasoning_tokens": 50
+    },
+    "total_tokens": 2774
+   }
+  },
+  {
+   "step": 7,
+   "action": "missing_views",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "Need towns whose videos would close geometry to request evidence."
+   },
+   "why": "Need towns whose videos would close geometry to request evidence.",
+   "result": {
+    "best_towns": [
+     "Málaga (63 km, look 114.5 deg, flash 31.6-51.1 deg up)",
+     "Saravena (66 km, look 214.5 deg, flash 30.4-49.7 deg up)",
+     "San Gil (103 km, look 95.9 deg, flash 20.6-37.2 deg up)",
+     "Pamplona (112 km, look 154.6 deg, flash 18.8-34.6 deg up)",
+     "Sogamoso (114 km, look 43.8 deg, flash 18.5-34.2 deg up)",
+     "Duitama (115 km, look 52.3 deg, flash 18.4-34.0 deg up)",
+     "Floridablanca (118 km, look 124.5 deg, flash 18.0-33.3 deg up)",
+     "Bucaramanga (124 km, look 125.8 deg, flash 17.0-31.9 deg up)"
+    ]
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ed54021aff2572894a9b",
+   "usage": {
+    "input_tokens": 2787,
+    "input_tokens_details": {
+     "cached_tokens": 2545
+    },
+    "output_tokens": 147,
+    "output_tokens_details": {
+     "reasoning_tokens": 63
+    },
+    "total_tokens": 2934
+   }
+  },
+  {
+   "step": 8,
+   "action": "request_evidence",
+   "clip": "medellin",
+   "clips": null,
+   "args": {
+    "clip": "medellin",
+    "kind": "videos_from_towns",
+    "towns": [
+     "Málaga",
+     "Saravena",
+     "San Gil"
+    ],
+    "why": "No oriented cameras exist so videos from towns that would see flash high up are needed."
+   },
+   "why": "No oriented cameras exist so videos from towns that would see flash high up are needed.",
+   "result": {
+    "accepted": false,
+    "problems": [
+     "check the satellite detections first"
+    ]
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ed565de5ea826fa84e01",
+   "usage": {
+    "input_tokens": 3089,
+    "input_tokens_details": {
+     "cached_tokens": 2161
+    },
+    "output_tokens": 366,
+    "output_tokens_details": {
+     "reasoning_tokens": 219
+    },
+    "total_tokens": 3455
+   }
+  },
+  {
+   "step": 9,
+   "action": "check_satellite",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "Required satellite check before requesting new videos for this event."
+   },
+   "why": "Required satellite check before requesting new videos for this event.",
+   "result": {
+    "detections": [
+     {
+      "utc": "2025-07-31T03:50:24Z",
+      "where": "6.460 N, 72.212 W",
+      "class": "Bolide",
+      "brightness": [
+       {
+        "category": "Fairly Bright",
+        "value": 9.722628516243302e-12
+       }
+      ],
+      "duration_s": 1.047533
+     }
+    ],
+    "note": "GLM covers the Americas from 2017; older or other-region events will show nothing"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ed589169bfca197b4f56",
+   "usage": {
+    "input_tokens": 3250,
+    "input_tokens_details": {
+     "cached_tokens": 2673
+    },
+    "output_tokens": 86,
+    "output_tokens_details": {
+     "reasoning_tokens": 6
+    },
+    "total_tokens": 3336
+   }
+  },
+  {
+   "step": 10,
+   "action": "request_evidence",
+   "clip": "medellin",
+   "clips": null,
+   "args": {
+    "clip": "medellin",
+    "kind": "videos_from_towns",
+    "towns": [
+     "Málaga",
+     "Saravena",
+     "San Gil"
+    ],
+    "why": "No oriented cameras exist so videos from towns that would see flash high up are needed."
+   },
+   "why": "No oriented cameras exist so videos from towns that would see flash high up are needed.",
+   "result": {
+    "accepted": true,
+    "blocked": true,
+    "request": {
+     "run_id": "20261027T132811-1934",
+     "at": "2026-10-27T13:28:41",
+     "kind": "videos_from_towns",
+     "why": "No oriented cameras exist so videos from towns that would see flash high up are needed.",
+     "clip": "medellin",
+     "towns": [
+      "Málaga",
+      "Saravena",
+      "San Gil"
+     ]
+    }
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ed590bb9cb0890324786",
+   "usage": {
+    "input_tokens": 3434,
+    "input_tokens_details": {
+     "cached_tokens": 3057
+    },
+    "output_tokens": 225,
+    "output_tokens_details": {
+     "reasoning_tokens": 74
+    },
+    "total_tokens": 3659
+   }
+  }
+ ],
+ "reports": {
+  "es": {
+   "check": {
+    "passed": true,
+    "numbers": 10,
+    "traced": 10,
+    "orphans": [],
+    "hemisphere_mismatches": []
+   }
+  },
+  "en": {
+   "check": {
+    "passed": true,
+    "numbers": 8,
+    "traced": 8,
+    "orphans": [],
+    "hemisphere_mismatches": []
+   }
+  }
+ },
+ "cost_usd": 0.0366
+}

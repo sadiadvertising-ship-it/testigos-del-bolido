@@ -439,6 +439,9 @@ class Case:
                 self._run_json(planner, max_steps)
             if self.status == 'running':
                 self.status = 'turn_limit'
+        except Exception as exc:  # an API or code failure ends the run on the record, not as 'running'
+            self.status, self.block = 'failed', {'reason': 'error', 'error': str(exc)[:500]}
+            raise
         finally:
             self._finish()
         return self.log
@@ -453,17 +456,18 @@ class Case:
         return text
 
     def _run_native(self, max_steps, notes, resumed_from):
-        prev, items = None, [{'role': 'user', 'content': [{'type': 'input_text', 'text': self._opening(notes, resumed_from)}]}]
+        # The whole conversation goes with every turn (the model's calls and the tools' outputs), so the loop does not
+        # depend on the server keeping earlier responses: a previous_response_id was once "not found or expired"
+        # mid-run. Prompt caching still applies to the repeated prefix.
+        convo = [{'role': 'user', 'content': [{'type': 'input_text', 'text': self._opening(notes, resumed_from)}]}]
         for _ in range(max_steps):
-            resp = api.respond(items, TOOLS, SYSTEM, model=PLANNER_MODEL, previous_response_id=prev, purpose=f'{self.id} agent turn')
-            prev = resp['id']
+            resp = api.respond(convo, TOOLS, SYSTEM, model=PLANNER_MODEL, purpose=f'{self.id} agent turn')
             calls = api.function_calls(resp)
             if not calls:
                 self._record('no_tool_call', {}, api.text_of(resp)[:300], {'error': 'no tool call'}, resp)
-                items = [{'role': 'user', 'content': [{'type': 'input_text', 'text':
-                          'Call a tool. The case ends when write_report is accepted, or when request_evidence blocks it.'}]}]
+                convo.append({'role': 'user', 'content': [{'type': 'input_text', 'text':
+                              'Call a tool. The case ends when write_report is accepted, or when request_evidence blocks it.'}]})
                 continue
-            items = []
             for c in calls:
                 try:
                     args = json.loads(c.get('arguments') or '{}')
@@ -471,7 +475,8 @@ class Case:
                     args = None
                 result = self.call(c['name'], args)
                 self._record(c['name'], args, (args or {}).get('why', ''), result, resp)
-                items.append({'type': 'function_call_output', 'call_id': c['call_id'],
+                convo.append({'type': 'function_call', 'call_id': c['call_id'], 'name': c['name'], 'arguments': c.get('arguments') or '{}'})
+                convo.append({'type': 'function_call_output', 'call_id': c['call_id'],
                               'output': json.dumps(result, default=str, ensure_ascii=False)[:8000]})
             if self.status != 'running':
                 return
@@ -521,7 +526,8 @@ class Case:
         runs = self.dir / 'runs'
         runs.mkdir(exist_ok=True)
         (runs / f'{self.run_id}.json').write_text(json.dumps(self.record, ensure_ascii=False, indent=1, default=str) + '\n')
-        (self.dir / 'agent_log.json').write_text(json.dumps(self.log, ensure_ascii=False, indent=1, default=str))
+        if self.reports or self.status == 'stopped':  # agent_log.json is the log of the run whose report is current
+            (self.dir / 'agent_log.json').write_text(json.dumps(self.log, ensure_ascii=False, indent=1, default=str))
 
 
 def review(event_id, run_id, approve, notes=None, by=None):

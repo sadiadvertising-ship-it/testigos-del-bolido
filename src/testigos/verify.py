@@ -12,6 +12,7 @@ import json
 import re
 
 NUMBER = re.compile(r'(?<![\w.])\d+(?:[.,]\d+)?(?:[eE][-+]?\d+)?')
+IN_RESULTS = re.compile(r'\d+(?:[.,]\d+)?(?:[eE][-+]?\d+)?')  # also digits after a letter, such as the hour in '...T03:50:24Z'
 COORD = re.compile(r'(\d+(?:[.,]\d+)?)\s*°?\s*([NSEWO])\b')
 LIST_MARKER = re.compile(r'^\s*(\d+)[.)]\s', re.M)  # '1. ' starting a line numbers a list, it is not a figure
 SIGMA = re.compile(r'(?<![\w.])([123])\s*(?:σ|sigma)')  # the 1 in '1σ' names a range, it is not a figure
@@ -32,7 +33,7 @@ def _walk(obj, out):
     if isinstance(obj, (int, float)):
         out.append(float(obj))
     elif isinstance(obj, str):
-        out.extend(v for m in NUMBER.finditer(obj) for v, _ in _readings(m.group(0)))
+        out.extend(v for m in IN_RESULTS.finditer(obj) for v, _ in _readings(m.group(0)))
     elif isinstance(obj, dict):
         for k, v in obj.items():
             _walk(str(k), out)

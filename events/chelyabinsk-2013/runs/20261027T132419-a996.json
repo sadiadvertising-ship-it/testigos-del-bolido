@@ -1,0 +1,580 @@
+{
+ "run_id": "20261027T132419-a996",
+ "event": "chelyabinsk-2013",
+ "started": "2026-10-27T13:24:19",
+ "git": {
+  "commit": "ca005ff",
+  "dirty": true
+ },
+ "planner": "native",
+ "planner_model": "muse-spark-1.3",
+ "instructions_sha": "f2f24fc3feaa",
+ "tools_sha": "b096c9185f72",
+ "inputs": {
+  "events/chelyabinsk-2013/event.json": "ad4025142dadc136",
+  "events/chelyabinsk-2013/picks.json": "1484f0a7c1d5c4c1",
+  "events/chelyabinsk-2013/calibration.json": "0dbad1a47920c84c",
+  "events/chelyabinsk-2013/glm-window.json": "379fe14221486da4",
+  "events/chelyabinsk-2013/city-geometry.json": null,
+  "out/sam/chelyabinsk-2013-2.json": "0f9b07035b900123",
+  "events/chelyabinsk-2013/witness/2.json": "ddb4505b2d014c6b",
+  "out/sam/chelyabinsk-2013-14.json": "bf8cb11450567d10",
+  "events/chelyabinsk-2013/witness/14.json": "f3e4ee5728afb8f3",
+  "out/sam/chelyabinsk-2013-48.json": "1957e134e9a70008",
+  "events/chelyabinsk-2013/witness/48.json": "ef43b6970da7f5dc",
+  "out/sam/chelyabinsk-2013-15.json": "9807bde1770a18e4",
+  "events/chelyabinsk-2013/witness/15.json": "c69d1f4a6b7ccae9",
+  "out/sam/chelyabinsk-2013-81.json": "8b42aa3dc1e7c44e",
+  "events/chelyabinsk-2013/witness/81.json": "47cab89f23127328",
+  "out/sam/chelyabinsk-2013-257.json": "76f65af71cd6ee3a",
+  "events/chelyabinsk-2013/witness/257.json": "334825536b2069aa",
+  "out/sam/chelyabinsk-2013-238.json": "746f64d40919697b",
+  "events/chelyabinsk-2013/witness/238.json": "2d06829ffb8ec93a",
+  "out/sam/chelyabinsk-2013-10.json": "843a21b2236a6482",
+  "events/chelyabinsk-2013/witness/10.json": null
+ },
+ "resumed_from": null,
+ "notes": null,
+ "history": [],
+ "finished": "2026-10-27T13:25:56",
+ "status": "awaiting_review",
+ "block": null,
+ "final": {
+  "clips": [
+   "2",
+   "10"
+  ],
+  "q_max_deg": 66.3,
+  "warnings": [],
+  "seen_for_s": 13.7,
+  "azimuth_deg": 282.12,
+  "slope_deg": 17.48,
+  "begin": "54.427 N, 64.101 E, 89.5 km",
+  "end": "54.914 N, 60.615 E, 11.4 km",
+  "speed_kms": 19.65,
+  "speed_sigma_kms": 0.29,
+  "speed_per_camera": {
+   "2": 19.65,
+   "10": 19.07
+  },
+  "residual_rms_deg": {
+   "2": 0.687,
+   "10": 0.824
+  },
+  "verdict": "natural",
+  "verdict_reason": "19.6 ± 0.3 km/s is above escape speed",
+  "verdict_rule": "natural if v - 2 sigma > 11 km/s (Earth escape speed is 11.2 km/s); re-entry if v + 2 sigma < 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise"
+ },
+ "dropped": {
+  "48": "Pair Q 7.5 deg with clip 2 is under 10 deg and adding it raises residuals from 0.687 to 0.715 deg (clip 2) and 0.824 to 0.931 deg (clip 10)"
+ },
+ "steps": [
+  {
+   "step": 1,
+   "action": "read_witness",
+   "clip": "10",
+   "clips": null,
+   "args": {
+    "clip": "10",
+    "why": "Complete witness reads so all clips have context before solving."
+   },
+   "why": "Complete witness reads so all clips have context before solving.",
+   "result": {
+    "clip_kind": "dashcam_parked",
+    "camera_moves": false,
+    "multiple_cuts": false,
+    "clock": "15.02.2013 09:42:55",
+    "fireball_s": [
+     0.8,
+     7.7
+    ],
+    "landmarks": [
+     "single-storey building on left side of road (building, conf 0.4)"
+    ],
+    "model_says_usable": true
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ec55fc349f12112d4e78",
+   "usage": {
+    "input_tokens": 2246,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 190,
+    "output_tokens_details": {
+     "reasoning_tokens": 94
+    },
+    "total_tokens": 2436
+   }
+  },
+  {
+   "step": 2,
+   "action": "calibration",
+   "clip": "2",
+   "clips": null,
+   "args": {
+    "clip": "2",
+    "why": "Check orientation quality and residual for final selection."
+   },
+   "why": "Check orientation quality and residual for final selection.",
+   "result": {
+    "calibrated": true,
+    "lens": "pinhole with radial k1",
+    "hfov": 66.6,
+    "k1": -0.267,
+    "evidence": "v2: 18 vertical lines and the avenue lamp-head rows (two annotators, events/chelyabinsk-2013/lines-2.json) plus the chapel; lines alone leave the field of view free (the fit ran to 151 deg), so the ch",
+    "fit_rms_deg": 0.065
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ec748afd1a5455ed4df6",
+   "usage": {
+    "input_tokens": 2429,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 204,
+    "output_tokens_details": {
+     "reasoning_tokens": 109
+    },
+    "total_tokens": 2633
+   }
+  },
+  {
+   "step": 3,
+   "action": "calibration",
+   "clip": "48",
+   "clips": null,
+   "args": {
+    "clip": "48",
+    "why": "Check orientation quality and residual for final selection."
+   },
+   "why": "Check orientation quality and residual for final selection.",
+   "result": {
+    "calibrated": true,
+    "lens": "pinhole with radial k1",
+    "hfov": 62.8,
+    "k1": -0.332,
+    "evidence": "landmarks",
+    "fit_rms_deg": 0.031
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ec75614cc12445cb4e5c",
+   "usage": {
+    "input_tokens": 2626,
+    "input_tokens_details": {
+     "cached_tokens": 2417
+    },
+    "output_tokens": 155,
+    "output_tokens_details": {
+     "reasoning_tokens": 65
+    },
+    "total_tokens": 2781
+   }
+  },
+  {
+   "step": 4,
+   "action": "calibration",
+   "clip": "10",
+   "clips": null,
+   "args": {
+    "clip": "10",
+    "why": "Check whether clip 10 can be oriented before solving."
+   },
+   "why": "Check whether clip 10 can be oriented before solving.",
+   "result": {
+    "calibrated": true,
+    "lens": "wide pinhole with radial k1",
+    "hfov": 79.5,
+    "k1": -0.15,
+    "evidence": "v4: pointing from the annotated lines with k1 fixed at -0.15 (the 480x360 frame cannot pin it); hfov 79.5 from speed agreement with Kamensk (both saw the fireball before it slowed); the three-station ",
+    "fit_rms_deg": 0.065
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ec778098c25d94844b0e",
+   "usage": {
+    "input_tokens": 2768,
+    "input_tokens_details": {
+     "cached_tokens": 2161
+    },
+    "output_tokens": 67,
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "total_tokens": 2835
+   }
+  },
+  {
+   "step": 5,
+   "action": "planes",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "Measure pair angles to choose geometry that triangulates well."
+   },
+   "why": "Measure pair angles to choose geometry that triangulates well.",
+   "result": {
+    "calibrated_clips": [
+     "2",
+     "48",
+     "10"
+    ],
+    "pairs": [
+     {
+      "pair": [
+       "2",
+       "10"
+      ],
+      "q_deg": 66.3
+     },
+     {
+      "pair": [
+       "48",
+       "10"
+      ],
+      "q_deg": 58.9
+     },
+     {
+      "pair": [
+       "2",
+       "48"
+      ],
+      "q_deg": 7.5
+     }
+    ]
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ec796ca2756fae6e419e",
+   "usage": {
+    "input_tokens": 2965,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 110,
+    "output_tokens_details": {
+     "reasoning_tokens": 34
+    },
+    "total_tokens": 3075
+   }
+  },
+  {
+   "step": 6,
+   "action": "solve",
+   "clip": null,
+   "clips": [
+    "2",
+    "10",
+    "48"
+   ],
+   "args": {
+    "clips": [
+     "2",
+     "10",
+     "48"
+    ],
+    "why": "Triangulate all oriented cameras to see residuals and verdict."
+   },
+   "why": "Triangulate all oriented cameras to see residuals and verdict.",
+   "result": {
+    "clips": [
+     "2",
+     "10",
+     "48"
+    ],
+    "q_max_deg": 66.3,
+    "warnings": [],
+    "seen_for_s": 13.7,
+    "azimuth_deg": 278.53,
+    "slope_deg": 16.8,
+    "begin": "54.463 N, 64.065 E, 87.1 km",
+    "end": "54.822 N, 60.540 E, 12.2 km",
+    "speed_kms": 19.49,
+    "speed_sigma_kms": 1.53,
+    "speed_per_camera": {
+     "2": 19.09,
+     "10": 14.77,
+     "48": 19.59
+    },
+    "residual_rms_deg": {
+     "2": 0.715,
+     "10": 0.931,
+     "48": 0.312
+    },
+    "verdict": "natural",
+    "verdict_reason": "19.5 ± 1.5 km/s is above escape speed",
+    "verdict_rule": "natural if v - 2 sigma > 11 km/s (Earth escape speed is 11.2 km/s); re-entry if v + 2 sigma < 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ec7bdf2f1e8fa32a4685",
+   "usage": {
+    "input_tokens": 3114,
+    "input_tokens_details": {
+     "cached_tokens": 2673
+    },
+    "output_tokens": 205,
+    "output_tokens_details": {
+     "reasoning_tokens": 102
+    },
+    "total_tokens": 3319
+   }
+  },
+  {
+   "step": 7,
+   "action": "solve",
+   "clip": null,
+   "clips": [
+    "2",
+    "10"
+   ],
+   "args": {
+    "clips": [
+     "2",
+     "10"
+    ],
+    "why": "Compare two-camera residual to test if third camera degrades it."
+   },
+   "why": "Compare two-camera residual to test if third camera degrades it.",
+   "result": {
+    "clips": [
+     "2",
+     "10"
+    ],
+    "q_max_deg": 66.3,
+    "warnings": [],
+    "seen_for_s": 13.7,
+    "azimuth_deg": 282.12,
+    "slope_deg": 17.48,
+    "begin": "54.427 N, 64.101 E, 89.5 km",
+    "end": "54.914 N, 60.615 E, 11.4 km",
+    "speed_kms": 19.65,
+    "speed_sigma_kms": 0.29,
+    "speed_per_camera": {
+     "2": 19.65,
+     "10": 19.07
+    },
+    "residual_rms_deg": {
+     "2": 0.687,
+     "10": 0.824
+    },
+    "verdict": "natural",
+    "verdict_reason": "19.6 ± 0.3 km/s is above escape speed",
+    "verdict_rule": "natural if v - 2 sigma > 11 km/s (Earth escape speed is 11.2 km/s); re-entry if v + 2 sigma < 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ec7e372a3da182d0468e",
+   "usage": {
+    "input_tokens": 3486,
+    "input_tokens_details": {
+     "cached_tokens": 2929
+    },
+    "output_tokens": 300,
+    "output_tokens_details": {
+     "reasoning_tokens": 204
+    },
+    "total_tokens": 3786
+   }
+  },
+  {
+   "step": 8,
+   "action": "solve",
+   "clip": null,
+   "clips": [
+    "48",
+    "10"
+   ],
+   "args": {
+    "clips": [
+     "48",
+     "10"
+    ],
+    "why": "Test alternate pair to confirm best two-camera choice."
+   },
+   "why": "Test alternate pair to confirm best two-camera choice.",
+   "result": {
+    "clips": [
+     "48",
+     "10"
+    ],
+    "q_max_deg": 58.9,
+    "warnings": [],
+    "seen_for_s": 10.3,
+    "azimuth_deg": 282.4,
+    "slope_deg": 17.18,
+    "begin": "54.521 N, 63.561 E, 72.5 km",
+    "end": "54.837 N, 61.258 E, 22.9 km",
+    "speed_kms": 19.1,
+    "speed_sigma_kms": 1.77,
+    "speed_per_camera": {
+     "48": 19.1,
+     "10": 15.56
+    },
+    "residual_rms_deg": {
+     "48": 0.059,
+     "10": 0.823
+    },
+    "verdict": "natural",
+    "verdict_reason": "19.1 ± 1.8 km/s is above escape speed",
+    "verdict_rule": "natural if v - 2 sigma > 11 km/s (Earth escape speed is 11.2 km/s); re-entry if v + 2 sigma < 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ec8222adb4d8a0fc4112",
+   "usage": {
+    "input_tokens": 3837,
+    "input_tokens_details": {
+     "cached_tokens": 3057
+    },
+    "output_tokens": 609,
+    "output_tokens_details": {
+     "reasoning_tokens": 504
+    },
+    "total_tokens": 4446
+   }
+  },
+  {
+   "step": 9,
+   "action": "drop_clip",
+   "clip": "48",
+   "clips": null,
+   "args": {
+    "clip": "48",
+    "reason": "Pair Q 7.5 deg with clip 2 is under 10 deg and adding it raises residuals from 0.687 to 0.715 deg (clip 2) and 0.824 to 0.931 deg (clip 10)",
+    "why": "Exclude clip 48 now because its narrow geometry degrades the wide-pair solution."
+   },
+   "why": "Exclude clip 48 now because its narrow geometry degrades the wide-pair solution.",
+   "result": {
+    "dropped": "48",
+    "reason": "Pair Q 7.5 deg with clip 2 is under 10 deg and adding it raises residuals from 0.687 to 0.715 deg (clip 2) and 0.824 to 0.931 deg (clip 10)"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ec8578a0e62c80bf4282",
+   "usage": {
+    "input_tokens": 4185,
+    "input_tokens_details": {
+     "cached_tokens": 3441
+    },
+    "output_tokens": 653,
+    "output_tokens_details": {
+     "reasoning_tokens": 486
+    },
+    "total_tokens": 4838
+   }
+  },
+  {
+   "step": 10,
+   "action": "finalize",
+   "clip": null,
+   "clips": [
+    "2",
+    "10"
+   ],
+   "args": {
+    "clips": [
+     "2",
+     "10"
+    ],
+    "why": "Close with the widest pair after excluding the geometry-poor camera."
+   },
+   "why": "Close with the widest pair after excluding the geometry-poor camera.",
+   "result": {
+    "accepted": true,
+    "final": {
+     "clips": [
+      "2",
+      "10"
+     ],
+     "q_max_deg": 66.3,
+     "warnings": [],
+     "seen_for_s": 13.7,
+     "azimuth_deg": 282.12,
+     "slope_deg": 17.48,
+     "begin": "54.427 N, 64.101 E, 89.5 km",
+     "end": "54.914 N, 60.615 E, 11.4 km",
+     "speed_kms": 19.65,
+     "speed_sigma_kms": 0.29,
+     "speed_per_camera": {
+      "2": 19.65,
+      "10": 19.07
+     },
+     "residual_rms_deg": {
+      "2": 0.687,
+      "10": 0.824
+     },
+     "verdict": "natural",
+     "verdict_reason": "19.6 ± 0.3 km/s is above escape speed",
+     "verdict_rule": "natural if v - 2 sigma > 11 km/s (Earth escape speed is 11.2 km/s); re-entry if v + 2 sigma < 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise"
+    }
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ec885b0a8885670f402b",
+   "usage": {
+    "input_tokens": 4410,
+    "input_tokens_details": {
+     "cached_tokens": 4081
+    },
+    "output_tokens": 383,
+    "output_tokens_details": {
+     "reasoning_tokens": 274
+    },
+    "total_tokens": 4793
+   }
+  },
+  {
+   "step": 11,
+   "action": "write_report",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "Write the bilingual report from the accepted solution."
+   },
+   "why": "Write the bilingual report from the accepted solution.",
+   "result": {
+    "reports": {
+     "es": {
+      "figures": 17,
+      "traced": 17,
+      "passed": true
+     },
+     "en": {
+      "figures": 16,
+      "traced": 16,
+      "passed": true
+     }
+    },
+    "status": "awaiting_review"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ec8a8742f75c6b964b50",
+   "usage": {
+    "input_tokens": 4775,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 248,
+    "output_tokens_details": {
+     "reasoning_tokens": 167
+    },
+    "total_tokens": 5023
+   }
+  }
+ ],
+ "reports": {
+  "es": {
+   "check": {
+    "passed": true,
+    "numbers": 17,
+    "traced": 17,
+    "orphans": [],
+    "hemisphere_mismatches": []
+   }
+  },
+  "en": {
+   "check": {
+    "passed": true,
+    "numbers": 16,
+    "traced": 16,
+    "orphans": [],
+    "hemisphere_mismatches": []
+   }
+  }
+ },
+ "cost_usd": 0.1316
+}

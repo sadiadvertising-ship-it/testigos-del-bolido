@@ -1,0 +1,156 @@
+{
+ "run_id": "20261027T132145-7dce",
+ "event": "chelyabinsk-2013",
+ "started": "2026-10-27T13:21:45",
+ "git": {
+  "commit": "ca005ff",
+  "dirty": false
+ },
+ "planner": "native",
+ "planner_model": "muse-spark-1.3",
+ "instructions_sha": "f2f24fc3feaa",
+ "tools_sha": "b096c9185f72",
+ "inputs": {
+  "events/chelyabinsk-2013/event.json": "ad4025142dadc136",
+  "events/chelyabinsk-2013/picks.json": "1484f0a7c1d5c4c1",
+  "events/chelyabinsk-2013/calibration.json": "0dbad1a47920c84c",
+  "events/chelyabinsk-2013/glm-window.json": "379fe14221486da4",
+  "events/chelyabinsk-2013/city-geometry.json": null,
+  "out/sam/chelyabinsk-2013-2.json": "0f9b07035b900123",
+  "events/chelyabinsk-2013/witness/2.json": "ddb4505b2d014c6b",
+  "out/sam/chelyabinsk-2013-14.json": "bf8cb11450567d10",
+  "events/chelyabinsk-2013/witness/14.json": "f3e4ee5728afb8f3",
+  "out/sam/chelyabinsk-2013-48.json": "1957e134e9a70008",
+  "events/chelyabinsk-2013/witness/48.json": null,
+  "out/sam/chelyabinsk-2013-15.json": "9807bde1770a18e4",
+  "events/chelyabinsk-2013/witness/15.json": "c69d1f4a6b7ccae9",
+  "out/sam/chelyabinsk-2013-81.json": "8b42aa3dc1e7c44e",
+  "events/chelyabinsk-2013/witness/81.json": "47cab89f23127328",
+  "out/sam/chelyabinsk-2013-257.json": "76f65af71cd6ee3a",
+  "events/chelyabinsk-2013/witness/257.json": "334825536b2069aa",
+  "out/sam/chelyabinsk-2013-238.json": "746f64d40919697b",
+  "events/chelyabinsk-2013/witness/238.json": "2d06829ffb8ec93a",
+  "out/sam/chelyabinsk-2013-10.json": "843a21b2236a6482",
+  "events/chelyabinsk-2013/witness/10.json": null
+ },
+ "resumed_from": null,
+ "notes": null,
+ "history": [],
+ "finished": "2026-10-27T13:22:42",
+ "status": "failed",
+ "block": {
+  "reason": "error",
+  "error": "/responses HTTP 400: referenced response not found or expired (turn 4, previous_response_id); recorded as failed afterwards, the loop now resends the conversation instead"
+ },
+ "final": null,
+ "dropped": {},
+ "steps": [
+  {
+   "step": 1,
+   "action": "read_witness",
+   "clip": "48",
+   "clips": null,
+   "args": {
+    "clip": "48",
+    "why": "I need the witness details for the oriented clip 48 before solving."
+   },
+   "why": "I need the witness details for the oriented clip 48 before solving.",
+   "result": {
+    "clip_kind": "dashcam_parked",
+    "camera_moves": false,
+    "multiple_cuts": false,
+    "clock": "2013/02/15 09:19:50",
+    "fireball_s": [
+     3.8,
+     12.8
+    ],
+    "landmarks": [
+     "nearby red traffic light pole (traffic_light, conf 0.95)",
+     "СТОП road sign (other, conf 0.95)",
+     "blue lane direction sign (other, conf 0.8)",
+     "left side street lamp (street_lamp, conf 0.7)"
+    ],
+    "model_says_usable": true
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ebbc99f6eb029c094109",
+   "usage": {
+    "input_tokens": 2246,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 219,
+    "output_tokens_details": {
+     "reasoning_tokens": 116
+    },
+    "total_tokens": 2465
+   }
+  },
+  {
+   "step": 2,
+   "action": "calibration",
+   "clip": "2",
+   "clips": null,
+   "args": {
+    "clip": "2",
+    "why": "I need the orientation residual for camera 2 to judge its fit."
+   },
+   "why": "I need the orientation residual for camera 2 to judge its fit.",
+   "result": {
+    "calibrated": true,
+    "lens": "pinhole with radial k1",
+    "hfov": 66.6,
+    "k1": -0.267,
+    "evidence": "v2: 18 vertical lines and the avenue lamp-head rows (two annotators, events/chelyabinsk-2013/lines-2.json) plus the chapel; lines alone leave the field of view free (the fit ran to 151 deg), so the ch",
+    "fit_rms_deg": 0.065
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ebe0ed19f95cc5b44b9b",
+   "usage": {
+    "input_tokens": 2499,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 124,
+    "output_tokens_details": {
+     "reasoning_tokens": 25
+    },
+    "total_tokens": 2623
+   }
+  },
+  {
+   "step": 3,
+   "action": "calibration",
+   "clip": "48",
+   "clips": null,
+   "args": {
+    "clip": "48",
+    "why": "I need the orientation residual for camera 48 to judge its fit."
+   },
+   "why": "I need the orientation residual for camera 48 to judge its fit.",
+   "result": {
+    "calibrated": true,
+    "lens": "pinhole with radial k1",
+    "hfov": 62.8,
+    "k1": -0.332,
+    "evidence": "landmarks",
+    "fit_rms_deg": 0.031
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae0ebea07774b625c0c48f9",
+   "usage": {
+    "input_tokens": 2724,
+    "input_tokens_details": {
+     "cached_tokens": 2161
+    },
+    "output_tokens": 114,
+    "output_tokens_details": {
+     "reasoning_tokens": 14
+    },
+    "total_tokens": 2838
+   }
+  }
+ ],
+ "reports": {},
+ "cost_usd": 0.0514
+}

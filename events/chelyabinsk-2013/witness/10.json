@@ -1,0 +1,49 @@
+{
+ "camera_moves": false,
+ "clip_kind": "dashcam_parked",
+ "edits": {
+  "cropped_or_zoomed": false,
+  "mirrored": false,
+  "multiple_cuts": false,
+  "music_overlay": false,
+  "slow_motion": false
+ },
+ "fireball": {
+  "color": "white",
+  "enters_from": "top left",
+  "exits_to": "top left",
+  "first_s": 0.8,
+  "flare_times_s": [
+   6.0
+  ],
+  "fragments": false,
+  "last_s": 7.7
+ },
+ "landmarks": [
+  {
+   "confidence": 0.4,
+   "distance_guess_m": 10.0,
+   "frame_s": 1.0,
+   "kind": "building",
+   "name_guess": "single-storey building on left side of road",
+   "osm_hint": "single storey commercial building",
+   "x_frac": 0.12,
+   "y_frac": 0.2
+  }
+ ],
+ "location_hints": [],
+ "onscreen_clock": {
+  "at_video_s": 0.0,
+  "text": "15.02.2013 09:42:55"
+ },
+ "reason": "Camera is stationary parked dashcam and fireball is clearly visible brightening in upper frame throughout clip.",
+ "sound": [
+  {
+   "confidence": 1.0,
+   "kind": "none",
+   "t_s": 0.0
+  }
+ ],
+ "transcript": "",
+ "usable_for_geometry": true
+}
