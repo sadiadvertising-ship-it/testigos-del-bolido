@@ -1,0 +1,80 @@
+{
+ "camera_moves": true,
+ "clip_kind": "other",
+ "edits": {
+  "cropped_or_zoomed": false,
+  "mirrored": false,
+  "multiple_cuts": false,
+  "music_overlay": false,
+  "slow_motion": false
+ },
+ "fireball": {
+  "color": "intense white-yellow overexposed to white, trail whitish-yellow",
+  "enters_from": "upper left / left edge",
+  "exits_to": "top edge / top-center - short trail segment visible only in upper third, does not cross entire frame",
+  "first_s": 2,
+  "flare_times_s": [
+   3,
+   4.2
+  ],
+  "fragments": false,
+  "last_s": 6.4
+ },
+ "landmarks": [
+  {
+   "confidence": 0.7,
+   "distance_guess_m": 800,
+   "frame_s": 1.1,
+   "kind": "chimney",
+   "name_guess": "\"factory chimney / smokestack\"",
+   "osm_hint": "factory chimney with smoke",
+   "x_frac": 0.52,
+   "y_frac": 0.33
+  },
+  {
+   "confidence": 0.5,
+   "distance_guess_m": 850,
+   "frame_s": 1.1,
+   "kind": "chimney",
+   "name_guess": "\"tower crane behind chimney\"",
+   "osm_hint": "construction crane",
+   "x_frac": 0.58,
+   "y_frac": 0.29
+  },
+  {
+   "confidence": 0.6,
+   "distance_guess_m": 120,
+   "frame_s": 1.1,
+   "kind": "tower",
+   "name_guess": "\"large beige rectangular shed / containers center background\"",
+   "osm_hint": "industrial shed container",
+   "x_frac": 0.47,
+   "y_frac": 0.35
+  },
+  {
+   "confidence": 0.5,
+   "distance_guess_m": 180,
+   "frame_s": 1.1,
+   "kind": "tower",
+   "name_guess": "\"blue industrial building on right\"",
+   "osm_hint": "industrial building blue roof",
+   "x_frac": 0.74,
+   "y_frac": 0.36
+  }
+ ],
+ "location_hints": [
+  {
+   "source": "speech",
+   "text": "no intelligible speech, no signs or text legible"
+  },
+  {
+   "source": "skyline",
+   "text": "snow covered flat industrial yard, tire obstacles and anti-tank hedgehogs, birch forest on horizon, overcast winter morning, smoke plume from distant chimney"
+  }
+ ],
+ "onscreen_clock": null,
+ "reason": "camera is fixed fisheye surveillance; fireball saturates the sensor 2.0-5.5s providing timing of flash/illumination and a short persistent trail remains visible ~6.0-6.4s from upper-left toward top-center; despite saturation the fixed geometry allows timing/brightness curve and approximate azimuth - usable but astrometry limited by overexposure and short trail",
+ "sound": [],
+ "transcript": "",
+ "usable_for_geometry": true
+}

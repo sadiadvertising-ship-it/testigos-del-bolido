@@ -1,0 +1,69 @@
+{
+ "camera_moves": false,
+ "clip_kind": "screen_recording",
+ "edits": {
+  "cropped_or_zoomed": false,
+  "mirrored": false,
+  "multiple_cuts": false,
+  "music_overlay": false,
+  "slow_motion": false
+ },
+ "fireball": {
+  "color": "intense saturated white, overexposed core with pale yellow halo; persistent trail white/gray",
+  "enters_from": "top center-right (first bloom near top center, ~2/3 up, slightly right of center)",
+  "exits_to": "top left (luminous head exits left of top center, persistent smoke trail remains extending from top-center to well beyond left edge)",
+  "first_s": 1.0,
+  "flare_times_s": [
+   2.2
+  ],
+  "fragments": false,
+  "last_s": 4.7
+ },
+ "landmarks": [
+  {
+   "confidence": 0.7,
+   "distance_guess_m": 800,
+   "frame_s": 0.0,
+   "kind": "tower",
+   "name_guess": "factory_chimney",
+   "osm_hint": "industrial building with tall chimney / smokestack",
+   "x_frac": 0.5,
+   "y_frac": 0.3
+  },
+  {
+   "confidence": 0.5,
+   "distance_guess_m": 1000,
+   "frame_s": 0.0,
+   "kind": "building",
+   "name_guess": "antenna",
+   "osm_hint": "antenna mast next to factory",
+   "x_frac": 0.46,
+   "y_frac": 0.33
+  },
+  {
+   "confidence": 0.4,
+   "distance_guess_m": null,
+   "frame_s": 0.0,
+   "kind": "sun",
+   "name_guess": "sun",
+   "osm_hint": "Sun on winter morning horizon",
+   "x_frac": 0.92,
+   "y_frac": 0.32
+  }
+ ],
+ "location_hints": [
+  {
+   "source": "skyline",
+   "text": "flat snow-covered plain with low sun on horizon - winter early morning at northern latitude"
+  },
+  {
+   "source": "skyline",
+   "text": "distant industrial complex with smokestack emitting smoke, fenced open field in foreground - consistent with Chelyabinsk region Russia"
+  }
+ ],
+ "onscreen_clock": null,
+ "reason": "camera is completely static throughout fireball/trail, fireball head visible ~1.0-4.7s and persistent linear trail visible until end (~8.6s). Saturation/bloom at peak ~2-3s prevents precise photometry but azimuth/elevation of entry and trail is measurable.",
+ "sound": [],
+ "transcript": "",
+ "usable_for_geometry": true
+}

@@ -1,0 +1,117 @@
+{
+ "camera_moves": true,
+ "clip_kind": "dashcam_parked",
+ "edits": {
+  "cropped_or_zoomed": false,
+  "mirrored": false,
+  "multiple_cuts": false,
+  "music_overlay": false,
+  "slow_motion": false
+ },
+ "fireball": {
+  "color": "intense white-yellow, saturating sensor to white with red lens flare artifact near center",
+  "enters_from": "upper right, top edge near 80% width",
+  "exits_to": "remains in upper right as persistent smoke trail, head fades behind tree line on right edge around 70-75% width, no ground impact visible",
+  "first_s": 2.0,
+  "flare_times_s": [
+   3.5,
+   4.5
+  ],
+  "fragments": false,
+  "last_s": 7.0
+ },
+ "landmarks": [
+  {
+   "confidence": 0.65,
+   "distance_guess_m": 25,
+   "frame_s": 12.0,
+   "kind": "traffic_light",
+   "name_guess": "pedestrian traffic light with blue pedestrian crossing sign on same pole, center frame",
+   "osm_hint": "pedestrian traffic light pole with pedestrian crossing sign",
+   "x_frac": 0.387,
+   "y_frac": 0.198
+  },
+  {
+   "confidence": 0.55,
+   "distance_guess_m": 35,
+   "frame_s": 12.0,
+   "kind": "traffic_light",
+   "name_guess": "vehicle traffic light showing red, right side of road",
+   "osm_hint": "vehicle traffic light",
+   "x_frac": 0.758,
+   "y_frac": 0.365
+  },
+  {
+   "confidence": 0.55,
+   "distance_guess_m": 35,
+   "frame_s": 12.0,
+   "kind": "road",
+   "name_guess": "yellow diamond priority road sign on pole right side",
+   "osm_hint": "yellow diamond priority road sign",
+   "x_frac": 0.758,
+   "y_frac": 0.318
+  },
+  {
+   "confidence": 0.5,
+   "distance_guess_m": 30,
+   "frame_s": 12.0,
+   "kind": "tower",
+   "name_guess": "wooden utility pole with power line, left side",
+   "osm_hint": "wooden utility pole",
+   "x_frac": 0.091,
+   "y_frac": 0.31
+  },
+  {
+   "confidence": 0.45,
+   "distance_guess_m": 15,
+   "frame_s": 12.0,
+   "kind": "tower",
+   "name_guess": "wooden utility pole with power line, center-left",
+   "osm_hint": "wooden utility pole",
+   "x_frac": 0.358,
+   "y_frac": 0.268
+  }
+ ],
+ "location_hints": [
+  {
+   "source": "overlay",
+   "text": "date -20C snow covered ground, 2013/02/15 winter - Chelyabinsk region"
+  },
+  {
+   "source": "sign",
+   "text": "Russian style traffic signs - blue pedestrian crossing sign, yellow diamond priority sign"
+  },
+  {
+   "source": "speech",
+   "text": "Russian language male voices"
+  },
+  {
+   "source": "skyline",
+   "text": "flat terrain, snow, coniferous and bare birch trees typical West Siberia"
+  }
+ ],
+ "onscreen_clock": {
+  "at_video_s": 0,
+  "text": "2013/02/15 09:16:40"
+ },
+ "reason": "Camera is static dashcam stopped at intersection. Fireball and persistent trail are clearly visible in upper right against clear sky from s02 to s07 despite sensor saturation at peak s03-s05 which limits astrometry during brightest flare but not before/after. Single continuous shot.",
+ "sound": [
+  {
+   "confidence": 0.45,
+   "kind": "speech",
+   "t_s": 11.5
+  },
+  {
+   "confidence": 0.5,
+   "kind": "speech",
+   "t_s": 16.5
+  },
+  {
+   "confidence": 0.5,
+   "kind": "speech",
+   "t_s": 21.5
+  }
+ ],
+ "transcript": "Что такое? [~11.5s] Что это было? [~16.5s] Охренеть... вот это да! [~21s] - low volume male Russian, approximate due to low audio quality",
+ "usable_for_geometry": true
+}

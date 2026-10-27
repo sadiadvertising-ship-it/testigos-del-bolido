@@ -1,0 +1,101 @@
+{
+ "camera_moves": false,
+ "clip_kind": "other",
+ "edits": {
+  "cropped_or_zoomed": false,
+  "mirrored": false,
+  "multiple_cuts": false,
+  "music_overlay": false,
+  "slow_motion": false
+ },
+ "fireball": {
+  "color": "intense white to yellow-white at peak, fading to white smoke trail",
+  "enters_from": "left edge just above horizon / treeline close to the rising sun at approx center-left",
+  "exits_to": "continues out of frame toward top-center / top edge, persistent trail remains in frame",
+  "first_s": 7.5,
+  "flare_times_s": [
+   8.5,
+   9.5
+  ],
+  "fragments": false,
+  "last_s": 15.0
+ },
+ "landmarks": [
+  {
+   "confidence": 0.95,
+   "distance_guess_m": 500,
+   "frame_s": 1,
+   "kind": "tower",
+   "name_guess": "high voltage electricity pylon / transmission tower",
+   "osm_hint": "high voltage power pylon",
+   "x_frac": 0.07,
+   "y_frac": 0.32
+  },
+  {
+   "confidence": 0.8,
+   "distance_guess_m": 600,
+   "frame_s": 1,
+   "kind": "tower",
+   "name_guess": "dark tree line / forest edge on horizon behind field",
+   "osm_hint": "forest tree line",
+   "x_frac": 0.18,
+   "y_frac": 0.4
+  },
+  {
+   "confidence": 0.7,
+   "distance_guess_m": 80,
+   "frame_s": 1,
+   "kind": "tower",
+   "name_guess": "light pole / mast behind corrugated fence on horizon right of center",
+   "osm_hint": "street light pole mast",
+   "x_frac": 0.62,
+   "y_frac": 0.36
+  },
+  {
+   "confidence": 1.0,
+   "distance_guess_m": null,
+   "frame_s": 1,
+   "kind": "other",
+   "name_guess": "Sun at horizon left of center",
+   "osm_hint": "Sun",
+   "x_frac": 0.2,
+   "y_frac": 0.32
+  },
+  {
+   "confidence": 0.6,
+   "distance_guess_m": 15,
+   "frame_s": 1,
+   "kind": "other",
+   "name_guess": "corrugated metal fence along right side of frame foreground",
+   "osm_hint": "fence",
+   "x_frac": 0.75,
+   "y_frac": 0.35
+  }
+ ],
+ "location_hints": [
+  {
+   "source": "overlay",
+   "text": "Cyrillic text 'Камера 19' indicates Russian language camera"
+  },
+  {
+   "source": "overlay",
+   "text": "Date 15.02.2013 on overlay is date of Chelyabinsk fireball"
+  },
+  {
+   "source": "overlay",
+   "text": "ID 'IPC476007(I)' - security camera system"
+  },
+  {
+   "source": "skyline",
+   "text": "flat snow covered field, sunrise, boreal winter conditions"
+  }
+ ],
+ "onscreen_clock": {
+  "at_video_s": 0,
+  "text": "Камера 19, 15.02.2013 09:18:11,44 at top left; 09:16:10 at top center; IPC476007(I) at bottom left. Clocks increment seconds in real time. Read at 09:18:xx ~ 09:16:xx range e.g. 09:18:20 / 09:16:20 at video s ~9-10 at peak flash."
+ },
+ "reason": "Camera is fixed CCTV. Fireball clearly visible as saturation flash  ~ at video s 8.5-9.5 and subsequent persistent white trail 9.5-15s moving left->right over horizon. No pan/tilt/handheld motion, only auto-exposure darkening after flash. Suitable for geometry despite saturation at maximum.",
+ "sound": [],
+ "transcript": "",
+ "usable_for_geometry": true
+}

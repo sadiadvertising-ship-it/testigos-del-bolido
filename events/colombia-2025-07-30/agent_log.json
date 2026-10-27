@@ -1,0 +1,107 @@
+[
+ {
+  "step": 1,
+  "action": "read_witness",
+  "clip": "bucaramanga",
+  "clips": [
+   "bucaramanga"
+  ],
+  "why": "Bucaramanga is the only unread clip, need its landmarks and clock to judge calibration potential before assessing geometry.",
+  "result": {
+   "error": "no trimmed video for clip bucaramanga"
+  }
+ },
+ {
+  "step": 2,
+  "action": "missing_views",
+  "clip": null,
+  "clips": [],
+  "why": "With zero calibrated clips, I need to know what additional views would close the geometry before attempting a solution.",
+  "result": {
+   "best_towns": [
+    "Málaga (63 km, look 114.5 deg, flash 31.6-51.1 deg up)",
+    "Saravena (66 km, look 214.5 deg, flash 30.4-49.7 deg up)",
+    "San Gil (103 km, look 95.9 deg, flash 20.6-37.2 deg up)",
+    "Pamplona (112 km, look 154.6 deg, flash 18.8-34.6 deg up)",
+    "Sogamoso (114 km, look 43.8 deg, flash 18.5-34.2 deg up)",
+    "Duitama (115 km, look 52.3 deg, flash 18.4-34.0 deg up)",
+    "Floridablanca (118 km, look 124.5 deg, flash 18.0-33.3 deg up)",
+    "Bucaramanga (124 km, look 125.8 deg, flash 17.0-31.9 deg up)"
+   ]
+  }
+ },
+ {
+  "step": 3,
+  "action": "read_witness",
+  "clip": "medellin",
+  "clips": [
+   "medellin"
+  ],
+  "why": "No calibrated clips exist yet, so I need to inspect the Medellin video details to assess its usability",
+  "result": {
+   "clip_kind": "phone_handheld",
+   "camera_moves": false,
+   "multiple_cuts": true,
+   "clock": null,
+   "fireball_s": [
+    2.2,
+    3.2
+   ],
+   "landmarks": [
+    "basketball backboard/hoop - white rectangle with o (tower, conf 0.85)",
+    "metal roof truss and support pillars of covered co (tower, conf 0.8)",
+    "thin street/light pole where fireball passes behin (tower, conf 0.55)"
+   ],
+   "model_says_usable": true
+  }
+ },
+ {
+  "step": 4,
+  "action": "calibration",
+  "clip": "medellin",
+  "clips": [
+   "medellin"
+  ],
+  "why": "Need to test if Medellin landmarks allow orientation before any triangulation.",
+  "result": {
+   "calibrated": false,
+   "why": "no surveyed landmark or line set confirmed for this camera"
+  }
+ },
+ {
+  "step": 5,
+  "action": "check_satellite",
+  "clip": null,
+  "clips": [],
+  "why": "No calibrated clips remain for triangulation, so check for independent GOES GLM detection before reporting insufficient geometry.",
+  "result": {
+   "detections": [
+    {
+     "utc": "2025-07-31T03:50:24Z",
+     "lat": 6.46,
+     "lon": -72.212,
+     "class": "Bolide",
+     "brightness": [
+      {
+       "category": "Fairly Bright",
+       "value": 9.722628516243302e-12
+      }
+     ],
+     "duration_s": 1.047533
+    }
+   ],
+   "note": "GLM covers the Americas from 2017; older or other-region events will show nothing"
+  }
+ },
+ {
+  "step": 6,
+  "action": "write_report",
+  "clip": null,
+  "clips": [],
+  "why": "No calibrated clips exist to triangulate, so the only valid product is an insufficient-geometry report using the satellite detection.",
+  "result": {
+   "written": "events/colombia-2025-07-30/agent_report_es.md",
+   "chars": 1162
+  }
+ }
+]

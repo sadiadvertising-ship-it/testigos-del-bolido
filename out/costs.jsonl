@@ -16,3 +16,51 @@
 {"ts": "2026-10-26T22:02:08", "kind": "sam_video", "usd": 0.048, "prompt": "bright light", "purpose": "chelyabinsk-2013-10 bright light", "frames_billed": 240, "frames_with_output": 240, "seconds": 23.7}
 {"ts": "2026-10-26T22:57:25", "kind": "spark", "usd": 0.02866, "model": "muse-spark-1.2", "purpose": "colombia-2025-07-30 medellin witness read", "seconds": 16.2, "input_tokens": 2530, "output_tokens": 6000}
 {"ts": "2026-10-26T22:57:59", "kind": "spark", "usd": 0.01292, "model": "muse-spark-1.2", "purpose": "colombia-2025-07-30 medellin witness read (retry)", "seconds": 11.1, "input_tokens": 2573, "output_tokens": 2283}
+{"ts": "2026-10-26T23:01:34", "kind": "spark", "usd": 0.00322, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.7, "input_tokens": 443, "output_tokens": 628}
+{"ts": "2026-10-26T23:02:05", "kind": "spark", "usd": 0.00299, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.5, "input_tokens": 443, "output_tokens": 574}
+{"ts": "2026-10-26T23:02:08", "kind": "spark", "usd": 0.00188, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.0, "input_tokens": 593, "output_tokens": 267}
+{"ts": "2026-10-26T23:02:23", "kind": "spark", "usd": 0.01753, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013-14 agent read", "seconds": 15.1, "input_tokens": 2406, "output_tokens": 3418}
+{"ts": "2026-10-26T23:02:27", "kind": "spark", "usd": 0.00406, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.8, "input_tokens": 824, "output_tokens": 714}
+{"ts": "2026-10-26T23:02:55", "kind": "spark", "usd": 0.04187, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013-48 agent read", "seconds": 28.4, "input_tokens": 2899, "output_tokens": 9000}
+{"ts": "2026-10-26T23:02:58", "kind": "spark", "usd": 0.00284, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 2.4, "input_tokens": 906, "output_tokens": 401}
+{"ts": "2026-10-26T23:03:10", "kind": "spark", "usd": 0.01611, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013-15 agent read", "seconds": 12.3, "input_tokens": 4051, "output_tokens": 2598}
+{"ts": "2026-10-26T23:03:13", "kind": "spark", "usd": 0.00291, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 2.5, "input_tokens": 1102, "output_tokens": 360}
+{"ts": "2026-10-26T23:03:16", "kind": "spark", "usd": 0.00343, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.3, "input_tokens": 1223, "output_tokens": 447}
+{"ts": "2026-10-26T23:03:19", "kind": "spark", "usd": 0.00342, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.0, "input_tokens": 1268, "output_tokens": 431}
+{"ts": "2026-10-26T23:03:32", "kind": "spark", "usd": 0.01871, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013-81 agent read", "seconds": 13.1, "input_tokens": 3722, "output_tokens": 3308}
+{"ts": "2026-10-26T23:03:35", "kind": "spark", "usd": 0.00388, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.0, "input_tokens": 1555, "output_tokens": 456}
+{"ts": "2026-10-26T23:03:39", "kind": "spark", "usd": 0.0036, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.6, "input_tokens": 1599, "output_tokens": 377}
+{"ts": "2026-10-26T23:03:54", "kind": "spark", "usd": 0.01537, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013-257 agent read", "seconds": 14.9, "input_tokens": 1485, "output_tokens": 3180}
+{"ts": "2026-10-26T23:03:57", "kind": "spark", "usd": 0.0051, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.4, "input_tokens": 1749, "output_tokens": 685}
+{"ts": "2026-10-26T23:04:11", "kind": "spark", "usd": 0.01425, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013-238 agent read", "seconds": 14.0, "input_tokens": 1747, "output_tokens": 2840}
+{"ts": "2026-10-26T23:04:16", "kind": "spark", "usd": 0.00541, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 4.5, "input_tokens": 1866, "output_tokens": 724}
+{"ts": "2026-10-26T23:04:20", "kind": "spark", "usd": 0.00505, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.8, "input_tokens": 1759, "output_tokens": 671}
+{"ts": "2026-10-26T23:04:24", "kind": "spark", "usd": 0.00566, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 4.5, "input_tokens": 1573, "output_tokens": 870}
+{"ts": "2026-10-26T23:04:34", "kind": "spark", "usd": 0.01006, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 9.8, "input_tokens": 1535, "output_tokens": 1916}
+{"ts": "2026-10-26T23:04:42", "kind": "spark", "usd": 0.01476, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013 agent report", "seconds": 8.1, "input_tokens": 1608, "output_tokens": 3000}
+{"ts": "2026-10-26T23:05:15", "kind": "spark", "usd": 0.0025, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 2.7, "input_tokens": 661, "output_tokens": 395}
+{"ts": "2026-10-26T23:05:18", "kind": "spark", "usd": 0.00262, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 2.1, "input_tokens": 769, "output_tokens": 390}
+{"ts": "2026-10-26T23:05:22", "kind": "spark", "usd": 0.00457, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.5, "input_tokens": 964, "output_tokens": 791}
+{"ts": "2026-10-26T23:05:26", "kind": "spark", "usd": 0.00459, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.3, "input_tokens": 1185, "output_tokens": 731}
+{"ts": "2026-10-26T23:05:31", "kind": "spark", "usd": 0.00523, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 4.5, "input_tokens": 1237, "output_tokens": 867}
+{"ts": "2026-10-26T23:05:37", "kind": "spark", "usd": 0.00655, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013 agent report", "seconds": 5.6, "input_tokens": 627, "output_tokens": 1356}
+{"ts": "2026-10-26T23:05:44", "kind": "spark", "usd": 0.00708, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 6.6, "input_tokens": 1284, "output_tokens": 1288}
+{"ts": "2026-10-26T23:05:47", "kind": "spark", "usd": 0.0043, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 2.9, "input_tokens": 1470, "output_tokens": 580}
+{"ts": "2026-10-26T23:05:54", "kind": "spark", "usd": 0.01077, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013 agent report", "seconds": 7.2, "input_tokens": 784, "output_tokens": 2304}
+{"ts": "2026-10-26T23:06:03", "kind": "spark", "usd": 0.00917, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 8.8, "input_tokens": 1516, "output_tokens": 1711}
+{"ts": "2026-10-26T23:06:08", "kind": "spark", "usd": 0.00847, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013 agent report", "seconds": 5.4, "input_tokens": 830, "output_tokens": 1749}
+{"ts": "2026-10-26T23:06:12", "kind": "spark", "usd": 0.00524, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 4.3, "input_tokens": 1562, "output_tokens": 773}
+{"ts": "2026-10-26T23:06:19", "kind": "spark", "usd": 0.01028, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013 agent report", "seconds": 6.7, "input_tokens": 876, "output_tokens": 2162}
+{"ts": "2026-10-26T23:06:24", "kind": "spark", "usd": 0.00596, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 4.8, "input_tokens": 1608, "output_tokens": 930}
+{"ts": "2026-10-26T23:06:30", "kind": "spark", "usd": 0.00964, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013 agent report", "seconds": 6.1, "input_tokens": 922, "output_tokens": 1997}
+{"ts": "2026-10-26T23:06:33", "kind": "spark", "usd": 0.00443, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.4, "input_tokens": 1653, "output_tokens": 556}
+{"ts": "2026-10-26T23:06:40", "kind": "spark", "usd": 0.01081, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013 agent report", "seconds": 7.0, "input_tokens": 967, "output_tokens": 2260}
+{"ts": "2026-10-26T23:06:45", "kind": "spark", "usd": 0.00514, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 4.6, "input_tokens": 1590, "output_tokens": 741}
+{"ts": "2026-10-26T23:06:50", "kind": "spark", "usd": 0.00681, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013 agent report", "seconds": 5.4, "input_tokens": 1013, "output_tokens": 1304}
+{"ts": "2026-10-26T23:07:17", "kind": "spark", "usd": 0.00512, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 5.3, "input_tokens": 482, "output_tokens": 1062}
+{"ts": "2026-10-26T23:07:20", "kind": "spark", "usd": 0.00294, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 2.9, "input_tokens": 525, "output_tokens": 538}
+{"ts": "2026-10-26T23:07:24", "kind": "spark", "usd": 0.00432, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 4.6, "input_tokens": 774, "output_tokens": 789}
+{"ts": "2026-10-26T23:07:27", "kind": "spark", "usd": 0.0036, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.0, "input_tokens": 922, "output_tokens": 577}
+{"ts": "2026-10-26T23:07:32", "kind": "spark", "usd": 0.00411, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 4.9, "input_tokens": 970, "output_tokens": 681}
+{"ts": "2026-10-26T23:07:36", "kind": "spark", "usd": 0.00408, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 3.6, "input_tokens": 1097, "output_tokens": 637}
+{"ts": "2026-10-26T23:07:42", "kind": "spark", "usd": 0.00772, "model": "muse-spark-1.2", "purpose": "colombia-2025-07-30 agent report", "seconds": 6.2, "input_tokens": 666, "output_tokens": 1621}

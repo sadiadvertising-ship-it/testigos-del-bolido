@@ -1,0 +1,122 @@
+{
+ "camera_moves": true,
+ "clip_kind": "dashcam_parked",
+ "edits": {
+  "cropped_or_zoomed": false,
+  "mirrored": false,
+  "multiple_cuts": false,
+  "music_overlay": false,
+  "slow_motion": false
+ },
+ "fireball": {
+  "color": "white to intense yellow-white at peak, saturated white with lens flare/starburst and persistent white smoke trail",
+  "enters_from": "upper right edge, mid-sky above horizon",
+  "exits_to": "center-right just above horizon, trail exits to right edge",
+  "first_s": 0.5,
+  "flare_times_s": [
+   3.5,
+   6.5,
+   9.0
+  ],
+  "fragments": false,
+  "last_s": 11.5
+ },
+ "landmarks": [
+  {
+   "confidence": 0.5,
+   "distance_guess_m": 15,
+   "frame_s": 0,
+   "kind": "building",
+   "name_guess": "1-2 storey brick commercial building on left edge of lot",
+   "osm_hint": "commercial building with cyrillic sign",
+   "x_frac": 0.0,
+   "y_frac": 0.0
+  },
+  {
+   "confidence": 0.7,
+   "distance_guess_m": 20,
+   "frame_s": 1,
+   "kind": "building",
+   "name_guess": "utility pole with overhead wires on left",
+   "osm_hint": "utility pole power line",
+   "x_frac": 0.03,
+   "y_frac": 0.28
+  },
+  {
+   "confidence": 0.6,
+   "distance_guess_m": 40,
+   "frame_s": 2,
+   "kind": "building",
+   "name_guess": "wooden/metal fence line across mid-ground parking lot",
+   "osm_hint": "fence",
+   "x_frac": 0.48,
+   "y_frac": 0.58
+  },
+  {
+   "confidence": 0.6,
+   "distance_guess_m": 30,
+   "frame_s": 2,
+   "kind": "building",
+   "name_guess": "row of white sedan taxis with roof signs parked on right",
+   "osm_hint": "parking lot taxis",
+   "x_frac": 0.82,
+   "y_frac": 0.53
+  },
+  {
+   "confidence": 0.4,
+   "distance_guess_m": 5000,
+   "frame_s": 2,
+   "kind": "building",
+   "name_guess": "distant low mountain ridge / hills on horizon center",
+   "osm_hint": "mountain ridge horizon",
+   "x_frac": 0.5,
+   "y_frac": 0.52
+  }
+ ],
+ "location_hints": [
+  {
+   "source": "overlay",
+   "text": "onscreen_cyrillic text on building left edge unreadable but cyrillic script - Russian"
+  },
+  {
+   "source": "language",
+   "text": "speech on audio is Russian"
+  },
+  {
+   "source": "sign",
+   "text": "white sedans with taxi roof boards common in Russia"
+  },
+  {
+   "source": "skyline",
+   "text": "snow covered parking lot, low winter sun dawn, flat industrial/rural skyline"
+  },
+  {
+   "source": "overlay",
+   "text": "date overlay 2013/02/15 matches Chelyabinsk meteor event"
+  }
+ ],
+ "onscreen_clock": {
+  "at_video_s": 0,
+  "text": "2013/02/15 09:20:25 yellow in top right corner, advances 1s per 1s video time. Last read 2013/02/15 09:20:38 at video_s 13"
+ },
+ "reason": "fireball is overexposed/saturated at peak and camera translates forward throughout the whole fireball interval - no static viewpoint for triangulation without correcting ego-motion",
+ "sound": [
+  {
+   "confidence": 0.7,
+   "kind": "speech",
+   "t_s": 2.5
+  },
+  {
+   "confidence": 0.7,
+   "kind": "speech",
+   "t_s": 5.0
+  },
+  {
+   "confidence": 0.8,
+   "kind": "speech",
+   "t_s": 10.0
+  }
+ ],
+ "transcript": "Russian speech indistinct, low volume from inside vehicle - unintelligible fragments, no clear words, no boom/rumble within clip duration. Video appears silent except for faint in-car conversation.",
+ "usable_for_geometry": false
+}

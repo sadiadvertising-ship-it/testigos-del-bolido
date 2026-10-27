@@ -75,6 +75,11 @@ replayed, report it once and set multiple_cuts."""
 
 
 def read(file_id, video_s, purpose=''):
+    """One structured reading; if Muse 1.2 loops (it has, twice) the read is retried once on 1.3."""
     content = [{'type': 'input_text', 'text': PROMPT}, {'type': 'input_video', 'file_id': file_id}]
-    return api.spark(content, schema=SCHEMA, max_output_tokens=9000, input_tokens_guess=int(4000 + 1500 * video_s),
-                     purpose=purpose or 'witness read')
+    guess = int(4000 + 1500 * video_s)
+    try:
+        return api.spark(content, schema=SCHEMA, max_output_tokens=6000, input_tokens_guess=guess, purpose=purpose or 'witness read')
+    except RuntimeError:
+        return api.spark(content, schema=SCHEMA, model='muse-spark-1.3', max_output_tokens=6000, effort='low',
+                         input_tokens_guess=guess, purpose=(purpose or 'witness read') + ' retry 1.3')

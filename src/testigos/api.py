@@ -104,6 +104,23 @@ def text_of(resp):
                    if c.get('type') in ('output_text', 'text'))
 
 
+def _json_in(text):
+    """The JSON object in a structured answer. Muse sometimes puts a sentence of commentary before it."""
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    dec = json.JSONDecoder()
+    for i, ch in enumerate(text):
+        if ch == '{':
+            try:
+                obj, _ = dec.raw_decode(text[i:])
+                return obj
+            except json.JSONDecodeError:
+                continue
+    return None
+
+
 def spark(content, schema=None, model='muse-spark-1.2', max_output_tokens=8000, effort='medium',
           input_tokens_guess=60000, purpose=''):
     _guard(input_tokens_guess * SPARK_IN + max_output_tokens * SPARK_OUT)
@@ -120,14 +137,14 @@ def spark(content, schema=None, model='muse-spark-1.2', max_output_tokens=8000, 
     text = text_of(resp)
     if not schema:
         return text
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        bad = CACHE / f"spark-unparsed-{dt.datetime.now().strftime('%H%M%S')}.txt"
-        CACHE.mkdir(parents=True, exist_ok=True)
-        bad.write_text(text)
-        raise RuntimeError(f'Muse Spark returned {len(text)} chars that are not valid JSON '
-                           f'(status {resp.get("status")}, output tokens {u.get("output_tokens")}); saved to {bad}') from None
+    parsed = _json_in(text)
+    if parsed is not None:
+        return parsed
+    bad = CACHE / f"spark-unparsed-{dt.datetime.now().strftime('%H%M%S')}.txt"
+    CACHE.mkdir(parents=True, exist_ok=True)
+    bad.write_text(text)
+    raise RuntimeError(f'Muse Spark returned {len(text)} chars that are not valid JSON '
+                       f'(status {resp.get("status")}, output tokens {u.get("output_tokens")}); saved to {bad}')
 
 
 def sam_video(file_id, prompt, frames_guess, metadata=None, purpose='', cache_key=None):
