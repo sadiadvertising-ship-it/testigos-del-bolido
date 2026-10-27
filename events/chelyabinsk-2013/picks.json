@@ -64,6 +64,12 @@
    "median_deg": 0.62,
    "p10_deg": -0.33,
    "p90_deg": 1.36
+  },
+  "position_check": {
+   "lateral": "catalog point is 4.3 m right (west) of the centreline of prospekt Pobedy (OSM way 152902490, 5 lanes, two-way), i.e. in a southbound lane: consistent",
+   "longitudinal": "catalog point is 38 m before the centreline of ulitsa Lenina; the far snow-bank edge along the cross street (y ~400) suggests the near kerb is ~25 m ahead, so the camera may stand ~6 m further south (unverified)",
+   "effect": "the chapel is 129 m away, so +/-10 m along the avenue moves its azimuth by up to ~2.3 deg; that is what lets Kamensk hfov wander 51-84 deg in the Monte Carlo",
+   "left_side": "no usable second landmark on the left: OSM buildings at 450-880 m (az 149-154) sit behind the forest"
   }
  },
  "chelyabinsk-2013-48": {
