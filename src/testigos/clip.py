@@ -36,14 +36,18 @@ def frame_times(path):
     return np.array([float(x) for x in fields if x not in ('', 'N/A')])
 
 
-def normalize(src, dst, start=None, end=None, max_height=720):
-    """Trim, apply rotation, cap the height and re-encode as H.264 with faststart; the frame rate is kept."""
+def normalize(src, dst, start=None, end=None, max_height=720, crop=None):
+    """Trim, apply rotation, crop (w, h, x, y) letterbox bars, cap the height and re-encode as H.264 with faststart.
+
+    The frame rate is kept.
+    """
     args = ['ffmpeg', '-v', 'error', '-y']
     if start is not None:
         args += ['-ss', f'{start:.3f}']
     if end is not None:
         args += ['-t', f'{end - (start or 0):.3f}']
-    args += ['-i', str(src), '-vf', f"scale=-2:'min({max_height},ih)'", '-c:v', 'libx264', '-preset', 'veryfast',
+    vf = (f'crop={crop[0]}:{crop[1]}:{crop[2]}:{crop[3]},' if crop else '') + f"scale=-2:'min({max_height},ih)'"
+    args += ['-i', str(src), '-vf', vf, '-c:v', 'libx264', '-preset', 'veryfast',
              '-crf', '18', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', str(dst)]
     subprocess.run(args, check=True)
     return dst

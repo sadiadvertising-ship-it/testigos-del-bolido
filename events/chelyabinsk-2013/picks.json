@@ -120,5 +120,63 @@
    "p90_deg": 1.07,
    "note": "down from 3.43 deg; a 1 deg bias remains, likely the vanishing-point pixel or k1-only distortion; no plumb lines exist left of x=250, where the fireball is"
   }
+ },
+ "chelyabinsk-2013-238": {
+  "camera_pos": [
+   54.37622,
+   60.81202,
+   8.0
+  ],
+  "camera_pos_source": "Ondrejov catalog; 8 m mounting height is a guess",
+  "image": [
+   872,
+   708
+  ],
+  "crop_from_1280x720": [
+   872,
+   708,
+   201,
+   10
+  ],
+  "lens": "pinhole",
+  "landmarks": [
+   {
+    "what": "tower, x only",
+    "pos": [
+     54.3795712,
+     60.8127864,
+     30.0
+    ],
+    "px_x": 357,
+    "source": "OSM man_made=tower 376 m, az 7.6"
+   },
+   {
+    "what": "chimney, x only",
+    "pos": [
+     54.385522785714286,
+     60.81887543571429,
+     30.0
+    ],
+    "px_x": 486,
+    "source": "OSM way 306339927, 1127 m, az 23.3"
+   },
+   {
+    "what": "flat horizon x 600-840",
+    "el": 0.0
+   }
+  ],
+  "camera_v1": {
+   "yaw": 17.280927238925667,
+   "pitch": -4.87909216469058,
+   "roll": 0.9739344366011559,
+   "hfov": 86.18548175032112,
+   "k1": 0.0,
+   "cam_height": 8.0
+  },
+  "check_against_cbet_v1": {
+   "frames": 63,
+   "median_deg": 9.33,
+   "diagnosis": "not usable: a 9 deg miss is an identification error, not a parameter error. The track sits about 10 deg higher and further west than CBET predicts, so the tower or chimney is probably a different OSM object, or the catalog position is not where this camera stood"
+  }
  }
 }

@@ -60,7 +60,7 @@ def probe_clip(event, c):
     small = OUT / f'{name}.mp4'
     OUT.mkdir(parents=True, exist_ok=True)
     start, end = c['window_s']
-    clip.normalize(raw, small, start, end)
+    clip.normalize(raw, small, start, end, crop=c.get('crop'))
     times = clip.frame_times(small)
     n = len(times)
     file_id = api.upload(small)

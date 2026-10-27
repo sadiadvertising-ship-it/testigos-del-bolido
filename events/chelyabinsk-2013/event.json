@@ -100,6 +100,28 @@
       "lens": "circular fisheye",
       "landmarks_seen": "steel-plant chimneys with smoke, buildings",
       "on_screen_clock": false
+    },
+    {
+      "catalog_no": 238,
+      "site": "Plast",
+      "lat": 54.37622,
+      "lon": 60.81202,
+      "camera": "security",
+      "source": "https://www.youtube.com/watch?v=6kwxK430DW4",
+      "window_s": [
+        9,
+        17.6
+      ],
+      "file_fps": 30.0,
+      "crop": [
+        872,
+        708,
+        201,
+        10
+      ],
+      "lens": "wide, 4:3 picture pillarboxed in 16:9",
+      "landmarks_seen": "tower and mast of an industrial site on the horizon, a smoking chimney, fence",
+      "on_screen_clock": false
     }
   ],
   "unavailable": [

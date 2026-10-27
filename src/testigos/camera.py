@@ -135,7 +135,8 @@ def _wrap(deg):
     return (deg + 180.0) % 360.0 - 180.0
 
 
-def fit(seed, cam_pos, points=(), x_only=(), plumb=(), free=('yaw', 'pitch', 'roll', 'hfov', 'k1')):
+def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.0,
+        free=('yaw', 'pitch', 'roll', 'hfov', 'k1')):
     """Least-squares camera fit from mixed evidence; returns (camera, report).
 
     points: [(where, (x, y))] landmarks or directions with a full pixel position;
@@ -143,8 +144,10 @@ def fit(seed, cam_pos, points=(), x_only=(), plumb=(), free=('yaw', 'pitch', 'ro
     plumb:  [[(x, y), ...]] pixels along objects that are vertical in the world (poles, building corners).
             A vertical line keeps one azimuth seen from the camera, so the spread of azimuths along it
             measures roll and lens distortion.
+    horizon: [(x, y)] pixels on a flat, distant horizon, all at elevation horizon_el.
     All residuals are in pixels so the groups weigh alike.
     """
+    hz = [np.asarray(p, float) for p in horizon]
     pts_azel = [(landmark_azel(cam_pos, w), np.asarray(px, float)) for w, px in points]
     xo_azel = [(landmark_azel(cam_pos, w), float(x)) for w, x in x_only]
     lines = [np.asarray(l, float) for l in plumb if len(l) >= 2]
@@ -155,7 +158,10 @@ def fit(seed, cam_pos, points=(), x_only=(), plumb=(), free=('yaw', 'pitch', 'ro
         return replace(seed, **dict(zip(free, x)))
 
     def groups(cam):
-        g = {'points': [], 'x_only': [], 'plumb': []}
+        g = {'points': [], 'x_only': [], 'plumb': [], 'horizon': []}
+        for p in hz:
+            r = cam.unproject(p)
+            g['horizon'].append((np.arcsin(np.clip(r[2], -1, 1)) - np.radians(horizon_el)) * cam.focal)
         for (az, el), px in pts_azel:
             p = cam.project_azel(az, el)
             g['points'].extend((p - px) if p is not None else (1e4, 1e4))
@@ -172,7 +178,7 @@ def fit(seed, cam_pos, points=(), x_only=(), plumb=(), free=('yaw', 'pitch', 'ro
 
     def resid(x):
         g = groups(build(x))
-        return np.array(g['points'] + g['x_only'] + g['plumb'])
+        return np.array(g['points'] + g['x_only'] + g['plumb'] + g['horizon'])
 
     sol = least_squares(resid, [getattr(seed, n) for n in free],
                         bounds=([lo[n] for n in free], [hi[n] for n in free]), loss='soft_l1', f_scale=3.0)
