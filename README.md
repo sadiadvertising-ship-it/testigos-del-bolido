@@ -147,17 +147,24 @@ moment in cuts. The agent ran SAM 3.1 on it, which found the flash in 79 of 132 
 on a map and the filming spot is unknown, so the camera cannot be oriented. Security-camera and dashcam clips from
 Bogotá and Medellín, reposted on 1 August 2025, have not been analysed yet.
 
+Was it space junk? No satellite or rocket re-entry in the Aerospace Corporation's CORDS database has a predicted window
+that includes the flash: the nearest, OBJECT C, was due 2.1 hours after it, and STARLINK-2038 8.1 hours before
+(`events/colombia-2025-07-30/reentries.json`). The database lists tracked objects only, so the speed still has to
+decide, and the speed needs a trajectory.
+
 With fewer than two oriented cameras the agent reports insufficient geometry and asks for what would close it: videos
 from Málaga, Saravena and San Gil, where the flash would have stood 20° to 50° above the horizon. Run
-`20261027T183335-867d` (7 steps, US$ 0.08) is blocked waiting for them (`events/colombia-2025-07-30/requests.json`):
+`20261027T184659-28c2` (6 steps, US$ 0.05) is blocked waiting for them (`events/colombia-2025-07-30/requests.json`). It
+resumed the run before it, `20261027T183335-867d`, when the re-entry listing was added; that earlier run is where the
+agent tracked the Medellín clip with SAM 3.1 itself:
 
 ```
-01  track            medellin   SAM 3.1: the flash in 79 of 132 frames, window 1.2-4.2 s
+01  track            medellin   SAM 3.1: the flash in 79 of 132 frames, window 1.2-4.2 s     (run 867d)
 02  calibration      medellin   not oriented
 03  finalize                    accepted: insufficient geometry
-04  check_satellite             1 GOES-19 detection
+04  check_satellite             1 GOES-19 detection; no re-entry window includes it           (run 28c2)
 05  missing_views               towns: Málaga, Saravena, San Gil, Pamplona
-06  write_report                figures traced: es 24 of 24, en 24 of 24
+06  write_report                figures traced: es 24 of 24, en 42 of 42                      (run 28c2)
 07  request_evidence            blocked: waiting for videos from Málaga, Saravena and San Gil
 ```
 
@@ -191,7 +198,7 @@ which is why the method uses each video's frame times and never its clock; in Ty
 orientation uses. Muse Spark 1.2 ran to its token cap on 4 of its 11 video reads; the retries recovered all of them.
 
 API spending is capped in code (`TESTIGOS_BUDGET_USD` a day, `TESTIGOS_TOTAL_BUDGET_USD` in total) and logged per call in
-`out/costs.jsonl`: US$ 2.49 for the whole project so far.
+`out/costs.jsonl`: US$ 2.53 for the whole project so far.
 
 ## Run it
 
