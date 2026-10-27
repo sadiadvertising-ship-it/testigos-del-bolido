@@ -62,8 +62,8 @@ TOOLS = [
     _tool('missing_views', 'Towns whose videos would see the flash 10 to 60 degrees up and close the geometry.'),
     _tool('drop_clip', 'Leave an oriented camera out of the final solution. The reason must cite a measured number.',
           {'clip': _CLIP, 'reason': {'type': 'string'}}, ['clip', 'reason']),
-    _tool('finalize', 'Submit the cameras of the final solution. Checked by the code; see the rules.',
-          {'clips': {'type': 'array', 'items': {'type': 'string'}}}, ['clips']),
+    _tool('finalize', 'Submit the cameras of the final solution (an empty list when none is oriented). Checked by the code; '
+          'see the rules.', {'clips': {'type': 'array', 'items': {'type': 'string'}}}),
     _tool('write_report', 'Write the Spanish and English report from the tool results. Checked by the code; see the rules.'),
     _tool('request_evidence', 'Ask a person for missing evidence and stop the run until it arrives.',
           {'kind': {'type': 'string', 'enum': ['videos_from_towns', 'camera_position', 'landmark_confirmation']},
@@ -311,9 +311,11 @@ class Case:
         facts_json = json.dumps(facts, default=str, ensure_ascii=False)[:14000]
         out = {}
         for lang, name in (('es', 'Spanish'), ('en', 'English')):
-            ask = (f'Write a short case report ({name}, 120-180 words) for an astronomy group from these tool results. '
-                   'Use only these numbers; spell coordinates with their hemisphere letter as the results do; '
-                   'say what is solid, what is uncertain and what is missing.')
+            ask = (f'Write a short case report ({name}, 120-180 words) for an astronomy group from the tool results below. '
+                   'Write for people: never name tools, JSON fields or flags (say "no camera could be oriented", not '
+                   f'"calibrated false"), and write units and directions in {name}. Use only numbers from the results, rounded '
+                   'as they are, each coordinate with the hemisphere letter the results give it; leave out raw instrument '
+                   'values. Say what is solid, what is uncertain and what is missing.')
             check, text, feedback = None, '', ''
             for attempt in range(2):
                 if self.replaying:
@@ -565,8 +567,8 @@ def replay(event_id, run_id):
 
 
 def _same(a, b, tol=1e-6):
-    if isinstance(a, dict) and isinstance(b, dict):
-        return a.keys() == b.keys() and all(_same(a[k], b[k], tol) for k in a)
+    if isinstance(a, dict) and isinstance(b, dict):  # 'at' is the wall-clock time of a request, not a result
+        return a.keys() == b.keys() and all(_same(a[k], b[k], tol) for k in a if k != 'at')
     if isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
         return len(a) == len(b) and all(_same(x, y, tol) for x, y in zip(a, b))
     if isinstance(a, (int, float)) and isinstance(b, (int, float)) and not isinstance(a, bool):

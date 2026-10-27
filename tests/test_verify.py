@@ -36,7 +36,7 @@ def test_a_changed_satellite_position_is_caught():
     text, facts = _case('colombia-2025-07-30')
     assert '6.46' in text
     r = check_report(text.replace('6.46', '6.64'), facts)
-    assert not r['passed'] and '6.64' in r['orphans']
+    assert not r['passed'] and any(o.startswith('6.64') for o in r['orphans'])
 
 
 def test_list_numbers_and_sigma_names_are_not_figures():

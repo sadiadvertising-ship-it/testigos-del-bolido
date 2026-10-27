@@ -1,7 +1,7 @@
-**Informe de caso - Bólido 2025-07-31**
+Reporte del bólido del 2025-07-31T03:50:24Z para grupo de astronomía.
 
-**Sólido:** Detección satelital GLM el 2025-07-31T03:50:24Z en lat 6.46, lon -72.212, clase Bolide, brillo categoría Fairly Bright con valor 9.722628516243302e-12 y duración 1.047533 s. GLM cubre las Américas desde 2017. Clip de Medellín confirma fenómeno visual: teléfono en mano sin movimiento, con intervalo del bólido entre 2.2 y 3.2 s, y el modelo lo marca como usable.
+**Sólido:** detección GLM a las 2025-07-31T03:50:24Z en 6.460 N, 72.212 W, clase Bolide, brillo Fairly Bright con valor 9.722628516243302e-12 y duración 1.047533 s. El sistema GLM cubre las Américas desde 2017, por lo que la detección es consistente con esa cobertura.
 
-**Incierto:** El clip de Medellín presenta cortes múltiples y reloj null, por lo que no hay sincronía absoluta con la hora GLM. Calibración no realizada porque no hay puntos topográficos confirmados para esa cámara. Las referencias detectadas no están verificadas: tablero de baloncesto conf. 0.85, estructura metálica de techo conf. 0.8 y poste delgado conf. 0.55.
+**Incierto:** la geometría es insuficiente. El resultado finalize indica accepted true pero insufficient_geometry true y oriented_clips [] , sin trayectoria triangulada posible. Además calibration para clip medellin y clip bucaramanga figura como calibrated false por no surveyed landmark or line set confirmed for this camera.
 
-**Falta:** Video recortado de Bucaramanga con error - no hay video recortado para clip bucaramanga. No hay vistas reales; solo localidades óptimas sugeridas para buscar testigos, como Málaga a 63 km, mirada 114.5 deg, flash 31.6-51.1 deg, y Saravena a 66 km. Sin levantamiento de referencias y reloj sincronizado no se puede estimar trayectoria, altura ni órbita con fiabilidad.
+**Falta:** para cerrar la geometría se requiere evidencia adicional. El clip bucaramanga presenta error no trimmed video, y el clip medellin presenta error has not been tracked yet. Se solicitan vistas que cerrarían la geometría, con mejores localidades: Málaga (63 km, look 114.5 deg, flash 31.6-51.1 deg up), Saravena (66 km, look 214.5 deg, flash 30.4-49.7 deg up) y San Gil (103 km, look 95.9 deg, flash 20.6-37.2 deg up), entre otras hasta Bucaramanga (124 km, look 125.8 deg, flash 17.0-31.9 deg up).
