@@ -22,12 +22,27 @@ def rows(key):
             if r['centroid'] is not None and not r['dup']]
 
 
-def station(key, cam, pos, rng=None, px_sigma=0.0):
+def station(key, cam, pos, rng=None, px_sigma=0.0, clock_sigma=0.0, jitter_frames=0.0):
+    """A station from the SAM head points; with an rng, pixels get Gaussian noise and the clock a scale error
+    N(1, clock_sigma) plus a uniform +/- jitter_frames error on every timestamp."""
     rs = rows(key)
     px = np.array([r['centroid'] for r in rs], float)
+    t = np.array([r['t'] for r in rs], float)
     if rng is not None and px_sigma:
         px = px + rng.normal(0, px_sigma, px.shape)
-    return Station(key, tuple(pos), np.array([r['t'] for r in rs]), np.array([cam.unproject(p) for p in px]))
+    if rng is not None and (clock_sigma or jitter_frames):
+        frame = float(np.median(np.diff(t))) if len(t) > 1 else 0.0
+        t = t * rng.normal(1.0, clock_sigma) + rng.uniform(-jitter_frames, jitter_frames, len(t)) * frame
+    return Station(key, tuple(pos), t, np.array([cam.unproject(p) for p in px]))
+
+
+def _moved(pos, rng, sigma_m):
+    """The camera position shifted by a Gaussian sigma_m metres north and east."""
+    if rng is None or not sigma_m:
+        return tuple(pos)
+    lat, lon, h = pos
+    dn, de = rng.normal(0, sigma_m, 2)
+    return (lat + dn / 111320, lon + de / (111320 * np.cos(np.radians(lat))), h)
 
 
 def kamensk_camera(rng=None, vp_px_sigma=0.0, chapel_px_sigma=0.0, bearing_sigma=0.0, pos_sigma_m=0.0):
@@ -47,7 +62,7 @@ def kamensk_camera(rng=None, vp_px_sigma=0.0, chapel_px_sigma=0.0, bearing_sigma
     return cal.camera, pos
 
 
-def korkino_camera(hfov, rng=None, line_px_sigma=0.0, bearing_sigma=0.0, k1=-0.15, with_report=False):
+def korkino_camera(hfov, rng=None, line_px_sigma=0.0, bearing_sigma=0.0, k1=-0.15, with_report=False, pos_sigma_m=0.0):
     e = PICKS['chelyabinsk-2013-10']
     bearing = e['alley_bearing_deg'] + (rng.normal(0, bearing_sigma) if rng is not None else 0.0)
     par, plumb, straight = [], [], []
@@ -64,7 +79,7 @@ def korkino_camera(hfov, rng=None, line_px_sigma=0.0, bearing_sigma=0.0, k1=-0.1
                 plumb.append(pts)
             else:
                 straight.append(pts)
-    pos = tuple(e['camera_pos'])
+    pos = _moved(e['camera_pos'], rng, pos_sigma_m)
     # The small 480x360 frame does not pin the distortion: 0.7 px of jitter sends a free k1 from -0.2 to
     # either bound. So k1 is a nuisance with a typical wide-dashcam value, varied in the Monte Carlo,
     # and the lines fix only the pointing.
@@ -103,9 +118,10 @@ def kamensk_camera_v2(rng=None, line_px_sigma=0.0, chapel_px_sigma=0.0, bearing_
     return (cam, pos, report) if with_report else (cam, pos)
 
 
-def tyumen_camera(rng=None, line_px_sigma=0.0, vp_px_sigma=0.0, tower_px_sigma=0.0, bearing_sigma=0.0, with_report=False):
+def tyumen_camera(rng=None, line_px_sigma=0.0, vp_px_sigma=0.0, tower_px_sigma=0.0, bearing_sigma=0.0, with_report=False,
+                  pos_sigma_m=0.0):
     e = PICKS['chelyabinsk-2013-48']
-    pos = tuple(e['camera_pos'])
+    pos = _moved(e['camera_pos'], rng, pos_sigma_m)
     vp_az, vp_px = 235.9, np.array([595.0, 345.0])
     tower_x = 1258.2
     if rng is not None:

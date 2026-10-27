@@ -1,10 +1,11 @@
 """Monte Carlo of a Chelyabinsk solution (Kamensk v2, Korkino v4, Tyumen v2; any two or three) against CBET 3423.
 
 Per draw every camera is re-fitted from perturbed evidence: line points 0.7 px, street bearings 0.7-1.0 deg,
-landmark pixels 3 px, camera positions 8 m, SAM head points 1.5 px; Korkino's field of view is drawn from
-N(79.5, 2.5) deg (speed agreement with Kamensk) and its unconstrained k1 from N(-0.15, 0.07).
+landmark pixels 3 px, every camera position 8 m, SAM head points 1.5 px; Korkino's field of view is drawn from
+N(79.5, 2.5) deg (speed agreement with Kamensk) and its unconstrained k1 from N(-0.15, 0.07). Each camera's clock gets
+a scale error N(1, 0.01) and every timestamp +/- half a frame, so the speed carries the frame-timing doubt too.
 Each draw's line (first and last observed point) is kept for the 3D viewer.
-Usage: .venv/bin/python scripts/montecarlo.py [draws] [station numbers, default 2 10 48]
+Usage: .venv/bin/python scripts/montecarlo.py [draws, default 500] [station numbers, default 2 10 48]
 """
 import json
 import pathlib
@@ -27,8 +28,8 @@ def near(sol, lat, lon, h):
 CAMERAS = {
     '2': lambda rng: kamensk_camera_v2(rng, line_px_sigma=0.7, chapel_px_sigma=3.0, bearing_sigma=0.7, pos_sigma_m=8.0),
     '10': lambda rng: korkino_camera(float(np.clip(rng.normal(79.5, 2.5), 72, 88)), rng, line_px_sigma=0.7, bearing_sigma=1.0,
-                                     k1=float(np.clip(rng.normal(-0.15, 0.07), -0.4, 0.0))),
-    '48': lambda rng: tyumen_camera(rng, line_px_sigma=0.7, vp_px_sigma=3.0, tower_px_sigma=2.0, bearing_sigma=0.7),
+                                     k1=float(np.clip(rng.normal(-0.15, 0.07), -0.4, 0.0)), pos_sigma_m=8.0),
+    '48': lambda rng: tyumen_camera(rng, line_px_sigma=0.7, vp_px_sigma=3.0, tower_px_sigma=2.0, bearing_sigma=0.7, pos_sigma_m=8.0),
 }
 
 
@@ -41,7 +42,8 @@ def main(n, nos):
     for i in range(n):
         cams = [(no, *CAMERAS[no](rng)) for no in nos]
         try:
-            sol = solve([station(f'chelyabinsk-2013-{no}', cam, pos, rng, 1.5) for no, cam, pos in cams])
+            sol = solve([station(f'chelyabinsk-2013-{no}', cam, pos, rng, 1.5, clock_sigma=0.01, jitter_frames=0.5)
+                         for no, cam, pos in cams])
         except GeometryError:
             continue
         lines.append([round(sol.begin[0], 4), round(sol.begin[1], 4), round(sol.begin[2]), round(sol.end[0], 4), round(sol.end[1], 4), round(sol.end[2])])
@@ -49,7 +51,7 @@ def main(n, nos):
         end_off, _ = near(sol, end['lat'], end['lon'], end['h_km'] * 1000)
         out.append({'azimuth': sol.azimuth, 'slope': sol.slope, 'flare_h_km': at_flare[2] / 1000,
                     'end_off_km': end_off / 1000, 'speed': sol.speed_kms})
-        if (i + 1) % 10 == 0:
+        if (i + 1) % 50 == 0:
             print(f'{i + 1}/{n}', flush=True)
     ref = {'azimuth': truth['azimuth_deg'], 'slope': truth['slope_deg'], 'flare_h_km': flare['h_km'],
            'end_off_km': 0.0, 'speed': truth['apparent_radiant']['v_kms']}
@@ -68,4 +70,4 @@ def main(n, nos):
 
 
 if __name__ == '__main__':
-    main(int(sys.argv[1]) if len(sys.argv) > 1 else 80, sys.argv[2:] or ['2', '10', '48'])
+    main(int(sys.argv[1]) if len(sys.argv) > 1 else 500, sys.argv[2:] or ['2', '10', '48'])
