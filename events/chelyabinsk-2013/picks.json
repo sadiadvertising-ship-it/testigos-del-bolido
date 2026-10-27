@@ -10,7 +10,7 @@
    1280,
    720
   ],
-  "lens": "pinhole",
+  "lens": "pinhole with radial k1",
   "landmarks": [
    {
     "what": "vanishing point of prospekt Pobedy",
@@ -38,12 +38,6 @@
     "source": "OSM way 284031196, 129 m from the camera"
    }
   ],
-  "camera": {
-   "yaw": 185.92059471533895,
-   "pitch": -1.004086478049292,
-   "roll": -1.084839693546837,
-   "hfov": 69.9354398278883
-  },
   "check_against_cbet": {
    "method": "angle between each SAM head-point ray and the plane through the camera and the published CBET line (not used in the fit)",
    "frames": 410,
@@ -51,6 +45,25 @@
    "p10_deg": -1.89,
    "p90_deg": 0.7,
    "note": "the low tail comes from flare frames, where the glow centre sits above the head"
+  },
+  "camera_v1": {
+   "yaw": 185.92059471533895,
+   "pitch": -1.004086478049292,
+   "roll": -1.084839693546837,
+   "hfov": 69.9354398278883
+  },
+  "camera": {
+   "yaw": 185.42809045885224,
+   "pitch": -1.7485687217879315,
+   "roll": 0.5535530028297585,
+   "hfov": 66.60059504130436,
+   "k1": -0.26742934701073606
+  },
+  "camera_note": "v2: 18 vertical lines and the avenue lamp-head rows (two annotators, events/chelyabinsk-2013/lines-2.json) plus the chapel; lines alone leave the field of view free (the fit ran to 151 deg), so the chapel stays",
+  "check_against_cbet_v2": {
+   "median_deg": 0.62,
+   "p10_deg": -0.33,
+   "p90_deg": 1.36
   }
  },
  "chelyabinsk-2013-48": {

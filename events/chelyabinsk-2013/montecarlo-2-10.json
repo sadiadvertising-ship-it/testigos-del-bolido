@@ -1,0 +1,80 @@
+{
+ "draws": 120,
+ "stations": [
+  "chelyabinsk-2013-2",
+  "chelyabinsk-2013-10"
+ ],
+ "stats": {
+  "azimuth": {
+   "median": 278.4,
+   "1sigma": [
+    274.34,
+    282.11
+   ],
+   "2sigma": [
+    267.08,
+    285.1
+   ],
+   "cbet": 279.5,
+   "cbet_within_1sigma": true,
+   "cbet_within_2sigma": true
+  },
+  "slope": {
+   "median": 17.26,
+   "1sigma": [
+    16.23,
+    17.93
+   ],
+   "2sigma": [
+    15.17,
+    18.79
+   ],
+   "cbet": 16.5,
+   "cbet_within_1sigma": true,
+   "cbet_within_2sigma": true
+  },
+  "flare_h_km": {
+   "median": 33.99,
+   "1sigma": [
+    28.84,
+    38.8
+   ],
+   "2sigma": [
+    25.65,
+    45.4
+   ],
+   "cbet": 31.73,
+   "cbet_within_1sigma": true,
+   "cbet_within_2sigma": true
+  },
+  "end_off_km": {
+   "median": 16.11,
+   "1sigma": [
+    12.13,
+    22.83
+   ],
+   "2sigma": [
+    7.98,
+    30.36
+   ],
+   "cbet": 0.0,
+   "cbet_within_1sigma": false,
+   "cbet_within_2sigma": false
+  },
+  "speed": {
+   "median": 15.77,
+   "1sigma": [
+    13.32,
+    18.48
+   ],
+   "2sigma": [
+    11.19,
+    21.7
+   ],
+   "cbet": 17.5,
+   "cbet_within_1sigma": true,
+   "cbet_within_2sigma": true
+  }
+ },
+ "note": "end_off_km is the distance from the CBET end point to our line; its CBET value is 0 by definition"
+}

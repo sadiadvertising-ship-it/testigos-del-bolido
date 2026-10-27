@@ -1,55 +1,52 @@
 {
  "stations": [
   "chelyabinsk-2013-2",
-  "chelyabinsk-2013-10",
-  "chelyabinsk-2013-48"
+  "chelyabinsk-2013-10"
  ],
- "q_max_deg": 63.1,
+ "q_max_deg": 64.4,
  "warnings": [],
  "residual_rms_deg": {
-  "chelyabinsk-2013-2": 1.029,
-  "chelyabinsk-2013-10": 0.991,
-  "chelyabinsk-2013-48": 1.007
+  "chelyabinsk-2013-2": 0.687,
+  "chelyabinsk-2013-10": 0.904
  },
  "azimuth_deg": [
-  272.68,
+  275.94,
   279.5
  ],
  "slope_deg": [
-  15.85,
+  16.5,
   16.5
  ],
  "speed_kms": [
-  19.14,
+  17.38,
   17.5
  ],
- "speed_sigma_kms": 3.27,
+ "speed_sigma_kms": 4.5,
  "station_speeds_kms": {
-  "chelyabinsk-2013-2": 14.27,
-  "chelyabinsk-2013-10": 8.35,
-  "chelyabinsk-2013-48": 19.69
+  "chelyabinsk-2013-2": 17.51,
+  "chelyabinsk-2013-10": 8.5
  },
- "flare_point_off_our_line_km": 9.3,
+ "flare_point_off_our_line_km": 4.23,
  "our_height_near_flare_km": [
-  33.05,
+  29.25,
   31.73
  ],
- "cbet_end_point_off_our_line_km": 15.89,
- "our_last_point_vs_cbet_end_km": 18.56,
+ "cbet_end_point_off_our_line_km": 7.31,
+ "our_last_point_vs_cbet_end_km": 7.65,
  "begin": [
-  54.6578,
-  63.6088,
-  76.42
+  54.615,
+  63.9052,
+  80.52
  ],
  "end": [
-  54.7853,
-  60.4419,
-  14.37
+  54.8621,
+  60.5725,
+  11.91
  ],
  "gate": {
   "azimuth": false,
   "slope": true,
   "flare_height": true,
-  "end_point": false
+  "end_point": true
  }
 }
