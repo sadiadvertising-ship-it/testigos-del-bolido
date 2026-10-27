@@ -1,0 +1,56 @@
+{
+ "chelyabinsk-2013-2": {
+  "camera_pos": [
+   56.41517,
+   61.91888,
+   1.3
+  ],
+  "camera_pos_source": "Ondrejov catalog, height 1.3 m for a dashcam",
+  "image": [
+   1280,
+   720
+  ],
+  "lens": "pinhole",
+  "landmarks": [
+   {
+    "what": "vanishing point of prospekt Pobedy",
+    "azel": [
+     182.5,
+     0.0
+    ],
+    "px": [
+     585,
+     345
+    ],
+    "source": "OSM ways 152902490 and 91391221 (bearings 183.0 and 181.7); pixel from the converging street-lamp rows"
+   },
+   {
+    "what": "Alexander Nevsky chapel, footprint centre at ground",
+    "pos": [
+     56.4142,
+     61.917691,
+     0.0
+    ],
+    "px": [
+     1132,
+     345
+    ],
+    "source": "OSM way 284031196, 129 m from the camera"
+   }
+  ],
+  "camera": {
+   "yaw": 185.92059471533895,
+   "pitch": -1.004086478049292,
+   "roll": -1.084839693546837,
+   "hfov": 69.9354398278883
+  },
+  "check_against_cbet": {
+   "method": "angle between each SAM head-point ray and the plane through the camera and the published CBET line (not used in the fit)",
+   "frames": 410,
+   "median_deg": -0.3,
+   "p10_deg": -1.89,
+   "p90_deg": 0.7,
+   "note": "the low tail comes from flare frames, where the glow centre sits above the head"
+  }
+ }
+}
