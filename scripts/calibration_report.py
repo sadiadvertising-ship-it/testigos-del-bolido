@@ -17,7 +17,7 @@ import sys
 import numpy as np
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from stations import EVENT, PICKS, kamensk_camera_v2, korkino_camera, rows, tyumen_camera  # noqa: E402
+from stations import EVENT, PICKS, TRUTH, kamensk_camera_v2, korkino_camera, rows, tyumen_camera  # noqa: E402
 from testigos.geo import enu_basis, to_ecef  # noqa: E402
 
 BUILDERS = {'2': lambda: kamensk_camera_v2(with_report=True), '10': lambda: korkino_camera(79.5, with_report=True),
@@ -25,7 +25,7 @@ BUILDERS = {'2': lambda: kamensk_camera_v2(with_report=True), '10': lambda: kork
 
 
 def vs_cbet_plane(cam, pos, key):
-    path = json.loads((EVENT / 'truth.json').read_text())['trajectory']
+    path = json.loads(TRUTH.read_text())['trajectory']
     a, b = (to_ecef(p['lat'], p['lon'], p['h_km'] * 1000) for p in (path[0], path[-1]))
     o = to_ecef(*pos)
     n = np.cross(a - o, b - o)

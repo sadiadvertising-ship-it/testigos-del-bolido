@@ -18,6 +18,7 @@ from testigos.geo import to_ecef, to_geodetic  # noqa: E402
 from testigos.solve import Station, solve  # noqa: E402
 
 EVENT = ROOT / 'events' / 'chelyabinsk-2013'
+TRUTH = ROOT / 'validation' / 'chelyabinsk-2013' / 'truth.json'
 
 
 def camera_of(entry):
@@ -44,18 +45,15 @@ def line_distance(sol, geodetic):
     return float(np.linalg.norm(q - along * sol.direction)), to_geodetic(closest)
 
 
-def main(nos):
-    picks = json.loads((EVENT / 'picks.json').read_text())
-    truth = json.loads((EVENT / 'truth.json').read_text())
-    stations = [station(no, picks) for no in nos]
-    sol = solve(stations)
+def compare(sol, truth):
+    """Our line against the published solution: the numbers, and the four criteria of the 28-Oct gate."""
     flare = next(p for p in truth['trajectory'] if p.get('note') == 'major flare')
     end = truth['trajectory'][-1]
     flare_off, flare_on_ours = line_distance(sol, (flare['lat'], flare['lon'], flare['h_km'] * 1000))
     end_dist = float(np.linalg.norm(to_ecef(*sol.end) - to_ecef(end['lat'], end['lon'], end['h_km'] * 1000)))
     end_off, _ = line_distance(sol, (end['lat'], end['lon'], end['h_km'] * 1000))
     cmp = {
-        'stations': [s.name for s in stations], 'q_max_deg': round(sol.q_max, 1), 'warnings': sol.warnings,
+        'q_max_deg': round(sol.q_max, 1), 'warnings': sol.warnings,
         'residual_rms_deg': {k: round(v, 3) for k, v in sol.residual_rms_deg.items()},
         'azimuth_deg': [round(sol.azimuth, 2), truth['azimuth_deg']],
         'slope_deg': [round(sol.slope, 2), truth['slope_deg']],
@@ -76,6 +74,13 @@ def main(nos):
         'flare_height': abs(flare_on_ours[2] / 1000 - flare['h_km']) <= gate['flare_height_tol_km'],
         'end_point': end_off / 1000 <= gate['end_point_tol_km'],
     }
+    return cmp
+
+
+def main(nos):
+    picks = json.loads((EVENT / 'picks.json').read_text())
+    stations = [station(no, picks) for no in nos]
+    cmp = {'stations': [s.name for s in stations], **compare(solve(stations), json.loads(TRUTH.read_text()))}
     out = ROOT / 'out' / 'chelyabinsk-2013'
     out.mkdir(parents=True, exist_ok=True)
     (out / 'solution.json').write_text(json.dumps(cmp, indent=1) + '\n')

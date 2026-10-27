@@ -95,3 +95,5 @@
 {"ts": "2026-10-26T23:21:25", "kind": "spark", "usd": 0.00835, "model": "muse-spark-1.2", "purpose": "agent plan", "seconds": 4.9, "input_tokens": 1582, "output_tokens": 1500}
 {"ts": "2026-10-26T23:21:27", "kind": "spark", "usd": 0.00335, "model": "muse-spark-1.3", "purpose": "agent plan retry 1.3", "seconds": 2.0, "input_tokens": 1582, "output_tokens": 323}
 {"ts": "2026-10-26T23:21:32", "kind": "spark", "usd": 0.00947, "model": "muse-spark-1.2", "purpose": "chelyabinsk-2013 agent report", "seconds": 5.1, "input_tokens": 886, "output_tokens": 1968}
+{"ts": "2026-10-27T12:04:39", "kind": "spark", "usd": 0.00134, "model": "muse-spark-1.3", "purpose": "tool-calling check 1", "response_id": "resp_6ae0d9a7513e23c9bc3e40e2", "seconds": 1.9, "input_tokens": 580, "cached_tokens": 0, "output_tokens": 145}
+{"ts": "2026-10-27T12:04:49", "kind": "spark", "usd": 0.00127, "model": "muse-spark-1.3", "purpose": "tool-calling check 2", "response_id": "resp_6ae0d9ac61b76e382f3a4c43", "seconds": 10.5, "input_tokens": 692, "cached_tokens": 0, "output_tokens": 95}

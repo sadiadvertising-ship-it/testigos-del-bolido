@@ -12,6 +12,7 @@ from testigos.camera import Camera, calibrate, fit  # noqa: E402
 from testigos.solve import Station  # noqa: E402
 
 EVENT = ROOT / 'events' / 'chelyabinsk-2013'
+TRUTH = ROOT / 'validation' / 'chelyabinsk-2013' / 'truth.json'  # published answer: scripts only, never the agent
 PICKS = json.loads((EVENT / 'picks.json').read_text())
 LINES_10 = json.loads((EVENT / 'lines-10.json').read_text())
 

@@ -75,7 +75,9 @@ def chelyabinsk():
     log = json.loads((case.dir / 'agent_log.json').read_text())
     dropped = {s['clip']: s['result'].get('reason') for s in log if s['action'] == 'drop_clip'}
     solves = [s for s in log if s['action'] == 'solve' and 'error' not in s['result']]
-    final = [c for c in solves[-1]['result']['clips'] if c not in dropped]
+    recorded = case.dir / 'final_solution.json'  # what finalize accepted; older runs left only the log
+    verdict = json.loads(recorded.read_text()) if recorded.exists() else solves[-1]['result']
+    final = verdict['clips'] if recorded.exists() else [c for c in solves[-1]['result']['clips'] if c not in dropped]
     sol, s0, s1 = solution(case, final)
     v = sol.speed_kms * 1000
 
@@ -113,7 +115,7 @@ def chelyabinsk():
 
     mc_file = case.dir / f"montecarlo-{'-'.join(final)}.json"
     mc = json.loads(mc_file.read_text()) if mc_file.exists() else None
-    truth = json.loads((case.dir / 'truth.json').read_text())
+    truth = json.loads((ROOT / 'validation' / case.id / 'truth.json').read_text())
     path_s = np.linspace(s0, s1, 80)
     top, bottom = (to_geodetic(sol.point + s * sol.direction)[2] for s in (s0, s1))
     return {
@@ -124,7 +126,7 @@ def chelyabinsk():
                      'times': [round(float((s - s0) / v), 3) for s in path_s],
                      'azimuth_deg': round(sol.azimuth, 2), 'slope_deg': round(sol.slope, 2), 'speed_kms': round(sol.speed_kms, 2),
                      'speed_sigma_kms': round(sol.speed_sigma, 2), 'q_deg': round(sol.q_max, 1),
-                     'verdict': solves[-1]['result']['verdict'], 'verdict_reason': solves[-1]['result']['verdict_reason']},
+                     'verdict': verdict['verdict'], 'verdict_reason': verdict['verdict_reason']},
         'stations': stations,
         'tried': tried,
         'montecarlo': mc and {'draws': mc['draws'], 'stats': mc['stats'],
@@ -138,7 +140,20 @@ def chelyabinsk():
                         'speed_kms': None}]},
         'agent_log': log,
         'report_es': (case.dir / 'agent_report_es.md').read_text(),
+        **reports_and_run(case),
     }
+
+
+def reports_and_run(case):
+    """The English report when there is one, and the newest run record's status, checks and cost."""
+    out = {}
+    if (case.dir / 'agent_report_en.md').exists():
+        out['report_en'] = (case.dir / 'agent_report_en.md').read_text()
+    runs = sorted((case.dir / 'runs').glob('*.json')) if (case.dir / 'runs').exists() else []
+    if runs:
+        rec = json.loads(runs[-1].read_text())
+        out['run'] = {k: rec.get(k) for k in ('run_id', 'status', 'block', 'git', 'planner', 'planner_model', 'cost_usd', 'reports', 'history')}
+    return out
 
 
 def colombia():
@@ -166,6 +181,7 @@ def colombia():
                     {'site': 'Floridablanca', 'lonlat': [TOWNS['Floridablanca'][1], TOWNS['Floridablanca'][0]], 'status': 'text report only'}],
         'agent_log': json.loads((case.dir / 'agent_log.json').read_text()),
         'report_es': (case.dir / 'agent_report_es.md').read_text(),
+        **reports_and_run(case),
     }
 
 

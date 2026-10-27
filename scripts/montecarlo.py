@@ -13,7 +13,7 @@ import sys
 import numpy as np
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from stations import EVENT, kamensk_camera_v2, korkino_camera, station, tyumen_camera  # noqa: E402
+from stations import EVENT, TRUTH, kamensk_camera_v2, korkino_camera, station, tyumen_camera  # noqa: E402
 from testigos.geo import to_ecef, to_geodetic  # noqa: E402
 from testigos.solve import GeometryError, solve  # noqa: E402
 
@@ -33,7 +33,7 @@ CAMERAS = {
 
 
 def main(n, nos):
-    truth = json.loads((EVENT / 'truth.json').read_text())
+    truth = json.loads(TRUTH.read_text())
     flare = next(p for p in truth['trajectory'] if p.get('note') == 'major flare')
     end = truth['trajectory'][-1]
     rng = np.random.default_rng(1502)

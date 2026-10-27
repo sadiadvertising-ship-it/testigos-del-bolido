@@ -21,6 +21,7 @@ LEDGER = ROOT / 'out' / 'costs.jsonl'
 CACHE = ROOT / 'out' / 'cache'
 
 SPARK_IN, SPARK_OUT = 1.25 / 1e6, 4.25 / 1e6  # USD per token
+SPARK_CACHED = 0.15 / 1e6  # cached input (prefix caching is automatic)
 SAM_VIDEO_FRAME = 0.0002  # USD per tracked frame, 50-frame minimum per request
 SAM_IMAGE = 2.50 / 1000
 
@@ -36,25 +37,43 @@ def key():
     raise RuntimeError('MODEL_API_KEY missing in .env')
 
 
+RUN_ID = None  # set by the agent so each ledger row names the run that paid for it
+
+
 def budget():
     return float(os.environ.get('TESTIGOS_BUDGET_USD', '5'))
 
 
+def total_budget():
+    """The cap over the whole ledger: the authorization is a total, so a daily cap alone could let it be passed."""
+    return float(os.environ.get('TESTIGOS_TOTAL_BUDGET_USD', '5'))
+
+
+def _rows():
+    return list(map(json.loads, LEDGER.read_text().splitlines())) if LEDGER.exists() else []
+
+
 def spent_today():
-    if not LEDGER.exists():
-        return 0.0
     today = dt.date.today().isoformat()
-    return sum(r['usd'] for r in map(json.loads, LEDGER.read_text().splitlines()) if r['ts'].startswith(today))
+    return sum(r['usd'] for r in _rows() if r['ts'].startswith(today))
+
+
+def spent_total():
+    return sum(r['usd'] for r in _rows())
 
 
 def _guard(estimate):
     if spent_today() + estimate > budget():
         raise BudgetExceeded(f'today: US$ {spent_today():.2f} spent, this call ~US$ {estimate:.2f}, cap US$ {budget():.2f}')
+    if spent_total() + estimate > total_budget():
+        raise BudgetExceeded(f'in total: US$ {spent_total():.2f} spent, this call ~US$ {estimate:.2f}, cap US$ {total_budget():.2f}')
 
 
 def _log(kind, usd, **extra):
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
     row = {'ts': dt.datetime.now().isoformat(timespec='seconds'), 'kind': kind, 'usd': round(usd, 5), **extra}
+    if RUN_ID:
+        row['run_id'] = RUN_ID
     with LEDGER.open('a') as f:
         f.write(json.dumps(row) + '\n')
 
@@ -145,6 +164,32 @@ def spark(content, schema=None, model='muse-spark-1.2', max_output_tokens=8000, 
     bad.write_text(text)
     raise RuntimeError(f'Muse Spark returned {len(text)} chars that are not valid JSON '
                        f'(status {resp.get("status")}, output tokens {u.get("output_tokens")}); saved to {bad}')
+
+
+def respond(input_items, tools, instructions, model='muse-spark-1.3', previous_response_id=None, max_output_tokens=2000,
+            effort='low', input_tokens_guess=8000, purpose=''):
+    """One turn of a tool-calling loop on /v1/responses; returns the raw response.
+
+    instructions, tools and effort go with every turn, because previous_response_id carries only the conversation
+    (dev.meta.ai/docs/protocols/responses). One call per turn keeps the log a plain sequence of decisions.
+    """
+    _guard(input_tokens_guess * SPARK_IN + max_output_tokens * SPARK_OUT)
+    body = {'model': model, 'instructions': instructions, 'input': input_items, 'tools': tools, 'parallel_tool_calls': False,
+            'max_output_tokens': max_output_tokens, 'reasoning': {'effort': effort}}
+    if previous_response_id:
+        body['previous_response_id'] = previous_response_id
+    t0 = time.time()
+    resp = _request('/responses', json.dumps(body).encode(), {'Content-Type': 'application/json'}, 600)
+    u = resp.get('usage') or {}
+    cached = (u.get('input_tokens_details') or {}).get('cached_tokens') or 0
+    usd = (u.get('input_tokens', 0) - cached) * SPARK_IN + cached * SPARK_CACHED + u.get('output_tokens', 0) * SPARK_OUT
+    _log('spark', usd, model=resp.get('model', model), purpose=purpose, response_id=resp.get('id'), seconds=round(time.time() - t0, 1),
+         input_tokens=u.get('input_tokens'), cached_tokens=cached, output_tokens=u.get('output_tokens'))
+    return resp
+
+
+def function_calls(resp):
+    return [o for o in resp.get('output', []) if o.get('type') == 'function_call']
 
 
 def sam_video(file_id, prompt, frames_guess, metadata=None, purpose='', cache_key=None):
