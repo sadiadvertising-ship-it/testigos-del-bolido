@@ -1,0 +1,30 @@
+{
+  "id": "chelyabinsk-2013",
+  "utc": "2013-02-15T03:20:20Z",
+  "catalog": "Borovicka et al. 2016, A&A, doi:10.1051/0004-6361/201526680 — camera positions are the catalog's published coordinates",
+  "clips": [
+    {"catalog_no": 2, "site": "Kamensk-Uralskiy", "lat": 56.41517, "lon": 61.91888, "camera": "stopping car, stopped during the fireball",
+     "source": "https://www.youtube.com/watch?v=kFlpCT3v12E", "window_s": [70, 100], "file_fps": 30.0,
+     "lens": "normal", "landmarks_seen": "church with dome, street lamps, road", "on_screen_clock": true},
+    {"catalog_no": 14, "site": "Beloretsk", "lat": 53.95274, "lon": 58.41018, "camera": "stopping car",
+     "source": "https://www.youtube.com/watch?v=5_1ytDqps8A", "window_s": [10, 44], "file_fps": 30.0, "catalog_fps": 25.0,
+     "lens": "normal", "landmarks_seen": "Ural ridge on the horizon, houses, utility poles", "on_screen_clock": true},
+    {"catalog_no": 48, "site": "Tyumen", "lat": 57.2024, "lon": 65.60532, "camera": "standing car at a traffic light",
+     "source": "https://www.youtube.com/watch?v=1ZdYf2vM5LA", "window_s": [5, 20], "file_fps": 29.97,
+     "lens": "normal", "landmarks_seen": "road axis, traffic lights, street lamps; fireball low on the horizon", "on_screen_clock": true},
+    {"catalog_no": 15, "site": "Chebarkul", "lat": 54.99504, "lon": 60.40023, "camera": "standing car",
+     "source": "https://www.youtube.com/watch?v=xboo7LiNR08", "window_s": [0, 22], "file_fps": 30.0,
+     "lens": "normal", "landmarks_seen": "utility poles, traffic light, tree line; fireball overexposed near the top", "on_screen_clock": true},
+    {"catalog_no": 81, "site": "Yekaterinburg", "lat": 56.94338, "lon": 60.62941, "camera": "security",
+     "source": "https://www.youtube.com/watch?v=kZxr9nAVQSo", "window_s": [13, 33], "file_fps": 30.0,
+     "lens": "wide, strong distortion", "landmarks_seen": "power-line pylon on the horizon, mast", "on_screen_clock": true},
+    {"catalog_no": 257, "site": "Magnitogorsk", "lat": 53.43749, "lon": 58.96862, "camera": "security",
+     "source": "https://www.youtube.com/watch?v=2kXIFt9JzvU", "window_s": [10, 17], "file_fps": 60.0, "catalog_fps": 30.0,
+     "lens": "circular fisheye", "landmarks_seen": "steel-plant chimneys with smoke, buildings", "on_screen_clock": false}
+  ],
+  "unavailable": [
+    {"catalog_no": 1, "site": "Verkhnaya Pyshma", "reason": "YouTube account terminated"},
+    {"catalog_no": 243, "site": "Mezhozernyi", "reason": "YouTube account terminated"}
+  ],
+  "notes": "Raw files live in data/ (not committed). File fps differs from the catalog for 14 and 257: re-encoded uploads, so frame times come from ffprobe and duplicated frames are dropped."
+}
