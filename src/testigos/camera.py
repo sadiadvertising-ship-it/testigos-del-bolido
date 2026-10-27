@@ -135,7 +135,7 @@ def _wrap(deg):
     return (deg + 180.0) % 360.0 - 180.0
 
 
-def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.0, straight=(),
+def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.0, straight=(), parallel=(),
         free=('yaw', 'pitch', 'roll', 'hfov', 'k1')):
     """Least-squares camera fit from mixed evidence; returns (camera, report).
 
@@ -147,10 +147,14 @@ def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.
     horizon: [(x, y)] pixels on a flat, distant horizon, all at elevation horizon_el.
     straight: [[(x, y), ...]] pixels along any straight edge (a roof line, a kerb): its rays must share one plane
             through the camera, which pins the lens distortion even where no pole stands.
+    parallel: [((az, el), [(x, y), ...])] pixels along edges parallel to a known world direction (a street's
+            kerbs and roof lines, with the street bearing from OSM): each edge's rays and that direction share a
+            plane, so the edges meet at the vanishing point without anyone placing it by eye.
     All residuals are in pixels so the groups weigh alike.
     """
     hz = [np.asarray(p, float) for p in horizon]
     edges = [np.asarray(l, float) for l in straight if len(l) >= 3]
+    par = [(azel_to_enu(*d), np.asarray(l, float)) for d, l in parallel if len(l) >= 2]
     pts_azel = [(landmark_azel(cam_pos, w), np.asarray(px, float)) for w, px in points]
     xo_azel = [(landmark_azel(cam_pos, w), float(x)) for w, x in x_only]
     lines = [np.asarray(l, float) for l in plumb if len(l) >= 2]
@@ -161,7 +165,12 @@ def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.
         return replace(seed, **dict(zip(free, x)))
 
     def groups(cam):
-        g = {'points': [], 'x_only': [], 'plumb': [], 'horizon': [], 'straight': []}
+        g = {'points': [], 'x_only': [], 'plumb': [], 'horizon': [], 'straight': [], 'parallel': []}
+        for d, line in par:
+            rays = np.array([cam.unproject(p) for p in line])
+            n = np.cross(d, rays.mean(axis=0))
+            n /= np.linalg.norm(n)
+            g['parallel'].extend((rays @ n) * cam.focal)
         for line in edges:
             rays = np.array([cam.unproject(p) for p in line])
             n = np.linalg.svd(rays)[2][-1]
@@ -185,7 +194,7 @@ def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.
 
     def resid(x):
         g = groups(build(x))
-        return np.array(g['points'] + g['x_only'] + g['plumb'] + g['horizon'] + g['straight'])
+        return np.array(g['points'] + g['x_only'] + g['plumb'] + g['horizon'] + g['straight'] + g['parallel'])
 
     sol = least_squares(resid, [getattr(seed, n) for n in free],
                         bounds=([lo[n] for n in free], [hi[n] for n in free]), loss='soft_l1', f_scale=3.0)
