@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testigos del Bólido</title>
+<meta name="description" content="Witness videos in, a fireball's trajectory out. A Muse Spark agent with SAM 3.1, checked on Chelyabinsk 2013 and applied to the Colombia fireball of 30 July 2025.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="map" role="img" aria-label="3D map of the fireball case"></div>
+
+<aside id="panel">
+  <header>
+    <h1>Testigos del Bólido</h1>
+    <p class="tagline">Witness videos in, a fireball's path out.</p>
+    <nav id="cases" aria-label="Cases"></nav>
+  </header>
+  <section id="lead" aria-live="polite"></section>
+  <section id="compare"></section>
+  <section id="chart"></section>
+  <section id="method">
+    <h2>How the agent works</h2>
+    <ol class="method">
+      <li><b>Muse Spark</b> watches each video: camera type, edits, on-screen clock, when the fireball shows, and landmarks a map could locate.</li>
+      <li><b>SAM 3.1</b> follows the fireball frame by frame from the phrase "bright light".</li>
+      <li>Each camera is oriented against OpenStreetMap landmarks and street lines, so every pixel becomes a direction in the sky.</li>
+      <li>One camera's lines of sight form a plane; two planes from different sides cross in the trajectory. Speed comes from each video's own frame times.</li>
+      <li>Muse plans every step and writes the report. Tools return measured numbers, and geometry rules override the model.</li>
+    </ol>
+  </section>
+  <section id="log"></section>
+  <section id="report"></section>
+  <footer>
+    <p>Built during the Meta Global AI Developer Hackathon with Muse Spark and SAM 3.1. Witness videos belong to their authors and are not redistributed here: only directions, times and camera sites rounded to about 100 m.</p>
+    <p>Basemap: OpenFreeMap, data © OpenStreetMap contributors. 3D: deck.gl.</p>
+  </footer>
+</aside>
+
+<div id="legend" aria-label="Map layers"></div>
+<div id="hud" hidden>
+  <button id="play" type="button">Replay</button>
+  <span id="readout" class="num">13 s of flight, in real time</span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/deck.gl@9.1.15/dist.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

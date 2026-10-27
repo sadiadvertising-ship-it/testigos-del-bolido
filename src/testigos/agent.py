@@ -45,9 +45,16 @@ Tools:
 - write_report(): write the case summary from what you found. Then done.
 The case state already lists, per clip, whether it is calibrated, tracked and read: do not re-check those flags.
 Typical order: planes over the calibrated clips, solve with the widest pair, consider a third camera, check_satellite,
-write_report, done. Read witness videos only when a decision needs them.
+write_report, done. Read witness videos only when a decision needs them. Before write_report, drop_clip each calibrated
+clip you leave out of the final solution (uncalibrated clips never enter a solve: do not drop them). The final solution
+is your last solve without the dropped clips.
 Rules: never invent numbers; use only tool outputs. Prefer a two-camera solution with a wide Q over adding a camera that
 lowers Q or raises residuals. Stop within the step budget."""
+
+
+def _latlon(lat, lon):
+    """Hemispheres spelled out: given bare signed numbers, Muse once wrote Chelyabinsk's longitudes as west."""
+    return f"{abs(lat):.3f} {'N' if lat >= 0 else 'S'}, {abs(lon):.3f} {'E' if lon >= 0 else 'W'}"
 
 
 class Case:
@@ -133,8 +140,8 @@ class Case:
         v = decide(sol.speed_kms, sol.speed_sigma or 1.0, end_height_km=sol.end[2] / 1000)
         return {'clips': clips, 'q_max_deg': round(sol.q_max, 1), 'warnings': sol.warnings,
                 'azimuth_deg': round(sol.azimuth, 2), 'slope_deg': round(sol.slope, 2),
-                'begin': [round(sol.begin[0], 3), round(sol.begin[1], 3), round(sol.begin[2] / 1000, 1)],
-                'end': [round(sol.end[0], 3), round(sol.end[1], 3), round(sol.end[2] / 1000, 1)],
+                'begin': f'{_latlon(sol.begin[0], sol.begin[1])}, {sol.begin[2] / 1000:.1f} km',
+                'end': f'{_latlon(sol.end[0], sol.end[1])}, {sol.end[2] / 1000:.1f} km',
                 'speed_kms': round(sol.speed_kms, 2) if sol.speed_kms else None,
                 'speed_per_camera': {k: round(s, 2) for k, (s, _) in sol.station_speeds.items()},
                 'residual_rms_deg': {k: round(r, 3) for k, r in sol.residual_rms_deg.items()},
@@ -148,7 +155,7 @@ class Case:
         t0 = dt.datetime.fromisoformat(self.event['utc'].replace('Z', '+00:00')).timestamp()
         hits = [e for e in json.loads(f.read_text())['data'] if abs(e['datetime'] / 1000 - t0) < 1800]
         return {'detections': [{'utc': dt.datetime.utcfromtimestamp(e['datetime'] / 1000).isoformat(timespec='seconds') + 'Z',
-                                'lat': round(e['latitude'], 3), 'lon': round(e['longitude'], 3),
+                                'where': _latlon(e['latitude'], e['longitude']),
                                 'class': e.get('humanClassification'), 'brightness': list((e.get('brightness') or {}).values())[:1],
                                 'duration_s': e.get('duration')} for e in hits][:5],
                 'note': 'GLM covers the Americas from 2017; older or other-region events will show nothing'}
@@ -206,5 +213,11 @@ class Case:
 
 def muse_planner(state, step, max_steps):
     content = [{'type': 'input_text', 'text': f'{SYSTEM}\nStep {step + 1} of at most {max_steps}.\nCase state:\n{state}'}]
-    return api.spark(content, schema=PLAN_SCHEMA, max_output_tokens=4000, effort='low', input_tokens_guess=4000,
-                     purpose='agent plan')
+    try:
+        return api.spark(content, schema=PLAN_SCHEMA, max_output_tokens=1500, effort='low', input_tokens_guess=4000,
+                         purpose='agent plan')
+    except api.BudgetExceeded:
+        raise
+    except RuntimeError:  # 1.2 has looped on progress sentences instead of the JSON; one retry on 1.3
+        return api.spark(content, schema=PLAN_SCHEMA, model='muse-spark-1.3', max_output_tokens=1500, effort='low',
+                         input_tokens_guess=4000, purpose='agent plan retry 1.3')

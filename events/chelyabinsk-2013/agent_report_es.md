@@ -1,9 +1,7 @@
-**Informe breve - Evento tipo Cheliábinsk 2013**
+Informe del bólido - análisis con clips 2 y 10.
 
-Para grupo de astronomía. Análisis basado solo en datos instrumentales disponibles.
+**Sólido:** La geometría es favorable con Q máximo de 66,3° entre 2-10 [pares 48-10: 58,9° y 2-48: 7,5°]. La solución de referencia con 2-10 da azimut 282,12°, pendiente 17,48°, inicio en 54,427 N, 64,101 E a 89,5 km y final en 54,914 N, 60,615 E a 11,4 km, con velocidad 19,65 km/s [19,65 en cámara 2 y 19,07 en cámara 10] y residuos RMS de 0,687° y 0,824°. Veredicto: natural, pues 19,6 ± 0,3 km/s está por encima de la velocidad de escape.
 
-**Sólido:** Geometría calibrada con clips 2, 48 y 10. La solución de dos cámaras 2-10 es la más robusta, con ángulo entre planos Q=66,3° [Qmáx=66,3°] y Q=58,9° para el par 48-10. Presenta azimut 282,12°, pendiente 17,48°, inicio [54,427, 64,101, 89,5 km] y fin [54,914, 60,615, 11,4 km]. Velocidad 19,65 km/s, coherente entre cámaras [2: 19,65 y 10: 19,07 km/s], con residuales RMS 0,687° y 0,824°. Veredicto: natural, 19,6 ±0,3 km/s por encima de velocidad de escape.
+**Incierto:** Al añadir el clip 48 la solución [azimut 278,53°, pendiente 16,8°, velocidad 19,49 km/s, inicio 54,463 N, 64,065 E a 87,1 km y final 54,822 N, 60,540 E a 12,2 km] empeora: residuos suben a 0,931° en cámara 10 y aparece discordancia de velocidad [14,77 vs 19,5 km/s, con 19,09 y 19,59 en 2 y 48], por lo que se descartó el 48 al no mejorar la geometría.
 
-**Incierto:** Al añadir el clip 48 [Q=7,5° con clip 2, casi coplanar] la solución a 3 cámaras se degrada: azimut 278,53°, pendiente 16,8°, velocidad 19,49 km/s [19,5 ±1,5] con dispersión [10: 14,77 vs 19,49 km/s] y residual de 10 sube de 0,824° a 0,931°.
-
-**Falta:** Verificación satelital sin detecciones []. Sin valor concluyente, pues GLM cubre solo Américas desde 2017.
+**Falta:** No hay detecciones satelitales. La nota indica que GLM cubre solo las Américas desde 2017, por lo que la ausencia no es concluyente.
