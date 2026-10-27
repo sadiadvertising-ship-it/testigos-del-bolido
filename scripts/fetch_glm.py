@@ -20,12 +20,15 @@ WINDOW_S = 1800
 
 def download():
     CATALOG.parent.mkdir(parents=True, exist_ok=True)
+    part = CATALOG.with_suffix('.part')
     try:
         with urllib.request.urlopen(URL, timeout=300) as r:
-            CATALOG.write_bytes(r.read())
+            part.write_bytes(r.read())
     except OSError as exc:  # the macOS system Python's TLS has failed on some hosts; curl is the fallback
         print('urllib failed:', exc, '- trying curl')
-        subprocess.run(['curl', '-sSf', '--retry', '3', '-o', str(CATALOG), URL], check=True)
+        subprocess.run(['curl', '-sSf', '--retry', '3', '-o', str(part), URL], check=True)
+    json.loads(part.read_text())  # a cut-off transfer must never replace the cached catalog
+    part.replace(CATALOG)
 
 
 def main(refresh):

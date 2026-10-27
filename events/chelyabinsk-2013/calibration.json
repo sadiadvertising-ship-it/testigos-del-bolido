@@ -25,6 +25,12 @@
    "roll": 0.0,
    "hfov": 0.0,
    "k1": 0.0
+  },
+  "vs_cbet_plane_deg": {
+   "rays": 410,
+   "median_deg": 0.62,
+   "p10_deg": -0.33,
+   "p90_deg": 1.36
   }
  },
  "10": {
@@ -53,6 +59,12 @@
    "roll": 0.0,
    "hfov": 0.0,
    "k1": 0.0
+  },
+  "vs_cbet_plane_deg": {
+   "rays": 68,
+   "median_deg": 3.39,
+   "p10_deg": 2.58,
+   "p90_deg": 4.44
   }
  },
  "48": {
@@ -81,6 +93,12 @@
    "roll": 0.0,
    "hfov": -0.011,
    "k1": 0.0
+  },
+  "vs_cbet_plane_deg": {
+   "rays": 223,
+   "median_deg": 0.98,
+   "p10_deg": 0.79,
+   "p90_deg": 1.06
   }
  }
 }

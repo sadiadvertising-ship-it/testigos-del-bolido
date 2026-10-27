@@ -49,6 +49,7 @@ class Solution:
     q_max: float  # largest angle between two stations' planes
     residual_rms_deg: dict
     warnings: list = field(default_factory=list)
+    left_out: tuple = ()  # cameras whose clock solve() distrusted and kept out of the speed
 
     def at_time(self, station, i):
         """Geodetic point on the path for observation i of a station."""
@@ -202,4 +203,4 @@ def solve(stations, min_q=5.0, warn_q=10.0):
         rms[st.name] = float(np.degrees(np.sqrt(np.mean(np.sum(r * r, axis=1)))))
 
     return Solution(p, d, begin, end, azimuth, slope, enu_to_azel(-motion), v, sigma,
-                    speeds, q_max, rms, warnings)
+                    speeds, q_max, rms, warnings, tuple(sorted(outliers)))

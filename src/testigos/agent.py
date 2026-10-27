@@ -144,7 +144,9 @@ class Case:
         stations = self._stations(clips)
         sol = solve(stations)
         self.last_solution = sol
-        seen_s = max(float(st.times.max() - st.times.min()) if len(st.times) else 0.0 for st in stations)
+        # a clock that solve() keeps out of the speed cannot vouch for the duration either
+        seen_s = max((float(st.times.max() - st.times.min()) for st in stations
+                      if len(st.times) and st.name not in sol.left_out), default=0.0)
         if sol.speed_kms is None:
             verdict, reason = 'inconclusive', 'no camera gave a speed'
         else:  # slope and duration let a slow, long passage read as a re-entry
