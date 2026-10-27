@@ -1,0 +1,11 @@
+{
+ "note": "Refereed solutions of the Chelyabinsk superbolide, added on 27 October 2026, after run 20261027T132419-a996 was graded against CBET 3423. CBET 3423, the reference chosen before the work, was a preliminary telegram (seven casual videos 'provisionally calibrated with Google Maps tools'); refereed papers followed later in 2013. Values as the sources below quote them; check them against the papers before citing.",
+ "solutions": [
+  {"who": "Borovička et al. 2013, Nature 503, 235", "doi": "10.1038/nature12671", "v_initial_kms": 19.03, "v_sigma_kms": 0.13,
+   "slope_deg_begin": 18.5, "slope_deg_end": 17.0, "heights_km": [95.1, 12.6],
+   "quoted_by": "https://www.cambridge.org/core/journals/proceedings-of-the-international-astronomical-union/article/chelyabinsk-event/8B9AF6EF233C58B2430540CB4EF79114"},
+  {"who": "Popova et al. 2013, Science 342, 1069", "doi": "10.1126/science.1242642", "v_initial_kms": 19.16, "v_sigma_kms": 0.15,
+   "entry_angle_deg": 18.3, "entry_angle_sigma_deg": 0.2, "first_seen_h_km": 97, "peak_brightness_h_km": 29.7,
+   "quoted_by": "https://www.ucdavis.edu/news/first-study-russian-meteorite"}
+ ]
+}

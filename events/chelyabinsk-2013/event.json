@@ -1,6 +1,7 @@
 {
   "id": "chelyabinsk-2013",
   "utc": "2013-02-15T03:20:20Z",
+  "local_time": {"offset_h": 6, "zone": "Yekaterinburg time"},
   "catalog": "Borovicka et al. 2016, A&A, doi:10.1051/0004-6361/201526680 — camera positions are the catalog's published coordinates",
   "clips": [
     {

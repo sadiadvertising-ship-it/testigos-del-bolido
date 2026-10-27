@@ -1,0 +1,89 @@
+{
+ "what": "SAM 3.1 against a brightness threshold: is SAM needed when the fireball is the brightest thing in the sky?\n\nEvery tracked frame in out/sam/ holds two measurements of the fireball: SAM 3.1's head point ('centroid', from the box\nSAM tracked with the phrase \"bright light\") and the numpy baseline that runs alongside ('blob': the largest saturated\nblob, kept only if it moves smoothly). This script feeds both, on the same frames and through the same cameras, to the\nsame solver, and measures how far each one's rays sit from the plane that CBET 3423's published path makes with each\ncamera. The baseline is a plain threshold, not a tuned classical tracker; it shows what SAM's choice of object buys.\nCBET is used only to grade, so the output goes to validation/chelyabinsk-2013/sam-vs-threshold.json.",
+ "cbet": {
+  "azimuth_deg": 279.5,
+  "slope_deg": 16.5
+ },
+ "off_cbet_plane": {
+  "Kamensk-Uralskiy": {
+   "sam": {
+    "rays": 410,
+    "median_deg": 0.65,
+    "p84_deg": 1.32
+   },
+   "threshold": {
+    "rays": 410,
+    "median_deg": 0.77,
+    "p84_deg": 3.01
+   }
+  },
+  "Korkino": {
+   "sam": {
+    "rays": 68,
+    "median_deg": 3.39,
+    "p84_deg": 4.16
+   },
+   "threshold": {
+    "rays": 68,
+    "median_deg": 16.75,
+    "p84_deg": 18.7
+   }
+  },
+  "Tyumen": {
+   "sam": {
+    "rays": 223,
+    "median_deg": 0.98,
+    "p84_deg": 1.04
+   },
+   "threshold": {
+    "rays": 223,
+    "median_deg": 1.06,
+    "p84_deg": 1.7
+   }
+  }
+ },
+ "solutions": {
+  "2+10": {
+   "sam": {
+    "azimuth_deg": 282.1,
+    "slope_deg": 17.5,
+    "speed_kms": 19.65,
+    "speed_per_camera_kms": {
+     "2": 19.65,
+     "10": 19.07
+    }
+   },
+   "threshold": {
+    "azimuth_deg": 303.7,
+    "slope_deg": 17.0,
+    "speed_kms": 0.01,
+    "speed_per_camera_kms": {
+     "2": 0.01,
+     "10": 91.97
+    }
+   }
+  },
+  "2+10+48": {
+   "sam": {
+    "azimuth_deg": 278.5,
+    "slope_deg": 16.8,
+    "speed_kms": 19.49,
+    "speed_per_camera_kms": {
+     "2": 19.09,
+     "10": 14.77,
+     "48": 19.59
+    }
+   },
+   "threshold": {
+    "azimuth_deg": 290.5,
+    "slope_deg": 17.4,
+    "speed_kms": 19.15,
+    "speed_per_camera_kms": {
+     "2": 24.09,
+     "10": 20.3,
+     "48": 18.78
+    }
+   }
+  }
+ }
+}

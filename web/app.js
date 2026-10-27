@@ -235,9 +235,10 @@ function leadSolved(d) {
     + `${fmt(mc.speed['2sigma'][0], 1)} km/s, is above Earth's 11.2 km/s escape speed: <b>a natural meteor</b>.`
     : `Speed ${fmt(s.speed_kms, 1)} km/s: ${esc(s.verdict_reason)}.`;
   return `<p class="when">${esc(d.when)} · validation case</p>
-    <p>${d.stations.length} witness videos, as anyone finds them online. A person marked street lines and landmarks in ${oriented} of
-    them so those cameras could be oriented, and SAM 3.1 tracked the fireball in each. The agent took it from there: it compared the
-    cameras' planes of sight, tried ${d.tried.length} combinations${dropped.length ? `, dropped ${dropped.map(x => esc(x.site)).join(', ')} citing its numbers` : ''},
+    <p>${d.stations.length} witness videos, as anyone finds them online. In ${oriented} of them, AI annotators measured street lines
+    and poles and matched landmarks to OpenStreetMap during development, so those cameras could be oriented; SAM 3.1 tracked the
+    fireball in each. The agent took it from there: it compared the cameras' planes of sight, tried ${d.tried.length}
+    combinations${dropped.length ? `, left out ${dropped.map(x => esc(x.site)).join(', ')} on a criterion the code measured` : ''},
     and chose <b>${esc(a.site)}</b> and <b>${esc(b.site)}</b>, ${Math.round(km(a.lonlat, b.lonlat))} km apart, whose planes cross at
     ${fmt(s.q_deg, 0)}°. The code re-solved that choice before accepting it.</p>
     <p class="big">Heading <span class="num">${fmt(s.azimuth_deg, 1)}°</span> (${dir(s.azimuth_deg)}), descending at
@@ -267,6 +268,20 @@ function compareSolved(d) {
       (1σ ${span(...mc.flare_h_km['1sigma'])}), and their end point lies ${fmt(mc.end_off_km.median, 1)} km from it.`);
     notes.push(`Our speed range is the Monte Carlo's (median ${fmt(mc.speed.median, 1)} km/s): it is the least certain number.`);
   }
+  if (d.refereed) {
+    notes.push(`CBET 3423 was a preliminary telegram; refereed solutions published later in 2013 give ${d.refereed.map(r =>
+      `${fmt(r.v_kms, 2)} km/s (${esc(r.who)})`).join(' and ')}. That comparison was added after the run and does not change its grade.`);
+  }
+  const held = d.stations.find(x => x.status === 'dropped' && x.rays);
+  if (held) {
+    notes.push(`${esc(held.site)}, left out of the fit, is a check on it: its lines of sight miss the path by ${fmt(held.miss_deg, 2)}°
+      RMS, and its own clock gives ${fmt(held.speed_kms, 2)} km/s along it.`);
+  }
+  const sam = d.sam_vs_threshold && d.sam_vs_threshold.solutions[s.clips.join('+')];
+  if (sam && sam.threshold && !sam.threshold.error) {
+    notes.push(`Without SAM 3.1, a plain brightness threshold on the same frames gives a heading of ${fmt(sam.threshold.azimuth_deg, 1)}°
+      and a speed of ${fmt(sam.threshold.speed_kms, 2)} km/s: it locks onto glare.`);
+  }
   return `<h2>Against the published solutions</h2>
     <table class="compare"><thead><tr><th></th><th class="r">This agent</th><th class="r">CBET 3423</th><th class="r">Zuluaga et al.</th></tr></thead>
     <tbody>${row('Heading', 'azimuth', s.azimuth_deg, 'azimuth_deg', '°')}${row('Slope', 'slope', s.slope_deg, 'slope_deg', '°')}
@@ -284,10 +299,12 @@ function leadOpen(d) {
   return `<p class="when">${esc(d.when)} · open case</p>
     <p>A green fireball crossed the night sky over north-eastern Colombia. The lightning mapper on the GOES-19 weather satellite
     recorded a ${fmt(g.duration_s, 2)} s flash at <span class="num">${latlon(g.lonlat)}</span>, ${nearest.km} km from ${esc(nearest.city)}.</p>
-    <p>The only witness video still online was filmed in Medellín${med ? `, ${med.km} km away` : ''}. Muse read it: nothing in view is on a map,
-    and the clip replays the moment in cuts, so the camera cannot be oriented. With fewer than two oriented cameras there is no
-    trajectory, and the agent says so instead of guessing${d.run && d.run.block && d.run.block.request ? `: it asked for videos from
-    ${esc((d.run.block.request.towns || []).join(', '))}, and the run stays blocked until they arrive` : ''}.</p>
+    <p>NASA's analysts classified it as a bolide, with medium confidence and lightning nearby. The one video analysed so far was
+    filmed in Medellín${med ? `, ${med.km} km away` : ''}: a handheld phone video that replays the moment in cuts. Muse judged it
+    usable, but nothing in view can be located on a map and the filming spot is unknown, so the code cannot orient it. Security
+    and dashcam clips from Bogotá and Medellín, reposted on 1 August 2025, have not been analysed yet. With fewer than two oriented
+    cameras there is no trajectory, and the agent says so instead of guessing${d.run && d.run.block && d.run.block.request ? `: it
+    asked for videos from ${esc((d.run.block.request.towns || []).join(', '))}, and the run stays blocked until they arrive` : ''}.</p>
     <p class="big">Phones in the towns marked in blue would have seen the flash 10° to 60° above the horizon. Two of those videos,
     from different sides, would give its path, its speed, and whether it was a meteor or a re-entering satellite.</p>`;
 }
@@ -373,6 +390,23 @@ function cameraTable(d) {
     slows. Miss is the RMS angle between its lines of sight and the plane through the camera and the final path.</p>`;
 }
 
+function measuredText(d, m) {
+  if (!m) return '';
+  const n = id => esc(name(d, id));
+  if (m.near_parallel_with) {
+    return '. ' + Object.entries(m.near_parallel_with).map(([k, r]) => `Its planes cross ${n(k)}'s at <span class="num">${fmt(r.q_deg_with_it, 1)}°</span>;
+      ${n(k)} crosses the other cameras at up to <span class="num">${fmt(r.its_widest_q_deg, 1)}°</span>, it at <span class="num">${fmt(r.this_widest_q_deg, 1)}°</span>`).join('. ');
+  }
+  if (m.q_deg_with_kept) {
+    return `. Its planes cross ${Object.entries(m.q_deg_with_kept).map(([k, q]) => `${n(k)}'s at <span class="num">${fmt(q, 1)}°</span>`).join(' and ')} (all must be under 10°)`;
+  }
+  if (m.residual_rms_deg_with_and_without) {
+    return `. Residual with and without it: ${Object.entries(m.residual_rms_deg_with_and_without).map(([k, [a, b]]) =>
+      `${n(k)} <span class="num">${fmt(a, 3)}°</span> against <span class="num">${fmt(b, 3)}°</span>`).join(', ')} (every one must rise by 25% and 0.1°)`;
+  }
+  return m.note ? `. ${esc(m.note)}` : '';
+}
+
 function result(d, s) {
   const r = s.result || {}, n = id => esc(name(d, id));
   if (r.error) return `Tool error: ${esc(r.error)}`;
@@ -380,7 +414,12 @@ function result(d, s) {
     case 'planes': return `Angle between planes: ${r.pairs.map(p => `${n(p.pair[0])}–${n(p.pair[1])} <span class="num">${fmt(p.q_deg, 1)}°</span>`).join(', ')}`;
     case 'solve': return `Heading <span class="num">${fmt(r.azimuth_deg, 1)}°</span>, slope <span class="num">${fmt(r.slope_deg, 1)}°</span>,
       <span class="num">${fmt(r.speed_kms, 2)}</span> km/s; per camera ${Object.entries(r.speed_per_camera || {}).map(([k, v]) => `${n(k)} <span class="num">${fmt(v, 2)}</span>`).join(', ')}`;
-    case 'drop_clip': return `Dropped ${n(r.dropped)}: ${esc(r.reason || '')}`;
+    case 'drop_clip': return r.accepted === false
+      ? `<b>Refused by the code</b>: ${esc((r.problems || []).join('; '))}${measuredText(d, r.measured)}`
+      : r.criterion ? `<b>Dropped ${n(r.dropped)}</b>: ${esc(r.criterion.replace(/_/g, ' '))}, confirmed by the code${measuredText(d, r.measured)}`
+        : `Dropped ${n(r.dropped)}: ${esc(r.reason || '')}`;
+    case 'track': return `SAM 3.1 found the fireball in <span class="num">${r.detected}</span> of <span class="num">${r.frames}</span> frames`
+      + (r.window_s ? ` of the window ${fmt(r.window_s[0], 1)}–${fmt(r.window_s[1], 1)} s` : '');
     case 'finalize': return r.accepted
       ? `<b>Accepted by the code</b>${r.insufficient_geometry ? ': fewer than two oriented cameras, so insufficient geometry is recorded' : '.'}`
       : `<b>Refused by the code</b>: ${esc((r.problems || []).join('; '))}`;
@@ -394,8 +433,10 @@ function result(d, s) {
       fireball from ${fmt(r.fireball_s[0], 1)} to ${fmt(r.fireball_s[1], 1)} s; ${r.landmarks.length} landmark guesses`;
     case 'calibration': return r.calibrated ? `Oriented (${esc(r.lens)}, ${fmt(r.hfov, 1)}° wide)` : `Not oriented: ${esc(r.why)}`;
     case 'missing_views': return `Best towns: ${r.best_towns.slice(0, 5).map(t => esc(t.split(' (')[0])).join(', ')}`;
-    case 'write_report': return r.reports ? `Report written; every figure checked against the tool results: `
-      + Object.entries(r.reports).filter(([, v]) => v && v.figures !== undefined).map(([lang, v]) => `${lang} ${v.traced} of ${v.figures}${v.passed ? '' : ' (refused)'}`).join(', ')
+    case 'write_report': return r.accepted === false ? `<b>Refused by the code</b>: ${esc((r.problems || []).join('; '))}`
+      : r.reports ? `Report written; every figure checked against the tool results: `
+      + Object.entries(r.reports).filter(([, v]) => v && v.figures !== undefined).map(([lang, v]) => `${lang} ${v.traced} of ${v.figures}${v.passed ? '' : ' (refused)'}`
+        + (v.refused_drafts ? `, after ${v.refused_drafts} refused draft${v.refused_drafts > 1 ? 's' : ''}` : '')).join(', ')
       : 'Wrote the report below.';
     default: return '';
   }

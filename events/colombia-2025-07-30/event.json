@@ -1,6 +1,7 @@
 {
   "id": "colombia-2025-07-30",
   "utc": "2025-07-31T03:50:24Z",
+  "local_time": {"offset_h": -5, "zone": "Colombia time"},
   "clips": [
     {
       "id": "medellin",

@@ -14,7 +14,8 @@ def test_scripted_case_runs_tools_and_logs_reasons(tmp_path, monkeypatch):
     script = iter([
         {'why': 'see what is calibrated', 'action': 'calibration', 'clip': '1', 'clips': None, 'reason': None},
         {'why': 'cannot solve with one camera', 'action': 'solve', 'clip': None, 'clips': ['1', '2'], 'reason': None},
-        {'why': 'clip 2 has no landmarks', 'action': 'drop_clip', 'clip': '2', 'clips': None, 'reason': 'no surveyed landmark'},
+        {'why': 'clip 2 has no landmarks', 'action': 'drop_clip', 'clip': '2', 'clips': None, 'reason': 'no surveyed landmark',
+         'criterion': 'not_oriented'},
         {'why': 'nothing more to do', 'action': 'done', 'clip': None, 'clips': None, 'reason': None},
     ])
     case = agent.Case('demo')
@@ -22,7 +23,7 @@ def test_scripted_case_runs_tools_and_logs_reasons(tmp_path, monkeypatch):
     assert [s['action'] for s in log] == ['calibration', 'solve', 'drop_clip', 'done']
     assert log[0]['result'] == {'calibrated': False, 'why': 'no surveyed landmark or line set confirmed for this camera'}
     assert 'error' in log[1]['result']  # a failed tool is reported back, not raised
-    assert case.dropped == {'2': 'no surveyed landmark'}
+    assert case.dropped == {'2': {'criterion': 'not_oriented', 'reason': 'no surveyed landmark'}}
     assert json.loads((ev / 'agent_log.json').read_text())[2]['why'] == 'clip 2 has no landmarks'
 
 

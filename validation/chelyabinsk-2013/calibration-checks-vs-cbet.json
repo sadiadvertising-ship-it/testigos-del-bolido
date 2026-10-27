@@ -1,0 +1,51 @@
+{
+ "note": "Checks of each camera fit against CBET 3423, made while the cameras were being calibrated; moved here from events/chelyabinsk-2013/picks.json on 27 Oct 2026 so that no agent input holds a published value. Keys ending _v1/_v2 belong to earlier fits of the same camera.",
+ "checks": {
+  "chelyabinsk-2013-2": {
+   "check_against_cbet": {
+    "method": "angle between each SAM head-point ray and the plane through the camera and the published CBET line (not used in the fit)",
+    "frames": 410,
+    "median_deg": -0.3,
+    "p10_deg": -1.89,
+    "p90_deg": 0.7,
+    "note": "the low tail comes from flare frames, where the glow centre sits above the head"
+   },
+   "check_against_cbet_v2": {
+    "median_deg": 0.62,
+    "p10_deg": -0.33,
+    "p90_deg": 1.36
+   }
+  },
+  "chelyabinsk-2013-48": {
+   "check_against_cbet": {
+    "frames": 223,
+    "median_deg": 3.43,
+    "p10_deg": 2.31,
+    "p90_deg": 3.77,
+    "diagnosis": "not usable yet: poles near the edges bow like barrel distortion, which a pinhole without k1 and with roll fixed at 0 cannot follow; next is a plumb-line fit of k1 and roll from several poles; the tower top also suggests it is taller than the 30 m default"
+   },
+   "check_against_cbet_v2": {
+    "frames": 223,
+    "median_deg": 0.98,
+    "p10_deg": 0.79,
+    "p90_deg": 1.07,
+    "note": "down from 3.43 deg; a 1 deg bias remains, likely the vanishing-point pixel or k1-only distortion; no plumb lines exist left of x=250, where the fireball is"
+   }
+  },
+  "chelyabinsk-2013-238": {
+   "check_against_cbet_v1": {
+    "frames": 63,
+    "median_deg": 9.33,
+    "diagnosis": "not usable: a 9 deg miss is an identification error, not a parameter error. The track sits about 10 deg higher and further west than CBET predicts, so the tower or chimney is probably a different OSM object, or the catalog position is not where this camera stood"
+   }
+  },
+  "chelyabinsk-2013-10": {
+   "check_against_cbet_v2": {
+    "frames": 68,
+    "median_deg": -0.56,
+    "p10_deg": -1.4,
+    "p90_deg": 0.76
+   }
+  }
+ }
+}

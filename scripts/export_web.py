@@ -70,10 +70,26 @@ def miss_deg(sol, st):
     return float(np.degrees(np.sqrt(np.mean(np.arcsin(np.clip(st.rays @ n, -1, 1)) ** 2))))
 
 
+def drop_reason(result, names):
+    """An accepted drop in words, from the criterion the code measured (older runs kept only the model's reason)."""
+    m, crit = result.get('measured') or {}, result.get('criterion')
+    if crit == 'near_parallel_pair':
+        return 'the weaker of a near-parallel pair: ' + '; '.join(
+            f"its planes cross {names.get(k, k)}'s at {r['q_deg_with_it']}°, and {names.get(k, k)} crosses the other cameras "
+            f"at up to {r['its_widest_q_deg']}° against its {r['this_widest_q_deg']}°" for k, r in m.get('near_parallel_with', {}).items())
+    if crit == 'narrow_planes':
+        return 'its planes cross every kept camera under 10°: ' + ', '.join(f'{names.get(k, k)} {q}°' for k, q in m.get('q_deg_with_kept', {}).items())
+    if crit == 'raises_residuals':
+        return 'it raises every other camera\'s residual by more than 25% and 0.1°'
+    return result.get('reason') or crit
+
+
 def chelyabinsk():
     case = Case('chelyabinsk-2013')
     log = json.loads((case.dir / 'agent_log.json').read_text())
-    dropped = {s['clip']: s['result'].get('reason') for s in log if s['action'] == 'drop_clip'}
+    names = {str(c['catalog_no']): c['site'] for c in case.event['clips']}
+    dropped = {s['clip']: drop_reason(s['result'], names) for s in log
+               if s['action'] == 'drop_clip' and s['result'].get('accepted', True) and 'error' not in s['result']}
     solves = [s for s in log if s['action'] == 'solve' and 'error' not in s['result']]
     recorded = case.dir / 'final_solution.json'  # what finalize accepted; older runs left only the log
     verdict = json.loads(recorded.read_text()) if recorded.exists() else solves[-1]['result']
@@ -115,6 +131,14 @@ def chelyabinsk():
 
     mc_file = case.dir / f"montecarlo-{'-'.join(final)}.json"
     mc = json.loads(mc_file.read_text()) if mc_file.exists() else None
+    vs_file = ROOT / 'validation' / case.id / f"montecarlo-{'-'.join(final)}-vs-cbet.json"
+    if mc and vs_file.exists():  # the viewer's comparison table shows the published values, labelled as such
+        mc = {**mc, 'stats': json.loads(vs_file.read_text())['stats']}
+    sam_file = ROOT / 'validation' / case.id / 'sam-vs-threshold.json'
+    sam_vs = json.loads(sam_file.read_text()) if sam_file.exists() else None
+    ref_file = ROOT / 'validation' / case.id / 'refereed.json'
+    refereed = [{'who': r['who'].split(',')[0] + ', ' + r['who'].split(', ')[1].split()[0], 'v_kms': r['v_initial_kms']}
+                for r in json.loads(ref_file.read_text())['solutions']] if ref_file.exists() else None
     truth = json.loads((ROOT / 'validation' / case.id / 'truth.json').read_text())
     path_s = np.linspace(s0, s1, 80)
     top, bottom = (to_geodetic(sol.point + s * sol.direction)[2] for s in (s0, s1))
@@ -138,6 +162,8 @@ def chelyabinsk():
                         'slope_deg': truth['slope_deg'], 'speed_kms': truth['apparent_radiant']['v_kms']},
                        {'who': 'Zuluaga, Ferrín & Geens 2013, arXiv:1303.1796', 'how': '4 videos', 'azimuth_deg': 285.0, 'slope_deg': 15.8,
                         'speed_kms': None}]},
+        'sam_vs_threshold': sam_vs and {'solutions': sam_vs['solutions'], 'off_cbet_plane': sam_vs['off_cbet_plane']},
+        'refereed': refereed,
         'agent_log': log,
         'report_es': (case.dir / 'agent_report_es.md').read_text(),
         **reports_and_run(case),
@@ -162,6 +188,14 @@ def reports_and_run(case):
     return out
 
 
+def medellin_track(case):
+    f = ROOT / 'out' / 'sam' / f'{case.key("medellin")}.json'
+    if not f.exists():
+        return ''
+    s = json.loads(f.read_text())['summary']
+    return f"; SAM 3.1 found the flash in {s['detected']} of its {s['frames']} frames"
+
+
 def colombia():
     case = Case('colombia-2025-07-30')
     glm = json.loads((case.dir / 'glm.json').read_text())
@@ -182,8 +216,10 @@ def colombia():
                       'classification': glm.get('humanClassification', 'Bolide')},
         'towns': towns,
         'witness': [{'site': 'Medellín', 'lonlat': [TOWNS['Medellín'][1], TOWNS['Medellín'][0]],
-                     'status': 'video read by Muse; no surveyed landmark, and the clip replays the moment, so it cannot be calibrated'},
-                    {'site': 'Bucaramanga', 'lonlat': [TOWNS['Bucaramanga'][1], TOWNS['Bucaramanga'][0]], 'status': 'video gone (account suspended)'},
+                     'status': 'a handheld phone video with cuts, read by Muse; nothing in view can be located on a map and the '
+                               'filming spot is unknown, so the code cannot orient it' + medellin_track(case)},
+                    {'site': 'Bucaramanga', 'lonlat': [TOWNS['Bucaramanga'][1], TOWNS['Bucaramanga'][0]],
+                     'status': 'no video: a text-only post, from an account now suspended'},
                     {'site': 'Floridablanca', 'lonlat': [TOWNS['Floridablanca'][1], TOWNS['Floridablanca'][0]], 'status': 'text report only'}],
         'agent_log': json.loads((case.dir / 'agent_log.json').read_text()),
         'report_es': (case.dir / 'agent_report_es.md').read_text(),

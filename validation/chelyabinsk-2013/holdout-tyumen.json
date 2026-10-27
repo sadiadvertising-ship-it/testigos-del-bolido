@@ -1,0 +1,16 @@
+{
+ "fit_cameras": [
+  "2",
+  "10"
+ ],
+ "held_out": "48",
+ "rays": 223,
+ "miss_deg": {
+  "median": 0.45,
+  "p90": 0.54
+ },
+ "own_clock_speed_kms": 19.17,
+ "own_clock_speed_sigma_kms": 0.08,
+ "fit_speed_kms": 19.65,
+ "note": "Tyumen as a held-out witness: how well does the Kamensk + Korkino path explain a camera that did not shape it?\n\nThe agent leaves Tyumen out of the trajectory fit (its planes nearly coincide with Kamensk's). Its rays and its own clock\nare still evidence: each ray's angular miss of the Kamensk + Korkino line, and the speed Tyumen's frame times give along\nthat line over the first 60% of its track (the solver's speed window, before the fireball slows). No published value is\nused. Its calibration was curated with CBET 3423 in view, so the check is independent of the fit, not of the people."
+}

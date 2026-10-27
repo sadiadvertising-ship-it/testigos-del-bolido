@@ -219,3 +219,54 @@ def track_fireball(file_id, n_frames, phrases=PHRASES, min_span_coverage=0.8, mi
         if span_cov >= min_span_coverage and travel >= min_travel_px:
             break
     return best
+
+
+def track_video(small, name, out_dir, window=None, max_usd=0.10):
+    """SAM 3.1 on a trimmed clip, or on a window of it: the chosen object's head per frame and the numpy baseline,
+    written to out_dir/<name>.json in the format of scripts/sam_probe.py. Times stay on the trimmed clip's clock.
+
+    The agent's `track` tool calls this for a clip nobody has tracked yet; a clip that would cost more than `max_usd`
+    is refused before any call.
+    """
+    import json
+    import pathlib
+
+    from . import clip as cliplib
+
+    out_dir, src, offset = pathlib.Path(out_dir), pathlib.Path(small), 0.0
+    if window:
+        src, offset = out_dir / f'{name}-window.mp4', float(window[0])
+        cliplib.normalize(small, src, window[0], window[1])
+    times = cliplib.frame_times(src)
+    n = len(times)
+    usd = max(n, 50) * api.SAM_VIDEO_FRAME
+    if usd > max_usd:
+        raise ValueError(f'{n} frames would cost about US$ {usd:.2f}; trim the clip first')
+    res = track_fireball(api.upload(src), n, purpose=name, cache_prefix=api.file_sha(src))
+    grays = list(cliplib.gray_frames(src))
+    dup = cliplib.duplicate_flags(grays)
+    blobs = blob_track(grays)
+    raw_hits = len(res['track'])
+    heads = measure(res['track'], grays)
+    frames = {k: res['track'][k] for k in heads}
+    rows, dists = [], []
+    for i in range(len(grays)):
+        box, cen, blob = frames.get(i), heads.get(i), blobs[i]
+        d = float(np.hypot(*(cen - blob))) if cen is not None and blob is not None else None
+        if d is not None:
+            dists.append(d)
+        rows.append({'frame': i, 't': offset + float(times[i]) if i < n else None, 'dup': bool(dup[i]),
+                     'box': [box[k] for k in ('x1', 'y1', 'x2', 'y2')] if box else None, 'c': box.get('c') if box else None,
+                     'centroid': cen.tolist() if cen is not None else None,
+                     'blob': blob.tolist() if blob is not None else None, 'sam_vs_blob_px': d})
+    hit = [r['frame'] for r in rows if r['box']]
+    summary = {'clip': name, 'phrase': res['phrase'], 'objects': res['objects'], 'chosen_id': res['id'],
+               'travel_px': res['travel_px'], 'frames': n, 'sam_frames': raw_hits, 'detected': len(hit),
+               'coverage_of_clip': round(res['coverage_of_clip'], 3), 'first_last': [hit[0], hit[-1]] if hit else None,
+               'coverage_of_span': round(len(hit) / (hit[-1] - hit[0] + 1), 3) if hit else 0.0,
+               'duplicates': int(dup.sum()), 'window_s': [round(w, 2) for w in window] if window else None,
+               'median_sam_vs_blob_px': round(float(np.median(dists)), 2) if dists else None,
+               'agree_within_5px': round(float(np.mean(np.array(dists) < 5)), 3) if dists else None}
+    out = {'summary': summary, 'rows': rows}
+    (out_dir / f'{name}.json').write_text(json.dumps(out, indent=1))
+    return out

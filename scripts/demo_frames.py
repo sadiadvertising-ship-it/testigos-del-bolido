@@ -9,6 +9,7 @@ import pathlib
 import subprocess
 import sys
 import tempfile
+import unicodedata
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -17,6 +18,12 @@ EVENT = 'chelyabinsk-2013'
 OUT = ROOT / 'out' / 'demo'
 FONT = '/System/Library/Fonts/Helvetica.ttc'
 TRACK, NIGHT, INK = (120, 188, 255), (8, 17, 31), (230, 237, 246)
+
+
+def plain(text):
+    """Uploader names can hold emoji, which the font cannot draw: keep letters, digits and punctuation."""
+    kept = ''.join(ch for ch in text if ord(ch) < 0x10000 and unicodedata.category(ch) not in ('So', 'Cs', 'Co'))
+    return ' '.join(kept.split())
 
 
 def frame_at(video, t):
@@ -59,7 +66,7 @@ def make(no, credits):
     c = credits.get(no, {})
     draw.text((40, img.height + 18), f"{c.get('site', no)}: SAM 3.1 finds the fireball from \"bright light\" (last 3 s of its track)",
               font=big, fill=INK)
-    draw.text((40, img.height + 70), f"{c.get('credit', '')}. Catalogued by Borovička et al. 2016.", font=small, fill=(168, 181, 199))
+    draw.text((40, img.height + 70), f"{plain(c.get('credit', ''))}. Catalogued by Borovička et al. 2016.", font=small, fill=(168, 181, 199))
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / f'{key}.png'
     canvas.save(path)

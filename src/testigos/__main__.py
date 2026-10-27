@@ -3,7 +3,8 @@
   python -m testigos run <event>                   the agent works the case (Muse Spark 1.3 tool calling); one line per step
   python -m testigos resume <event> <run_id>       continue a blocked run once its inputs changed, or with --notes
   python -m testigos review <event> <run_id> --approve | --reject [--notes ...] [--by NAME]
-  python -m testigos replay <event> <run_id>       re-run the recorded tool calls with today's code, offline
+  python -m testigos replay <event> <run_id> [--echo]   re-run the recorded tool calls with today's code, offline;
+                                                  --echo prints every step as `run` does
 """
 import argparse
 import json
@@ -20,13 +21,17 @@ def short(r):
     if 'pairs' in r:
         return 'Q ' + ', '.join(f"{a}-{b} {p['q_deg']}°" for p in r['pairs'] for a, b in [p['pair']])[:90]
     if 'reports' in r:
-        return ', '.join(f"{lang} {v['traced']}/{v['figures']} figures traced" for lang, v in r['reports'].items()
-                         if isinstance(v, dict)) + f" -> {r['status']}"
+        return ', '.join(f"{lang} {v['traced']}/{v['figures']} figures traced"
+                         + (f" after {v['refused_drafts']} refused draft{'s' if v['refused_drafts'] > 1 else ''}"
+                            if v.get('refused_drafts') else '')
+                         for lang, v in r['reports'].items() if isinstance(v, dict)) + f" -> {r['status']}"
+    if r.get('accepted') and 'dropped' in r:
+        return f"dropped {r['dropped']}: {r['criterion']} confirmed by the code"
     if 'accepted' in r:
         if r['accepted']:
             return 'blocked: waiting for evidence' if r.get('blocked') else (
                 'accepted: insufficient geometry' if r.get('insufficient_geometry') else 'accepted')
-        return 'REFUSED: ' + '; '.join(r.get('problems', []))[:120]
+        return 'REFUSED: ' + '; '.join(r.get('problems', []))[:150]
     if 'azimuth_deg' in r:
         return f"{r['azimuth_deg']}° heading, {r['slope_deg']}° slope, {r['speed_kms']} km/s, Q {r['q_max_deg']}°, {r['verdict']}"
     if 'detections' in r:
@@ -74,6 +79,7 @@ def main(argv=None):
     y = sub.add_parser('replay')
     y.add_argument('event')
     y.add_argument('run_id')
+    y.add_argument('--echo', action='store_true', help='print every step, with the recorded why and today\'s result')
     a = p.parse_args(argv)
 
     if a.cmd == 'run':
@@ -99,7 +105,7 @@ def main(argv=None):
         rec = agent.review(a.event, a.run_id, approve=a.approve, notes=a.notes, by=a.by)
         print(f"run {a.run_id}: {rec['status']}")
     elif a.cmd == 'replay':
-        out = agent.replay(a.event, a.run_id)
+        out = agent.replay(a.event, a.run_id, echo=echo if a.echo else None)
         print(f"replayed {out['steps']} steps of {a.run_id}: "
               + ('no differences' if not out['differences'] else f"{len(out['differences'])} differences"))
         for d in out['differences']:

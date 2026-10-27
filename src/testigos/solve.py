@@ -50,6 +50,8 @@ class Solution:
     residual_rms_deg: dict
     warnings: list = field(default_factory=list)
     left_out: tuple = ()  # cameras whose clock solve() distrusted and kept out of the speed
+    speed_sigma_formal: float | None = None  # inverse-variance error of the combined speed
+    speed_spread: float | None = None  # spread between the cameras' speeds over sqrt(n)
 
     def at_time(self, station, i):
         """Geodetic point on the path for observation i of a station."""
@@ -188,14 +190,16 @@ def solve(stations, min_q=5.0, warn_q=10.0):
                 warnings.append(f'{name}: {s:.1f} km/s is more than 3 sigma from the other cameras ({med:.1f} km/s); '
                                 'left out of the speed')
     used = {k: x for k, x in speeds.items() if k not in outliers}
-    v = sigma = None
+    v = sigma = formal = spread = None
     if used:
         vals = np.array([s for s, _ in used.values()])
         errs = np.array([max(e, 0.05) for _, e in used.values()])
         w = 1 / errs ** 2
-        v, sigma = float(np.sum(w * vals) / np.sum(w)), float(np.sqrt(1 / np.sum(w)))
+        v, formal = float(np.sum(w * vals) / np.sum(w)), float(np.sqrt(1 / np.sum(w)))
+        sigma = formal
         if len(vals) > 1:
-            sigma = max(sigma, float(np.std(vals, ddof=1) / np.sqrt(len(vals))))
+            spread = float(np.std(vals, ddof=1) / np.sqrt(len(vals)))
+            sigma = max(formal, spread)
 
     rms = {}
     for st in stations:
@@ -203,4 +207,4 @@ def solve(stations, min_q=5.0, warn_q=10.0):
         rms[st.name] = float(np.degrees(np.sqrt(np.mean(np.sum(r * r, axis=1)))))
 
     return Solution(p, d, begin, end, azimuth, slope, enu_to_azel(-motion), v, sigma,
-                    speeds, q_max, rms, warnings, tuple(sorted(outliers)))
+                    speeds, q_max, rms, warnings, tuple(sorted(outliers)), formal, spread)
