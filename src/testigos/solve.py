@@ -56,8 +56,24 @@ class Solution:
         return to_geodetic(q)
 
 
-def plane_normal(rays):
-    return np.linalg.svd(np.asarray(rays, float))[2][-1]
+def plane_normal(rays, iterations=3, floor_deg=0.2):
+    """Normal of the plane through the camera that best contains the rays.
+
+    Rays more than 3 robust sigmas (or floor_deg) off the plane are dropped and the plane refitted:
+    flare frames, where the glow centre sits off the head, must not tilt the plane.
+    """
+    rays = np.asarray(rays, float)
+    keep = np.ones(len(rays), bool)
+    n = np.linalg.svd(rays)[2][-1]
+    for _ in range(iterations):
+        off = np.abs(rays @ n)
+        mad = np.median(off[keep]) * 1.4826
+        new = off <= max(3 * mad, np.sin(np.radians(floor_deg)))
+        if new.sum() < 3 or (new == keep).all():
+            break
+        keep = new
+        n = np.linalg.svd(rays[keep])[2][-1]
+    return n
 
 
 def convergence(n1, n2):
@@ -136,7 +152,9 @@ def solve(stations, min_q=5.0, warn_q=10.0):
         d = d0 + x[0] * e1 + x[1] * e2
         return p0 + 1000.0 * (x[2] * e1 + x[3] * e2), d / np.linalg.norm(d)
 
-    sol = least_squares(lambda x: _ray_residuals(*build(x), stations), np.zeros(4), x_scale=[1e-3, 1e-3, 1.0, 1.0])
+    # soft_l1 with a 0.3 degree scale: outlying rays (flare, a pole after the fireball faded) lose their pull
+    sol = least_squares(lambda x: _ray_residuals(*build(x), stations), np.zeros(4), x_scale=[1e-3, 1e-3, 1.0, 1.0],
+                        loss='soft_l1', f_scale=np.radians(0.3))
     p, d = build(sol.x)
 
     along = {st.name: np.array([_closest(p, d, st.origin, r)[0] for r in st.rays]) for st in stations}

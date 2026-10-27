@@ -52,5 +52,53 @@
    "p90_deg": 0.7,
    "note": "the low tail comes from flare frames, where the glow centre sits above the head"
   }
+ },
+ "chelyabinsk-2013-48": {
+  "camera_pos": [
+   57.2024,
+   65.60532,
+   1.3
+  ],
+  "image": [
+   1280,
+   720
+  ],
+  "lens": "pinhole, distortion not yet fitted",
+  "landmarks": [
+   {
+    "what": "vanishing point of ulitsa Shcherbakova heading south-west",
+    "azel": [
+     235.9,
+     0.0
+    ],
+    "px": [
+     595,
+     345
+    ],
+    "source": "OSM way 53795778 (bearing 55.2, driven the other way)"
+   },
+   {
+    "what": "lattice power tower, x only",
+    "pos": [
+     57.2026,
+     65.6031095
+    ],
+    "px_x": 1267,
+    "source": "OSM power=tower, 135 m"
+   }
+  ],
+  "camera_v1": {
+   "yaw": 239.37724263858001,
+   "pitch": -1.1603473590527327,
+   "roll": 0.0,
+   "hfov": 81.66705012719822
+  },
+  "check_against_cbet": {
+   "frames": 223,
+   "median_deg": 3.43,
+   "p10_deg": 2.31,
+   "p90_deg": 3.77,
+   "diagnosis": "not usable yet: poles near the edges bow like barrel distortion, which a pinhole without k1 and with roll fixed at 0 cannot follow; next is a plumb-line fit of k1 and roll from several poles; the tower top also suggests it is taller than the 30 m default"
+  }
  }
 }

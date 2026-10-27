@@ -48,6 +48,21 @@ def test_end_to_end_from_landmark_calibration():
     assert abs(sol.azimuth - az) < 1.5 and abs(sol.slope - slope) < 1.5
 
 
+def test_flare_outliers_do_not_tilt_the_path():
+    rng = np.random.default_rng(9)
+    t, pts = path()
+    stations = []
+    for n in STATIONS:
+        st = exact_station(n, t, pts, noise_deg=0.02, rng=rng)
+        rays = st.rays_enu.copy()
+        bad = slice(len(rays) // 2, len(rays) // 2 + max(len(rays) // 8, 3))  # a burst of glow-centre points off the head
+        rays[bad] = rays[bad] + np.array([0.0, 0.0, 0.03])
+        rays /= np.linalg.norm(rays, axis=1)[:, None]
+        stations.append(Station(n, st.pos, st.times, rays))
+    sol = solve(stations)
+    assert distance_to_line(sol, END) < 1500 and distance_to_line(sol, BEGIN) < 1500
+
+
 def test_direction_follows_the_clock_not_the_ray_order():
     t, pts = path()
     stations = []
