@@ -5,7 +5,7 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-data/
+/data/
 out/*.mp4
 out/frames/
 out/cache/
