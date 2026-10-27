@@ -1,0 +1,12 @@
+{
+ "source": "The Aerospace Corporation, CORDS reentry database, https://aerospace.org/reentries (pages 48 and 49, sorted by predicted reentry time), read on 27 October 2026",
+ "note": "Every catalogued reentry predicted between 30 July 2025 08:00 UTC and 3 August 2025 08:30 UTC, in the order the database lists them. CORDS covers tracked objects only: untracked debris would not appear, and a predicted time window is not a ground track.",
+ "reentries": [
+  {"object": "STARLINK-1940", "norad_id": 47552, "type": "payload", "predicted_utc": "2025-07-30T08:33:00Z", "window_h": 1},
+  {"object": "YAOGAN-35 B", "norad_id": 49391, "type": "payload", "predicted_utc": "2025-07-30T13:53:00Z", "window_h": 4},
+  {"object": "STARLINK-2191", "norad_id": 48565, "type": "payload", "predicted_utc": "2025-07-30T15:44:00Z", "window_h": 1},
+  {"object": "STARLINK-2038", "norad_id": 47654, "type": "payload", "predicted_utc": "2025-07-30T18:42:00Z", "window_h": 1},
+  {"object": "OBJECT C", "norad_id": 53950, "type": "unknown", "predicted_utc": "2025-07-31T07:54:00Z", "window_h": 2},
+  {"object": "STARLINK-4614", "norad_id": 53741, "type": "payload", "predicted_utc": "2025-08-03T08:24:00Z", "window_h": 4}
+ ]
+}

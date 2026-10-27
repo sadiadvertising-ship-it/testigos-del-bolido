@@ -94,3 +94,19 @@ def test_check_satellite_reads_the_committed_window(tmp_path, monkeypatch):
     r = agent.Case('glm').check_satellite()
     assert r['detections'][0]['utc'] == '2025-07-31T03:50:23Z'
     assert r['detections'][0]['where'] == '6.460 N, 72.212 W'
+
+
+def test_check_satellite_measures_the_nearest_reentry_windows(tmp_path, monkeypatch):
+    ev = tmp_path / 'events' / 'reentry'
+    ev.mkdir(parents=True)
+    (ev / 'event.json').write_text(json.dumps({'id': 'reentry', 'utc': '2025-07-31T03:50:24Z', 'clips': []}))
+    (ev / 'glm-window.json').write_text(json.dumps({'events': []}))
+    (ev / 'reentries.json').write_text(json.dumps({'source': 'Test catalogue, CORDS, read today', 'reentries': [
+        {'object': 'EARLY', 'type': 'payload', 'predicted_utc': '2025-07-30T18:42:00Z', 'window_h': 1},
+        {'object': 'LATE', 'type': 'unknown', 'predicted_utc': '2025-07-31T07:54:00Z', 'window_h': 2},
+        {'object': 'COVERS', 'type': 'rocket body', 'predicted_utc': '2025-07-31T05:00:00Z', 'window_h': 2}]}))
+    monkeypatch.setattr(agent, 'ROOT', tmp_path)
+    r = agent.Case('reentry').check_satellite()['reentries']
+    assert r['containing_the_flash'] == ['COVERS']
+    gaps = {x['object']: x['hours_between_window_and_flash'] for x in r['nearest']}
+    assert gaps == {'COVERS': 0.0, 'LATE': 2.1}

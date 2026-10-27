@@ -305,6 +305,10 @@ function leadOpen(d) {
     and dashcam clips from Bogotá and Medellín, reposted on 1 August 2025, have not been analysed yet. With fewer than two oriented
     cameras there is no trajectory, and the agent says so instead of guessing${d.run && d.run.block && d.run.block.request ? `: it
     asked for videos from ${esc((d.run.block.request.towns || []).join(', '))}, and the run stays blocked until they arrive` : ''}.</p>
+    ${d.reentries ? `<p>Was it space junk? No satellite or rocket re-entry in the ${esc(d.reentries.source)} has a predicted window
+    that includes the flash${d.reentries.nearest.length ? `; the nearest, ${esc(d.reentries.nearest[0].object)}, was due
+    ${fmt(d.reentries.nearest[0].hours_between_window_and_flash, 1)} h away` : ''}. Only tracked objects are listed, so the speed
+    still has to decide.</p>` : ''}
     <p class="big">Phones in the towns marked in blue would have seen the flash 10° to 60° above the horizon. Two of those videos,
     from different sides, would give its path, its speed, and whether it was a meteor or a re-entering satellite.</p>`;
 }
@@ -426,9 +430,12 @@ function result(d, s) {
     case 'request_evidence': return r.accepted
       ? `<b>Request recorded</b>; the run stops until a person supplies it (${esc((r.request.towns || []).join(', ') || r.request.kind)}).`
       : `<b>Refused by the code</b>: ${esc((r.problems || []).join('; '))}`;
-    case 'check_satellite': return r.detections && r.detections.length
-      ? r.detections.map(g => `${esc(g.class || 'Detection')} at ${esc(g.utc)}, ${esc(g.where || `${g.lat}, ${g.lon}`)}, ${fmt(g.duration_s, 2)} s`).join('; ')
-      : `No detection. ${esc(r.note || '')}`;
+    case 'check_satellite': return (r.detections && r.detections.length
+      ? r.detections.map(g => `${esc(g.class || 'Detection')} at ${esc(g.utc)}, ${esc(g.where || `${g.lat}, ${g.lon}`)}, ${fmt(g.duration_s, 2)} s`
+        + (g.confidence ? `, ${esc(g.confidence)} confidence` : '')).join('; ')
+      : `No detection. ${esc(r.note || '')}`)
+      + (r.reentries ? `. Re-entries: ${r.reentries.containing_the_flash.length ? esc(r.reentries.containing_the_flash.join(', ')) + ' could match'
+        : `none whose window includes the flash (nearest ${esc(r.reentries.nearest[0].object)}, ${fmt(r.reentries.nearest[0].hours_between_window_and_flash, 1)} h)`}` : '');
     case 'read_witness': return `${esc(String(r.clip_kind).replace(/_/g, ' '))}${r.camera_moves ? ', camera moving' : ''}${r.multiple_cuts ? ', several cuts' : ''};
       fireball from ${fmt(r.fireball_s[0], 1)} to ${fmt(r.fireball_s[1], 1)} s; ${r.landmarks.length} landmark guesses`;
     case 'calibration': return r.calibrated ? `Oriented (${esc(r.lens)}, ${fmt(r.hfov, 1)}° wide)` : `Not oriented: ${esc(r.why)}`;

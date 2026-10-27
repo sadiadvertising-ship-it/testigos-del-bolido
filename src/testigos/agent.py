@@ -73,7 +73,8 @@ TOOLS = [
           'poorly.', {'clips': {'type': 'array', 'items': {'type': 'string'}, 'description': 'optional subset'}}),
     _tool('solve', 'Triangulate two or more oriented cameras: direction, slope, begin and end, speed per camera, residuals, Q '
           'and the verdict rule outcome.', {'clips': {'type': 'array', 'items': {'type': 'string'}}}, ['clips']),
-    _tool('check_satellite', 'GOES GLM bolide detections within 30 minutes of the event (the Americas, from 2017).'),
+    _tool('check_satellite', 'GOES GLM bolide detections within 30 minutes of the event (the Americas, from 2017), and, when the '
+          'case has one, the catalogued satellite and rocket reentries nearest the event time.'),
     _tool('missing_views', 'Towns whose videos would see the flash 10 to 60 degrees up and close the geometry.'),
     _tool('drop_clip', 'Leave a camera out of the final solution. The code measures the criterion and refuses the drop when '
           'it does not hold: near_parallel_pair (its planes cross a kept camera\'s under 10 degrees and that camera crosses '
@@ -296,11 +297,27 @@ class Case:
         def utc(ms):
             return dt.datetime.fromtimestamp(ms / 1000, dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 
-        return {'detections': [{'utc': utc(e['datetime']),
-                                'where': _latlon(e['latitude'], e['longitude']),
-                                'class': e.get('humanClassification'), 'brightness': list((e.get('brightness') or {}).values())[:1],
-                                'duration_s': e.get('duration')} for e in hits][:5],
-                'note': 'GLM covers the Americas from 2017; older or other-region events will show nothing'}
+        out = {'detections': [{'utc': utc(e['datetime']),
+                               'where': _latlon(e['latitude'], e['longitude']),
+                               'class': e.get('humanClassification'), 'brightness': list((e.get('brightness') or {}).values())[:1],
+                               'duration_s': e.get('duration'), 'confidence': e.get('confidenceRating'),
+                               'lightning_nearby': e.get('nearbyLightningActivity')} for e in hits][:5],
+               'note': 'GLM covers the Americas from 2017; older or other-region events will show nothing'}
+        reentries = self.dir / 'reentries.json'  # a committed, sourced excerpt of a reentry catalogue, when one exists
+        if reentries.exists():
+            r = json.loads(reentries.read_text())
+            rows = []
+            for e in r['reentries']:
+                at = dt.datetime.fromisoformat(e['predicted_utc'].replace('Z', '+00:00')).timestamp()
+                lo, hi = at - 3600 * e['window_h'], at + 3600 * e['window_h']
+                gap = 0.0 if lo <= t0 <= hi else min(abs(t0 - lo), abs(t0 - hi)) / 3600
+                rows.append({'object': e['object'], 'type': e['type'], 'predicted_utc': e['predicted_utc'][:16] + 'Z',
+                             'window_h': e['window_h'], 'hours_between_window_and_flash': round(gap, 1)})
+            out['reentries'] = {'source': r['source'].split(',')[0] + ', ' + r['source'].split(',')[1].strip(),
+                                'containing_the_flash': [x['object'] for x in rows if x['hours_between_window_and_flash'] == 0],
+                                'nearest': sorted(rows, key=lambda x: x['hours_between_window_and_flash'])[:2],
+                                'caveat': 'tracked objects only; a predicted window is not a ground track'}
+        return out
 
     def missing_views(self, **_):
         f = self.dir / 'city-geometry.json'
@@ -688,7 +705,8 @@ class Case:
 
     # run record ------------------------------------------------------------------------------
     def _inputs(self):
-        paths = [self.dir / n for n in ('event.json', 'picks.json', 'calibration.json', 'glm-window.json', 'city-geometry.json')]
+        paths = [self.dir / n for n in ('event.json', 'picks.json', 'calibration.json', 'glm-window.json', 'city-geometry.json',
+                                        'reentries.json')]
         for c in self.clip_ids():
             paths += [ROOT / 'out' / 'sam' / f'{self.key(c)}.json', self.dir / 'witness' / f'{c}.json']
         paths += sorted(self.dir.glob('montecarlo-*.json'))  # solve() reads the speed range from them

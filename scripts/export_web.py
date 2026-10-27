@@ -200,6 +200,7 @@ def medellin_track(case):
 
 def colombia():
     case = Case('colombia-2025-07-30')
+    log = json.loads((case.dir / 'agent_log.json').read_text())
     glm = json.loads((case.dir / 'glm.json').read_text())
     towns = []
     for r in json.loads((case.dir / 'city-geometry.json').read_text()):
@@ -223,7 +224,8 @@ def colombia():
                     {'site': 'Bucaramanga', 'lonlat': [TOWNS['Bucaramanga'][1], TOWNS['Bucaramanga'][0]],
                      'status': 'no video: a text-only post, from an account now suspended'},
                     {'site': 'Floridablanca', 'lonlat': [TOWNS['Floridablanca'][1], TOWNS['Floridablanca'][0]], 'status': 'text report only'}],
-        'agent_log': json.loads((case.dir / 'agent_log.json').read_text()),
+        'agent_log': log,
+        'reentries': next((s['result'].get('reentries') for s in log if s['action'] == 'check_satellite'), None),
         'report_es': (case.dir / 'agent_report_es.md').read_text(),
         **reports_and_run(case),
     }
