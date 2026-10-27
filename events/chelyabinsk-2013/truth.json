@@ -1,0 +1,19 @@
+{
+  "event": "Chelyabinsk superbolide, 2013-02-15 03:20 UTC",
+  "source": "Borovicka, Spurny & Shrbeny, CBET 3423 (2013-02-23): seven casual video records, provisionally calibrated with Google Maps tools, linear trajectory",
+  "url": "https://tamkin3.eps.harvard.edu/cbet/003400/CBET003423.txt",
+  "trajectory": [
+    {"t": 0.00, "lon": 64.266, "lat": 54.508, "h_km": 91.83, "v_kms": 17.5},
+    {"t": 9.18, "lon": 61.913, "lat": 54.788, "h_km": 41.02, "v_kms": 17.5},
+    {"t": 11.20, "lon": 61.455, "lat": 54.836, "h_km": 31.73, "v_kms": 17.5, "note": "major flare"},
+    {"t": 12.36, "lon": 61.159, "lat": 54.867, "h_km": 25.81, "v_kms": 17.5},
+    {"t": 13.20, "lon": 60.920, "lat": 54.891, "h_km": 21.05, "v_kms": 12.5},
+    {"t": 16.20, "lon": 60.606, "lat": 54.922, "h_km": 14.94, "v_kms": 4.3}
+  ],
+  "azimuth_deg": 279.5,
+  "slope_deg": 16.5,
+  "apparent_radiant": {"ra_deg": 328.6, "dec_deg": 8.0, "sigma_deg": 1.0, "v_kms": 17.5, "v_sigma_kms": 0.5},
+  "geocentric_radiant": {"ra_deg": 334.7, "dec_deg": -1.0, "v_kms": 13.2},
+  "video_catalog": "Borovicka et al. 2016, A&A, doi:10.1051/0004-6361/201526680 (https://meteor.asu.cas.cz/~lenka/videa/)",
+  "gate_2026_10_28": {"azimuth_tol_deg": 3, "slope_tol_deg": 3, "flare_height_tol_km": 5, "end_point_tol_km": 15, "calibration_rms_max_deg": 0.3}
+}

@@ -10,3 +10,4 @@ out/*.mp4
 out/frames/
 out/cache/
 .DS_Store
+.venv-tools/
