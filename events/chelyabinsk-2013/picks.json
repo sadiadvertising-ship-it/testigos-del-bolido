@@ -69,7 +69,53 @@
    "lateral": "catalog point is 4.3 m right (west) of the centreline of prospekt Pobedy (OSM way 152902490, 5 lanes, two-way), i.e. in a southbound lane: consistent",
    "longitudinal": "catalog point is 38 m before the centreline of ulitsa Lenina; the far snow-bank edge along the cross street (y ~400) suggests the near kerb is ~25 m ahead, so the camera may stand ~6 m further south (unverified)",
    "effect": "the chapel is 129 m away, so +/-10 m along the avenue moves its azimuth by up to ~2.3 deg; that is what lets Kamensk hfov wander 51-84 deg in the Monte Carlo",
-   "left_side": "no usable second landmark on the left: OSM buildings at 450-880 m (az 149-154) sit behind the forest"
+   "left_side": "no usable second landmark on the left: OSM buildings at 450-880 m (az 149-154) sit behind the forest",
+   "flare_frame": "frame 363 of the trimmed clip is lit by the flare: the rounded corner kerb, the central island tip and the snow-covered corner lot are visible. Ground distances through the v2 camera: the island tip and the lot edge sit ~19-32 m south. Tying them to OSM needs kerb lines OSM does not hold (no road widths), so the along-avenue position stays uncertain by roughly 0 to -10 m from the catalog point."
+  },
+  "position_sensitivity": {
+   "shift_south_m": [
+    0,
+    -6,
+    -10,
+    -12,
+    -14
+   ],
+   "kamensk_hfov": [
+    66.6,
+    69.5,
+    71.6,
+    72.7,
+    73.8
+   ],
+   "two_station_azimuth": [
+    282.12,
+    282.11,
+    282.09,
+    282.09,
+    282.08
+   ],
+   "two_station_slope": [
+    17.48,
+    17.55,
+    17.6,
+    17.62,
+    17.65
+   ],
+   "two_station_speed_kms": [
+    19.6,
+    21.0,
+    21.9,
+    22.4,
+    22.9
+   ],
+   "three_station_azimuth": [
+    278.53,
+    269.78,
+    264.58,
+    261.8,
+    259.1
+   ],
+   "reading": "Kamensk+Korkino keeps its direction and slope whatever the along-avenue position; only the speed moves. Adding Tyumen (1 deg bias, planes 7.5 deg apart from Kamensk) makes the answer swing, so Tyumen stays out of the headline. Image ground features (island tip 18.8 m ahead) suggest the car stood ~10-12 m south of the catalog point, but tying them to OSM needs kerb positions OSM does not hold."
   }
  },
  "chelyabinsk-2013-48": {
