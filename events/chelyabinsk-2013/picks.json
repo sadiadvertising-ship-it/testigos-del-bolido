@@ -53,11 +53,11 @@
    "hfov": 69.9354398278883
   },
   "camera": {
-   "yaw": 185.42809045885224,
-   "pitch": -1.7485687217879315,
-   "roll": 0.5535530028297585,
-   "hfov": 66.60059504130436,
-   "k1": -0.26742934701073606
+   "yaw": 185.42808353527366,
+   "pitch": -1.7485813575725766,
+   "roll": 0.553578778023044,
+   "hfov": 66.60056345114526,
+   "k1": -0.26743197641788197
   },
   "camera_note": "v2: 18 vertical lines and the avenue lamp-head rows (two annotators, events/chelyabinsk-2013/lines-2.json) plus the chapel; lines alone leave the field of view free (the fit ran to 151 deg), so the chapel stays",
   "check_against_cbet_v2": {
@@ -231,19 +231,33 @@
   },
   "lines": "events/chelyabinsk-2013/lines-10.json (two annotators; 11 alley-parallel, 7 vertical, 3 other straight; the thin pole left out)",
   "alley_bearing_deg": 122.0,
-  "camera": {
+  "camera_note": "v4: pointing from the annotated lines with k1 fixed at -0.15 (the 480x360 frame cannot pin it); hfov 79.5 from speed agreement with Kamensk (both saw the fireball before it slowed); the three-station geometric minimum is not robust once k1 is fixed. No CBET input.",
+  "check_against_cbet_v2": {
+   "frames": 68,
+   "median_deg": -0.56,
+   "p10_deg": -1.4,
+   "p90_deg": 0.76
+  },
+  "camera_v2_hfov_91.9": {
    "yaw": 122.81987586743917,
    "pitch": 1.3258274694186076,
    "roll": 0.6608035404209797,
    "hfov": 91.92,
    "k1": -0.09335975231818215
   },
-  "camera_note": "yaw, pitch, roll, k1 from the lines at each candidate hfov; hfov 91.9 from three-station self-calibration (Kamensk, Tyumen, Korkino), no CBET input",
-  "check_against_cbet_v2": {
-   "frames": 68,
-   "median_deg": -0.56,
-   "p10_deg": -1.4,
-   "p90_deg": 0.76
+  "camera_v3_hfov_78.8": {
+   "yaw": 122.7045233660736,
+   "pitch": 1.0201278616627933,
+   "roll": 1.530008567857262,
+   "hfov": 78.8,
+   "k1": -0.21571639914698681
+  },
+  "camera": {
+   "yaw": 122.62946729457587,
+   "pitch": 1.0697811341970695,
+   "roll": 0.9678208468258448,
+   "hfov": 79.5,
+   "k1": -0.15
   }
  }
 }

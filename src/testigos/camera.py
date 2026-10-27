@@ -136,7 +136,7 @@ def _wrap(deg):
 
 
 def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.0, straight=(), parallel=(),
-        free=('yaw', 'pitch', 'roll', 'hfov', 'k1')):
+        free=('yaw', 'pitch', 'roll', 'hfov', 'k1'), bounds=None):
     """Least-squares camera fit from mixed evidence; returns (camera, report).
 
     points: [(where, (x, y))] landmarks or directions with a full pixel position;
@@ -150,6 +150,7 @@ def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.
     parallel: [((az, el), [(x, y), ...])] pixels along edges parallel to a known world direction (a street's
             kerbs and roof lines, with the street bearing from OSM): each edge's rays and that direction share a
             plane, so the edges meet at the vanishing point without anyone placing it by eye.
+    bounds: optional {name: (lo, hi)} overrides, e.g. {'k1': (-0.45, 0.0)} for a wide lens that can only barrel.
     All residuals are in pixels so the groups weigh alike.
     """
     hz = [np.asarray(p, float) for p in horizon]
@@ -160,6 +161,8 @@ def fit(seed, cam_pos, points=(), x_only=(), plumb=(), horizon=(), horizon_el=0.
     lines = [np.asarray(l, float) for l in plumb if len(l) >= 2]
     lo = {'yaw': -np.inf, 'pitch': -89.0, 'roll': -45.0, 'hfov': 5.0, 'k1': -0.6}
     hi = {'yaw': np.inf, 'pitch': 89.0, 'roll': 45.0, 'hfov': 200.0 if seed.fisheye else 170.0, 'k1': 0.6}
+    for name, (a, b) in (bounds or {}).items():
+        lo[name], hi[name] = a, b
 
     def build(x):
         return replace(seed, **dict(zip(free, x)))
