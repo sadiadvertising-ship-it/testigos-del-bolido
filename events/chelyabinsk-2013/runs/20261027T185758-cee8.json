@@ -38,9 +38,16 @@
  },
  "resumed_from": "20261027T183453-9c57",
  "notes": "El reporte en español atribuye la incertidumbre a una base corta. No lo es: las dos cámaras están lejos y sus planos se cruzan en ángulo amplio. Quiten esa frase.",
- "history": [],
+ "history": [
+  {
+   "at": "2026-10-27T19:02:15",
+   "review": "approved",
+   "by": "Diego Burbano",
+   "notes": null
+  }
+ ],
  "finished": "2026-10-27T18:58:37",
- "status": "awaiting_review",
+ "status": "approved",
  "block": null,
  "final": {
   "clips": [

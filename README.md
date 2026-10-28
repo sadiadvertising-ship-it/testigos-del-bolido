@@ -77,7 +77,7 @@ What the agent did on Chelyabinsk (run `20261027T185758-cee8`, 9 steps, US$ 0.07
 07  drop_clip     48        near_parallel_pair, confirmed by the code: its planes cross Kamensk's at 7.5°,
                             and Kamensk crosses Korkino at 66.3° against Tyumen's 58.9°
 08  finalize      2+10      accepted by the code
-09  write_report            figures traced: es 29 of 29, en 22 of 22 -> awaiting review
+09  write_report            figures traced: es 29 of 29, en 22 of 22 -> awaiting review, then signed off
 ```
 
 This is the case's second run. The first (`20261027T132419-a996`) chose the same cameras, but it dropped Tyumen citing a
@@ -90,7 +90,7 @@ Replayed with today's code, the first run's drop of Tyumen no longer goes throug
 The second run (`20261027T183453-9c57`) passed every check, and its Spanish report still said the uncertainty came from
 a short baseline. That is false: the two cameras are 173 km apart and their planes cross at 66°. No figure was wrong,
 so no check could catch it; Diego Burbano did, and sent the report back (`review --reject --notes`). The third run is
-the one above, waiting for his signature. Each review is kept in the run record's history.
+the one above, which he signed off on 27 October 2026. Each review is kept in the run record's history.
 
 ## Validation: Chelyabinsk, 15 February 2013
 
