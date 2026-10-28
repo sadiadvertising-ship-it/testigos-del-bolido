@@ -6,9 +6,9 @@
   "clips": null,
   "args": {
    "clip": "2",
-   "why": "Confirm orientation and residual for the final solution."
+   "why": "Confirm Kamensk-Uralskiy orientation and residual for the record."
   },
-  "why": "Confirm orientation and residual for the final solution.",
+  "why": "Confirm Kamensk-Uralskiy orientation and residual for the record.",
   "result": {
    "calibrated": true,
    "lens": "pinhole with radial k1",
@@ -18,92 +18,28 @@
    "fit_rms_deg": 0.065
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13a881e5ec1f5953a4f36",
+  "response_id": "resp_6ae165395ff8f2442b2e409c",
   "usage": {
-   "input_tokens": 2853,
+   "input_tokens": 2873,
    "input_tokens_details": {
     "cached_tokens": 0
    },
-   "output_tokens": 239,
+   "output_tokens": 247,
    "output_tokens_details": {
-    "reasoning_tokens": 144
+    "reasoning_tokens": 149
    },
-   "total_tokens": 3092
+   "total_tokens": 3120
   }
  },
  {
   "step": 2,
-  "action": "calibration",
-  "clip": "48",
-  "clips": null,
-  "args": {
-   "clip": "48",
-   "why": "Confirm orientation and residual for Tyumen camera."
-  },
-  "why": "Confirm orientation and residual for Tyumen camera.",
-  "result": {
-   "calibrated": true,
-   "lens": "pinhole with radial k1",
-   "hfov": 62.8,
-   "k1": -0.332,
-   "evidence": "landmarks",
-   "fit_rms_deg": 0.031
-  },
-  "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13a89880d10186cd54722",
-  "usage": {
-   "input_tokens": 3050,
-   "input_tokens_details": {
-    "cached_tokens": 0
-   },
-   "output_tokens": 188,
-   "output_tokens_details": {
-    "reasoning_tokens": 87
-   },
-   "total_tokens": 3238
-  }
- },
- {
-  "step": 3,
-  "action": "calibration",
-  "clip": "10",
-  "clips": null,
-  "args": {
-   "clip": "10",
-   "why": "Confirm orientation and residual for Korkino camera."
-  },
-  "why": "Confirm orientation and residual for Korkino camera.",
-  "result": {
-   "calibrated": true,
-   "lens": "wide pinhole with radial k1",
-   "hfov": 79.5,
-   "k1": -0.15,
-   "evidence": "v4: pointing from the annotated lines with k1 fixed at -0.15 (the 480x360 frame cannot pin it); hfov 79.5 from speed agreement with Kamensk (both saw the fireball before it slowed); the three-station ",
-   "fit_rms_deg": 0.065
-  },
-  "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13a8b58e0c45de3e3408f",
-  "usage": {
-   "input_tokens": 3192,
-   "input_tokens_details": {
-    "cached_tokens": 0
-   },
-   "output_tokens": 66,
-   "output_tokens_details": {
-    "reasoning_tokens": 0
-   },
-   "total_tokens": 3258
-  }
- },
- {
-  "step": 4,
   "action": "planes",
   "clip": null,
   "clips": null,
   "args": {
-   "why": "Measure intersection angles to assess triangulation geometry."
+   "why": "Measure plane crossing angles to test near-parallel claim."
   },
-  "why": "Measure intersection angles to assess triangulation geometry.",
+  "why": "Measure plane crossing angles to test near-parallel claim.",
   "result": {
    "calibrated_clips": [
     "2",
@@ -135,17 +71,81 @@
    ]
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13a8c2b1215ec3ec74f1d",
+  "response_id": "resp_6ae1653b6c610a84d8474f04",
   "usage": {
-   "input_tokens": 3388,
+   "input_tokens": 3074,
    "input_tokens_details": {
-    "cached_tokens": 3185
+    "cached_tokens": 2801
    },
-   "output_tokens": 129,
+   "output_tokens": 135,
    "output_tokens_details": {
-    "reasoning_tokens": 56
+    "reasoning_tokens": 52
    },
-   "total_tokens": 3517
+   "total_tokens": 3209
+  }
+ },
+ {
+  "step": 3,
+  "action": "calibration",
+  "clip": "48",
+  "clips": null,
+  "args": {
+   "clip": "48",
+   "why": "Confirm Tyumen orientation for the corrected report wording."
+  },
+  "why": "Confirm Tyumen orientation for the corrected report wording.",
+  "result": {
+   "calibrated": true,
+   "lens": "pinhole with radial k1",
+   "hfov": 62.8,
+   "k1": -0.332,
+   "evidence": "landmarks",
+   "fit_rms_deg": 0.031
+  },
+  "model": "muse-spark-1.3",
+  "response_id": "resp_6ae1653ec202355389e44166",
+  "usage": {
+   "input_tokens": 3222,
+   "input_tokens_details": {
+    "cached_tokens": 0
+   },
+   "output_tokens": 188,
+   "output_tokens_details": {
+    "reasoning_tokens": 90
+   },
+   "total_tokens": 3410
+  }
+ },
+ {
+  "step": 4,
+  "action": "calibration",
+  "clip": "10",
+  "clips": null,
+  "args": {
+   "clip": "10",
+   "why": "Confirm Korkino orientation for the corrected report wording."
+  },
+  "why": "Confirm Korkino orientation for the corrected report wording.",
+  "result": {
+   "calibrated": true,
+   "lens": "wide pinhole with radial k1",
+   "hfov": 79.5,
+   "k1": -0.15,
+   "evidence": "v4: pointing from the annotated lines with k1 fixed at -0.15 (the 480x360 frame cannot pin it); hfov 79.5 from speed agreement with Kamensk (both saw the fireball before it slowed); the three-station ",
+   "fit_rms_deg": 0.065
+  },
+  "model": "muse-spark-1.3",
+  "response_id": "resp_6ae16540f6d2ab6fe5ff43d7",
+  "usage": {
+   "input_tokens": 3365,
+   "input_tokens_details": {
+    "cached_tokens": 0
+   },
+   "output_tokens": 67,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 3432
   }
  },
  {
@@ -154,133 +154,6 @@
   "clip": null,
   "clips": [
    "2",
-   "48",
-   "10"
-  ],
-  "args": {
-   "clips": [
-    "2",
-    "48",
-    "10"
-   ],
-   "why": "Test full three-camera solution and residuals."
-  },
-  "why": "Test full three-camera solution and residuals.",
-  "result": {
-   "clips": [
-    "2",
-    "48",
-    "10"
-   ],
-   "q_max_deg": 66.3,
-   "warnings": [],
-   "seen_for_s": 13.7,
-   "azimuth_deg": 278.53,
-   "slope_deg": 16.8,
-   "begin": "54.463 N, 64.065 E, 87.1 km",
-   "end": "54.822 N, 60.540 E, 12.2 km",
-   "speed_kms": 19.49,
-   "speed_sigma_kms": 1.53,
-   "speed_sigma_formal_kms": 0.07,
-   "speed_spread_kms": 1.53,
-   "speed_band_95_kms": [
-    14.23,
-    29.88
-   ],
-   "speed_band_source": "Monte Carlo, 200 draws",
-   "uncertainty": {
-    "source": "montecarlo-2-10-48.json",
-    "draws": 200,
-    "azimuth_deg": {
-     "median": 277.04,
-     "1sigma": [
-      260.91,
-      281.14
-     ],
-     "2sigma": [
-      241.65,
-      284.56
-     ]
-    },
-    "slope_deg": {
-     "median": 16.45,
-     "1sigma": [
-      12.48,
-      17.19
-     ],
-     "2sigma": [
-      4.92,
-      17.82
-     ]
-    },
-    "speed_kms": {
-     "median": 19.09,
-     "1sigma": [
-      17.23,
-      22.93
-     ],
-     "2sigma": [
-      14.23,
-      29.88
-     ]
-    },
-    "end_h_km": {
-     "median": 12.34,
-     "1sigma": [
-      10.24,
-      20.28
-     ],
-     "2sigma": [
-      8.96,
-      48.38
-     ]
-    },
-    "begin_h_km": {
-     "median": 81.58,
-     "1sigma": [
-      73.15,
-      90.89
-     ],
-     "2sigma": [
-      66.55,
-      105.1
-     ]
-    }
-   },
-   "speed_per_camera": {
-    "2": 19.09,
-    "48": 19.59,
-    "10": 14.77
-   },
-   "residual_rms_deg": {
-    "2": 0.715,
-    "48": 0.312,
-    "10": 0.931
-   },
-   "verdict": "natural",
-   "verdict_reason": "19.5 km/s, 95% range 14.2 to 29.9 km/s (Monte Carlo, 200 draws) is above escape speed",
-   "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
-  },
-  "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13a8f3d97b23bd08340d8",
-  "usage": {
-   "input_tokens": 3534,
-   "input_tokens_details": {
-    "cached_tokens": 0
-   },
-   "output_tokens": 273,
-   "output_tokens_details": {
-    "reasoning_tokens": 167
-   },
-   "total_tokens": 3807
-  }
- },
- {
-  "step": 6,
-  "action": "solve",
-  "clip": null,
-  "clips": [
-   "2",
    "10"
   ],
   "args": {
@@ -288,9 +161,9 @@
     "2",
     "10"
    ],
-   "why": "Test Kamensk-Korkino pair with wide intersection."
+   "why": "Solve the wide-pair baseline before testing the third camera."
   },
-  "why": "Test Kamensk-Korkino pair with wide intersection.",
+  "why": "Solve the wide-pair baseline before testing the third camera.",
   "result": {
    "clips": [
     "2",
@@ -384,31 +257,31 @@
    "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13a9363c8b121319b4e3d",
+  "response_id": "resp_6ae16541be15c1bd6b314c61",
   "usage": {
-   "input_tokens": 4245,
+   "input_tokens": 3562,
    "input_tokens_details": {
-    "cached_tokens": 3313
+    "cached_tokens": 3057
    },
-   "output_tokens": 385,
+   "output_tokens": 175,
    "output_tokens_details": {
-    "reasoning_tokens": 281
+    "reasoning_tokens": 75
    },
-   "total_tokens": 4630
+   "total_tokens": 3737
   }
  },
  {
-  "step": 7,
+  "step": 6,
   "action": "drop_clip",
   "clip": "48",
   "clips": null,
   "args": {
    "clip": "48",
    "criterion": "near_parallel_pair",
-   "reason": "Tyumen parallels Kamensk at 7.5 deg while Kamensk crosses Korkino at 66.3 deg versus 58.9 deg for Tyumen.",
-   "why": "Remove the weaker of the near-parallel pair before finalizing."
+   "reason": "Tyumen planes cross Kamensk-Uralskiy at 7.5 deg while Kamensk crosses Korkino at 66.3 deg",
+   "why": "Tyumen parallels Kamensk and adds no conditioning to the wide pair."
   },
-  "why": "Remove the weaker of the near-parallel pair before finalizing.",
+  "why": "Tyumen parallels Kamensk and adds no conditioning to the wide pair.",
   "result": {
    "accepted": true,
    "dropped": "48",
@@ -424,24 +297,212 @@
     "threshold_deg": 10,
     "rule": "of two cameras whose planes cross under 10 deg, the one that crosses the rest more widely stays"
    },
-   "reason": "Tyumen parallels Kamensk at 7.5 deg while Kamensk crosses Korkino at 66.3 deg versus 58.9 deg for Tyumen."
+   "reason": "Tyumen planes cross Kamensk-Uralskiy at 7.5 deg while Kamensk crosses Korkino at 66.3 deg"
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13a971f2dfb00655f43df",
+  "response_id": "resp_6ae165441f811dfe90bb46df",
   "usage": {
-   "input_tokens": 4935,
+   "input_tokens": 4252,
    "input_tokens_details": {
-    "cached_tokens": 2929
+    "cached_tokens": 0
    },
-   "output_tokens": 680,
+   "output_tokens": 446,
    "output_tokens_details": {
-    "reasoning_tokens": 514
+    "reasoning_tokens": 284
    },
-   "total_tokens": 5615
+   "total_tokens": 4698
+  }
+ },
+ {
+  "step": 7,
+  "action": "calibration",
+  "clip": "14",
+  "clips": null,
+  "args": {
+   "clip": "14",
+   "why": "Verify Beloretsk lacks orientation before dropping it."
+  },
+  "why": "Verify Beloretsk lacks orientation before dropping it.",
+  "result": {
+   "calibrated": false,
+   "why": "no surveyed landmark or line set confirmed for this camera"
+  },
+  "model": "muse-spark-1.3",
+  "response_id": "resp_6ae1654604f6c5dcaa294e1b",
+  "usage": {
+   "input_tokens": 4535,
+   "input_tokens_details": {
+    "cached_tokens": 4209
+   },
+   "output_tokens": 324,
+   "output_tokens_details": {
+    "reasoning_tokens": 226
+   },
+   "total_tokens": 4859
   }
  },
  {
   "step": 8,
+  "action": "drop_clip",
+  "clip": "14",
+  "clips": null,
+  "args": {
+   "clip": "14",
+   "criterion": "not_oriented",
+   "reason": "Beloretsk has no orientation",
+   "why": "Beloretsk cannot contribute rays without orientation."
+  },
+  "why": "Beloretsk cannot contribute rays without orientation.",
+  "result": {
+   "accepted": true,
+   "dropped": "14",
+   "criterion": "not_oriented",
+   "reason": "Beloretsk has no orientation"
+  },
+  "model": "muse-spark-1.3",
+  "response_id": "resp_6ae16549cd4cfc5924184983",
+  "usage": {
+   "input_tokens": 4645,
+   "input_tokens_details": {
+    "cached_tokens": 4465
+   },
+   "output_tokens": 188,
+   "output_tokens_details": {
+    "reasoning_tokens": 57
+   },
+   "total_tokens": 4833
+  }
+ },
+ {
+  "step": 9,
+  "action": "drop_clip",
+  "clip": "15",
+  "clips": null,
+  "args": {
+   "clip": "15",
+   "criterion": "not_oriented",
+   "reason": "Chebarkul has no orientation",
+   "why": "Chebarkul cannot contribute rays without orientation."
+  },
+  "why": "Chebarkul cannot contribute rays without orientation.",
+  "result": {
+   "accepted": true,
+   "dropped": "15",
+   "criterion": "not_oriented",
+   "reason": "Chebarkul has no orientation"
+  },
+  "model": "muse-spark-1.3",
+  "response_id": "resp_6ae1654bc8fe2b51c87b4495",
+  "usage": {
+   "input_tokens": 4803,
+   "input_tokens_details": {
+    "cached_tokens": 3185
+   },
+   "output_tokens": 298,
+   "output_tokens_details": {
+    "reasoning_tokens": 171
+   },
+   "total_tokens": 5101
+  }
+ },
+ {
+  "step": 10,
+  "action": "drop_clip",
+  "clip": "81",
+  "clips": null,
+  "args": {
+   "clip": "81",
+   "criterion": "not_oriented",
+   "reason": "Yekaterinburg has no orientation",
+   "why": "Yekaterinburg cannot contribute rays without orientation."
+  },
+  "why": "Yekaterinburg cannot contribute rays without orientation.",
+  "result": {
+   "accepted": true,
+   "dropped": "81",
+   "criterion": "not_oriented",
+   "reason": "Yekaterinburg has no orientation"
+  },
+  "model": "muse-spark-1.3",
+  "response_id": "resp_6ae1654de4e5c511766649e7",
+  "usage": {
+   "input_tokens": 4961,
+   "input_tokens_details": {
+    "cached_tokens": 4593
+   },
+   "output_tokens": 106,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5067
+  }
+ },
+ {
+  "step": 11,
+  "action": "drop_clip",
+  "clip": "257",
+  "clips": null,
+  "args": {
+   "clip": "257",
+   "criterion": "not_oriented",
+   "reason": "Magnitogorsk has no orientation",
+   "why": "Magnitogorsk cannot contribute rays without orientation."
+  },
+  "why": "Magnitogorsk cannot contribute rays without orientation.",
+  "result": {
+   "accepted": true,
+   "dropped": "257",
+   "criterion": "not_oriented",
+   "reason": "Magnitogorsk has no orientation"
+  },
+  "model": "muse-spark-1.3",
+  "response_id": "resp_6ae1654daeea30c8d5e84f95",
+  "usage": {
+   "input_tokens": 5125,
+   "input_tokens_details": {
+    "cached_tokens": 4721
+   },
+   "output_tokens": 104,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5229
+  }
+ },
+ {
+  "step": 12,
+  "action": "drop_clip",
+  "clip": "238",
+  "clips": null,
+  "args": {
+   "clip": "238",
+   "criterion": "not_oriented",
+   "reason": "Plast has no orientation",
+   "why": "Plast cannot contribute rays without orientation."
+  },
+  "why": "Plast cannot contribute rays without orientation.",
+  "result": {
+   "accepted": true,
+   "dropped": "238",
+   "criterion": "not_oriented",
+   "reason": "Plast has no orientation"
+  },
+  "model": "muse-spark-1.3",
+  "response_id": "resp_6ae1654e888fdceea70f41fc",
+  "usage": {
+   "input_tokens": 5286,
+   "input_tokens_details": {
+    "cached_tokens": 4849
+   },
+   "output_tokens": 100,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 5386
+  }
+ },
+ {
+  "step": 13,
   "action": "finalize",
   "clip": null,
   "clips": [
@@ -453,9 +514,9 @@
     "2",
     "10"
    ],
-   "why": "Submit Kamensk-Uralskiy plus Korkino as final wide-angle pair."
+   "why": "Finalize Kamensk-Uralskiy and Korkino as the wide-pair solution."
   },
-  "why": "Submit Kamensk-Uralskiy plus Korkino as final wide-angle pair.",
+  "why": "Finalize Kamensk-Uralskiy and Korkino as the wide-pair solution.",
   "result": {
    "accepted": true,
    "final": {
@@ -552,39 +613,39 @@
    }
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13a9a62f7d46eddba4565",
+  "response_id": "resp_6ae1655000e891eeb90b4de6",
   "usage": {
-   "input_tokens": 5227,
+   "input_tokens": 5441,
    "input_tokens_details": {
-    "cached_tokens": 3441
+    "cached_tokens": 5105
    },
-   "output_tokens": 238,
+   "output_tokens": 207,
    "output_tokens_details": {
-    "reasoning_tokens": 136
+    "reasoning_tokens": 101
    },
-   "total_tokens": 5465
+   "total_tokens": 5648
   }
  },
  {
-  "step": 9,
+  "step": 14,
   "action": "write_report",
   "clip": null,
   "clips": null,
   "args": {
-   "why": "Write bilingual report from the accepted two-camera solution."
+   "why": "Write corrected bilingual report with three oriented cameras."
   },
-  "why": "Write bilingual report from the accepted two-camera solution.",
+  "why": "Write corrected bilingual report with three oriented cameras.",
   "result": {
    "reports": {
     "es": {
-     "figures": 29,
-     "traced": 29,
+     "figures": 22,
+     "traced": 22,
      "passed": true,
      "refused_drafts": 0
     },
     "en": {
-     "figures": 22,
-     "traced": 22,
+     "figures": 23,
+     "traced": 23,
      "passed": true,
      "refused_drafts": 0
     }
@@ -592,17 +653,17 @@
    "status": "awaiting_review"
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13a9c728051787d914f67",
+  "response_id": "resp_6ae165532b128e8eaccb4390",
   "usage": {
-   "input_tokens": 5935,
+   "input_tokens": 6150,
    "input_tokens_details": {
-    "cached_tokens": 5105
+    "cached_tokens": 3441
    },
-   "output_tokens": 312,
+   "output_tokens": 376,
    "output_tokens_details": {
-    "reasoning_tokens": 232
+    "reasoning_tokens": 296
    },
-   "total_tokens": 6247
+   "total_tokens": 6526
   }
  }
 ]
