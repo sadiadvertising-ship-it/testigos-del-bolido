@@ -1,11 +1,9 @@
 Veredicto, escrito por el código: ninguno. No se pudieron orientar dos cámaras, así que no hay trayectoria ni velocidad que juzgar.
 
-Informe del destello del 30 de julio de 2025 a las 22:50 hora de Colombia (UTC-5), 31 de julio de 2025 a las 03:50:24Z en hora UTC.
+Informe: destello sobre Colombia del 30 de julio de 2025 a las 22:50 (UTC-5, hora de Colombia), correspondiente al 31 de julio de 2025 a las 03:50:24Z.
 
-Lo sólido es que un satélite meteorológico registró a la misma hora un bólido en 6.460 N, 72.212 W, de categoría bastante brillante, con duración de 1.047533 segundos y confianza media.
+Lo sólido: un satélite registró un bólido en 6.460 grados norte (N), 72.212 grados oeste (W), con confianza media y duración de 1.047533 segundos, no aislado de rayos cercanos. Existe video de Medellín (cancha de baloncesto), a 373 kilómetros del destello, pero se desconoce el punto exacto de grabación. De Bucaramanga, a 124 kilómetros, solo hubo una publicación de texto: nunca llevó video adjunto; la cuenta fue suspendida después.
 
-Ninguna cámara pudo orientarse por falta de puntos de referencia confirmados, por lo que no hay geometría suficiente ni trayectoria calculada. Existe video de testigo de Medellín (cancha de baloncesto), a 373 kilómetros del destello, pero se desconoce el lugar exacto de filmación. De Bucaramanga, a 124 kilómetros, no existe video porque la cuenta fue suspendida.
+Lo incierto: ninguna cámara pudo orientarse por falta de puntos de referencia confirmados, por lo que la solución no usa ninguna cámara y ninguna quedó apartada, y la geometría es insuficiente para trayectoria y velocidad.
 
-Lo incierto es que el evento no aparece aislado de rayos cercanos. No se encontró ningún reingreso rastreado que contenga el destello; lo más próximo fue OBJECT C, previsto para 2025-07-31T07:54Z con ventana de 2 horas, a 2.1 horas del destello.
-
-Faltan vistas laterales: se solicitan videos desde Málaga (63 kilómetros), Saravena (66 kilómetros) y San Gil (103 kilómetros).
+Falta: vistas cercanas desde Málaga (63 kilómetros), Saravena (66 kilómetros) y alrededores. En reentradas, ningún objeto contiene el destello; lo más próximo es OBJECT C, a 2.1 horas del borde de su ventana prevista.

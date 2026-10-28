@@ -1,0 +1,324 @@
+{
+ "run_id": "20261027T215525-b8d0",
+ "event": "colombia-2025-07-30",
+ "started": "2026-10-27T21:55:25",
+ "git": {
+  "commit": "8f38a87",
+  "dirty": false
+ },
+ "planner": "native",
+ "planner_model": "muse-spark-1.3",
+ "instructions_sha": "363f389846be",
+ "tools_sha": "ea0d5367f35b",
+ "inputs": {
+  "events/colombia-2025-07-30/event.json": "9009c3db1dd3b9b5",
+  "events/colombia-2025-07-30/picks.json": null,
+  "events/colombia-2025-07-30/calibration.json": null,
+  "events/colombia-2025-07-30/glm-window.json": "4e2e336e009c9f4c",
+  "events/colombia-2025-07-30/city-geometry.json": "fd548e01b7976ab8",
+  "events/colombia-2025-07-30/reentries.json": "03a90e260e6860c8",
+  "out/sam/colombia-2025-07-30-medellin.json": "9cdcfbe74bc1096b",
+  "events/colombia-2025-07-30/witness/medellin.json": "8ef2983ad3401ed2",
+  "out/sam/colombia-2025-07-30-bucaramanga.json": null,
+  "events/colombia-2025-07-30/witness/bucaramanga.json": null
+ },
+ "resumed_from": "20261027T184659-28c2",
+ "notes": "From a claims check by the AI coding assistant, not a person's review: there was never a video from Bucaramanga, because the post was text only, so do not say a video was lost or that the account's suspension removed it. The 2.1 hours is the gap between the edge of OBJECT C's predicted window and the flash, not the time until its predicted re-entry.",
+ "history": [],
+ "finished": "2026-10-27T21:55:56",
+ "status": "blocked",
+ "block": {
+  "reason": "missing_evidence",
+  "request": {
+   "run_id": "20261027T215525-b8d0",
+   "at": "2026-10-27T21:55:56",
+   "kind": "videos_from_towns",
+   "why": "No oriented cameras exist so videos from towns that would see flash high up are needed.",
+   "clip": "medellin",
+   "towns": [
+    "Málaga",
+    "Saravena",
+    "San Gil"
+   ]
+  }
+ },
+ "final": {
+  "insufficient_geometry": true,
+  "oriented_clips": []
+ },
+ "dropped": {},
+ "steps": [
+  {
+   "step": 1,
+   "action": "calibration",
+   "clip": "medellin",
+   "clips": null,
+   "args": {
+    "clip": "medellin",
+    "why": "I confirm whether Medellín can be oriented given its unknown filming spot."
+   },
+   "why": "I confirm whether Medellín can be oriented given its unknown filming spot.",
+   "result": {
+    "calibrated": false,
+    "why": "no surveyed landmark or line set confirmed for this camera"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae1642166314600dc1349e0",
+   "usage": {
+    "input_tokens": 2791,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 677,
+    "output_tokens_details": {
+     "reasoning_tokens": 571
+    },
+    "total_tokens": 3468
+   }
+  },
+  {
+   "step": 2,
+   "action": "finalize",
+   "clip": null,
+   "clips": [],
+   "args": {
+    "clips": [],
+    "why": "No oriented cameras exist so I submit an empty solution to record insufficient geometry."
+   },
+   "why": "No oriented cameras exist so I submit an empty solution to record insufficient geometry.",
+   "result": {
+    "accepted": true,
+    "insufficient_geometry": true,
+    "oriented_clips": [],
+    "next": "check_satellite and missing_views, then write_report, then request_evidence for the views that would close the geometry"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae1642342f6b3b224a14dad",
+   "usage": {
+    "input_tokens": 2906,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 206,
+    "output_tokens_details": {
+     "reasoning_tokens": 103
+    },
+    "total_tokens": 3112
+   }
+  },
+  {
+   "step": 3,
+   "action": "check_satellite",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "I check satellite detections before writing the insufficient-geometry report."
+   },
+   "why": "I check satellite detections before writing the insufficient-geometry report.",
+   "result": {
+    "detections": [
+     {
+      "utc": "2025-07-31T03:50:24Z",
+      "where": "6.460 N, 72.212 W",
+      "class": "Bolide",
+      "brightness": [
+       {
+        "category": "Fairly Bright",
+        "value": 9.722628516243302e-12
+       }
+      ],
+      "duration_s": 1.047533,
+      "confidence": "medium",
+      "lightning_nearby": "not isolated"
+     }
+    ],
+    "note": "GLM covers the Americas from 2017; older or other-region events will show nothing",
+    "reentries": {
+     "source": "The Aerospace Corporation, CORDS reentry database",
+     "containing_the_flash": [],
+     "nearest": [
+      {
+       "object": "OBJECT C",
+       "type": "unknown",
+       "predicted_utc": "2025-07-31T07:54Z",
+       "window_h": 2,
+       "hours_between_window_and_flash": 2.1
+      },
+      {
+       "object": "STARLINK-2038",
+       "type": "payload",
+       "predicted_utc": "2025-07-30T18:42Z",
+       "window_h": 1,
+       "hours_between_window_and_flash": 8.1
+      }
+     ],
+     "caveat": "tracked objects only; a predicted window is not a ground track"
+    }
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae1642543f48a6950b84713",
+   "usage": {
+    "input_tokens": 3048,
+    "input_tokens_details": {
+     "cached_tokens": 2801
+    },
+    "output_tokens": 103,
+    "output_tokens_details": {
+     "reasoning_tokens": 17
+    },
+    "total_tokens": 3151
+   }
+  },
+  {
+   "step": 4,
+   "action": "missing_views",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "I find towns whose videos would close the geometry for the report."
+   },
+   "why": "I find towns whose videos would close the geometry for the report.",
+   "result": {
+    "best_towns": [
+     "Málaga (63 km, look 114.5 deg, flash 31.6-51.1 deg up)",
+     "Saravena (66 km, look 214.5 deg, flash 30.4-49.7 deg up)",
+     "San Gil (103 km, look 95.9 deg, flash 20.6-37.2 deg up)",
+     "Pamplona (112 km, look 154.6 deg, flash 18.8-34.6 deg up)",
+     "Sogamoso (114 km, look 43.8 deg, flash 18.5-34.2 deg up)",
+     "Duitama (115 km, look 52.3 deg, flash 18.4-34.0 deg up)",
+     "Floridablanca (118 km, look 124.5 deg, flash 18.0-33.3 deg up)",
+     "Bucaramanga (124 km, look 125.8 deg, flash 17.0-31.9 deg up)"
+    ]
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae164286714a246d1b9448a",
+   "usage": {
+    "input_tokens": 3402,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 153,
+    "output_tokens_details": {
+     "reasoning_tokens": 64
+    },
+    "total_tokens": 3555
+   }
+  },
+  {
+   "step": 5,
+   "action": "write_report",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "I write the bilingual insufficient-geometry report from the tool results."
+   },
+   "why": "I write the bilingual insufficient-geometry report from the tool results.",
+   "result": {
+    "reports": {
+     "es": {
+      "figures": 18,
+      "traced": 18,
+      "passed": true,
+      "refused_drafts": 0
+     },
+     "en": {
+      "figures": 22,
+      "traced": 22,
+      "passed": true,
+      "refused_drafts": 0
+     },
+     "next": "request_evidence for the views that would close the geometry"
+    },
+    "status": "running"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae1642a520a8f5f867046dd",
+   "usage": {
+    "input_tokens": 3706,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 383,
+    "output_tokens_details": {
+     "reasoning_tokens": 299
+    },
+    "total_tokens": 4089
+   }
+  },
+  {
+   "step": 6,
+   "action": "request_evidence",
+   "clip": "medellin",
+   "clips": null,
+   "args": {
+    "clip": "medellin",
+    "kind": "videos_from_towns",
+    "towns": [
+     "Málaga",
+     "Saravena",
+     "San Gil"
+    ],
+    "why": "No oriented cameras exist so videos from towns that would see flash high up are needed."
+   },
+   "why": "No oriented cameras exist so videos from towns that would see flash high up are needed.",
+   "result": {
+    "accepted": true,
+    "blocked": true,
+    "request": {
+     "run_id": "20261027T215525-b8d0",
+     "at": "2026-10-27T21:55:56",
+     "kind": "videos_from_towns",
+     "why": "No oriented cameras exist so videos from towns that would see flash high up are needed.",
+     "clip": "medellin",
+     "towns": [
+      "Málaga",
+      "Saravena",
+      "San Gil"
+     ]
+    }
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae1643c87d832efb3fc4810",
+   "usage": {
+    "input_tokens": 3869,
+    "input_tokens_details": {
+     "cached_tokens": 2929
+    },
+    "output_tokens": 319,
+    "output_tokens_details": {
+     "reasoning_tokens": 166
+    },
+    "total_tokens": 4188
+   }
+  }
+ ],
+ "reports": {
+  "es": {
+   "check": {
+    "passed": true,
+    "numbers": 18,
+    "traced": 18,
+    "orphans": [],
+    "wrong_kind": [],
+    "hemisphere_mismatches": [],
+    "verdict_mismatches": []
+   },
+   "drafts": [],
+   "text": "Veredicto, escrito por el código: ninguno. No se pudieron orientar dos cámaras, así que no hay trayectoria ni velocidad que juzgar.\n\nInforme: destello sobre Colombia del 30 de julio de 2025 a las 22:50 (UTC-5, hora de Colombia), correspondiente al 31 de julio de 2025 a las 03:50:24Z.\n\nLo sólido: un satélite registró un bólido en 6.460 grados norte (N), 72.212 grados oeste (W), con confianza media y duración de 1.047533 segundos, no aislado de rayos cercanos. Existe video de Medellín (cancha de baloncesto), a 373 kilómetros del destello, pero se desconoce el punto exacto de grabación. De Bucaramanga, a 124 kilómetros, solo hubo una publicación de texto: nunca llevó video adjunto; la cuenta fue suspendida después.\n\nLo incierto: ninguna cámara pudo orientarse por falta de puntos de referencia confirmados, por lo que la solución no usa ninguna cámara y ninguna quedó apartada, y la geometría es insuficiente para trayectoria y velocidad.\n\nFalta: vistas cercanas desde Málaga (63 kilómetros), Saravena (66 kilómetros) y alrededores. En reentradas, ningún objeto contiene el destello; lo más próximo es OBJECT C, a 2.1 horas del borde de su ventana prevista.\n"
+  },
+  "en": {
+   "check": {
+    "passed": true,
+    "numbers": 22,
+    "traced": 22,
+    "orphans": [],
+    "wrong_kind": [],
+    "hemisphere_mismatches": [],
+    "verdict_mismatches": []
+   },
+   "drafts": [],
+   "text": "Verdict, written by the code: none. Fewer than two cameras could be oriented, so there is no trajectory and no speed to judge.\n\nOn 2025-07-30 22:50 (UTC-5, Colombia time), 2025-07-31T03:50:24Z, a flash was recorded over Colombia.\n\nWhat is solid: a space-based lightning sensor recorded a Bolide at 6.460 N, 72.212 W with medium confidence, lasting 1.047533 seconds. Lightning was nearby, so the flash was not isolated.\n\nWitness material: video exists only from Medellín (basketball court), about 373 km from the flash; its filming spot is unknown and no camera could be oriented from surveyed landmarks. The Bucaramanga item was a text-only post about 124 km away; no video was ever attached to it, and the account was suspended later.\n\nAs a result, no cameras could be oriented, the solution uses none, and none were set aside. Geometry is insufficient for a trajectory.\n\nUncertain and missing: no known re-entry window contains the flash. The nearest tracked object, OBJECT C, has a 2 hour predicted window whose edge is 2.1 hours from the flash, followed by STARLINK-2038 at 8.1 hours; a predicted window is not a ground track. Views from Málaga (63 km), Saravena (66 km) and nearby towns are still needed.\n"
+  }
+ },
+ "cost_usd": 0.0527
+}
