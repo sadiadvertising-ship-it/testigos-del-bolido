@@ -6,9 +6,12 @@
 const SERIES = [[57, 135, 229], [25, 158, 112], [217, 89, 38]];
 const GRAY = [125, 135, 150];
 const INK = [230, 237, 246];
+const MUTED = [150, 160, 175];
+const FAINT = [112, 123, 140];
 const WHITE = [242, 248, 255];
 const GLOW = [108, 182, 255];
-const PUBLISHED = [200, 211, 224];
+const ACCENT = [120, 188, 255];  // var(--accent)
+const PUBLISHED = [201, 133, 0];  // var(--published): the palette's yellow, which the validator separates from both cameras' hues
 const NIGHT = [8, 17, 31];
 const FONT = '"IBM Plex Sans", system-ui, sans-serif';
 const COMPASS = ['north', 'north-north-east', 'north-east', 'east-north-east', 'east', 'east-south-east', 'south-east',
@@ -25,7 +28,9 @@ const abbr = az => dir(az).split('-').map(w => w[0].toUpperCase()).join('');
 const latlon = ([lon, lat]) => `${fmt(Math.abs(lat), 2)}° ${lat >= 0 ? 'N' : 'S'}, ${fmt(Math.abs(lon), 2)}° ${lon >= 0 ? 'E' : 'W'}`;
 const dash = new deck.PathStyleExtension({dash: true});
 
-const state = {data: null, t: null, playing: false, highlight: null, show: {sight: true, mc: true, published: true}};
+// stage: in video mode, how much of the Colombia map shows (keys 1 to 3); 0 shows everything, as it always does outside it.
+// spots: where each town label of the open case sits, by town (placeTowns).
+const state = {data: null, t: null, playing: false, highlight: null, stage: 0, spots: new Map(), show: {sight: true, mc: true, published: true}};
 const cache = {};
 let cases = [];
 
@@ -37,11 +42,22 @@ function km([lon1, lat1], [lon2, lat2]) {
 
 // ---- map -------------------------------------------------------------------------------------------------------------
 
-const bare = new URLSearchParams(location.search).get('panel') === '0';  // ?panel=0 for screen recordings
+const params = new URLSearchParams(location.search);
+const bare = params.get('panel') === '0';  // ?panel=0 hides the panel and the map key, for screen recordings
+const video = params.get('video') === '1';  // ?video=1: larger type and a wider trajectory, for recording at 1920x1080
+// The Chelyabinsk replay runs once on load, unless the viewer prefers reduced motion or the URL says ?replay=0.
+const autoplay = params.get('replay') !== '0' && !matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.body.classList.toggle('bare', bare);
+document.body.classList.toggle('video', video);
 const narrow = matchMedia('(max-width: 760px)');
 const padding = () => (document.body.classList.contains('bare') ? {top: 0, bottom: 0, left: 0, right: 0}
-  : narrow.matches ? {top: 0, bottom: innerHeight * 0.5, left: 0, right: 0} : {top: 0, bottom: 0, left: 412, right: 0});
+  : narrow.matches ? {top: 0, bottom: innerHeight * 0.5, left: 0, right: 0}
+    : {top: 0, bottom: 0, left: $('#panel').getBoundingClientRect().right, right: 0});
+
+// Sizes on the map, in pixels.
+const LOOK = video
+  ? {text: 17, pad: [6, 3, 6, 3], gap: 12, heights: 24, path: 5, pathColor: [255, 255, 255], glow: 130, glowWidth: 18, published: 3, dot: 1.35}
+  : {text: 12, pad: [4, 2, 4, 2], gap: 9, heights: 12, path: 3, pathColor: WHITE, glow: 90, glowWidth: 12, published: 2, dot: 1};
 
 const map = new maplibregl.Map({
   container: 'map', style: 'https://tiles.openfreemap.org/styles/dark', center: [62.6, 55.0], zoom: 5, pitch: 55,
@@ -51,6 +67,8 @@ map.addControl(new maplibregl.NavigationControl({visualizePitch: true}), 'top-ri
 map.on('error', e => console.warn('map:', e.error && e.error.message));
 const overlay = new deck.MapboxOverlay({interleaved: false, layers: [], getTooltip: tooltip});
 map.addControl(overlay);
+
+const placeFilters = {};  // the basemap's own filters on its place names
 
 map.on('style.load', () => {
   const night = {background: ['background-color', '#08111f'], water: ['fill-color', '#0b1b30']};
@@ -63,21 +81,39 @@ map.on('style.load', () => {
     map.setLayoutProperty(l.id, 'text-transform', 'none');
     map.setPaintProperty(l.id, 'text-color', '#5d6c84');
     map.setPaintProperty(l.id, 'text-halo-color', '#08111f');
+    placeFilters[l.id] = l.filter || true;
   }
+  quietNames();
   try {
     map.setSky({'sky-color': '#02060d', 'horizon-color': '#132944', 'fog-color': '#08111f', 'sky-horizon-blend': 0.6,
       'horizon-fog-blend': 0.7, 'fog-ground-blend': 0.8});
   } catch (e) { /* the map works without a sky */ }
 });
 
+// The basemap leaves out the places the case labels itself, so no name shows twice.
+let quieted = '';
+function quietNames() {
+  const d = state.data;
+  const names = !d ? [] : d.solution ? d.stations.map(s => s.site)
+    : d.towns.filter(t => state.spots.has(t.city) && townShows(d, t)).map(t => t.city);
+  const name = ['coalesce', ['get', 'name:latin'], ['get', 'name']], applied = JSON.stringify([names, Object.keys(placeFilters)]);
+  if (applied === quieted) return;
+  quieted = applied;
+  for (const [id, filter] of Object.entries(placeFilters)) {
+    map.setFilter(id, names.length ? ['all', filter, ['!', ['in', name, ['literal', names]]]] : filter);
+  }
+}
+
 const ON_TOP = {parameters: {depthCompare: 'always', depthWriteEnabled: false}};  // labels and markers stay readable over the 3D lines
+// Translucent planes hide nothing behind them: the lines of sight lie inside their camera's plane and would flicker out.
+const SHEER = {parameters: {depthWriteEnabled: false}};
 
 function text(id, data, getPosition, getText, extra = {}) {
   return new deck.TextLayer({
-    id, data, getPosition, getText, getSize: 12, sizeUnits: 'pixels', sizeMinPixels: 11, sizeMaxPixels: 13, fontFamily: FONT,
-    fontWeight: 500, characterSet: 'auto',
-    background: true, getBackgroundColor: [...NIGHT, 215], backgroundPadding: [4, 2, 4, 2], getColor: [...INK, 255],
-    getTextAnchor: 'start', getAlignmentBaseline: 'center', getPixelOffset: [9, 0], billboard: true, ...ON_TOP, ...extra,
+    id, data, getPosition, getText, getSize: LOOK.text, sizeUnits: 'pixels', sizeMinPixels: LOOK.text - 1, sizeMaxPixels: LOOK.text + 1,
+    fontFamily: FONT, fontWeight: 500, characterSet: 'auto',
+    background: true, getBackgroundColor: [...NIGHT, 215], backgroundPadding: LOOK.pad, getColor: [...INK, 255],
+    getTextAnchor: 'start', getAlignmentBaseline: 'center', getPixelOffset: [LOOK.gap, 0], billboard: true, ...ON_TOP, ...extra,
   });
 }
 
@@ -116,7 +152,7 @@ function solvedLayers(d) {
   }
   if (state.show.sight) {
     layers.push(new deck.SolidPolygonLayer({id: 'planes', data: planes, getPolygon: p => p.polygon, _full3d: true,
-      getFillColor: p => [...camColor(d, p.s), p.s.status === 'used' ? 24 : 10]}));
+      getFillColor: p => [...camColor(d, p.s), p.s.status === 'used' ? 24 : 10], ...SHEER}));
     layers.push(new deck.PathLayer({id: 'rays', data: rays, getPath: r => r.path, widthUnits: 'pixels', billboard: true,
       getColor: r => [...camColor(d, r.s), r.s.status === 'used' ? 115 : 95], getWidth: 1,
       getDashArray: r => (r.s.status === 'used' ? [0, 0] : [4, 3]), extensions: [dash]}));
@@ -125,67 +161,181 @@ function solvedLayers(d) {
     getColor: [...GLOW, 110], getWidth: 1.5, widthUnits: 'pixels', getDashArray: [3, 3], extensions: [dash]}));
   layers.push(new deck.LineLayer({id: 'curtain', data: sol.path.filter((_, i) => i % 4 === 0), getSourcePosition: p => p,
     getTargetPosition: p => [p[0], p[1], 0], getColor: [...GLOW, 38], getWidth: 1}));
+  // The paths draw over the planes of sight: the solved line is where those planes meet, and they would hide it.
+  layers.push(new deck.PathLayer({id: 'glow', data: [flown], getPath: p => p, getColor: [...GLOW, LOOK.glow], getWidth: LOOK.glowWidth,
+    widthUnits: 'pixels', billboard: true, capRounded: true, jointRounded: true, ...ON_TOP}));
+  layers.push(new deck.PathLayer({id: 'path', data: [flown], getPath: p => p, getColor: [...LOOK.pathColor, 255], getWidth: LOOK.path,
+    widthUnits: 'pixels', billboard: true, capRounded: true, jointRounded: true, ...ON_TOP}));
   if (state.show.published && d.published && !live) {
-    layers.push(new deck.PathLayer({id: 'published', data: [d.published.path], getPath: p => p, getColor: [...PUBLISHED, 220],
-      getWidth: 2, widthUnits: 'pixels', billboard: true, getDashArray: [6, 4], extensions: [dash]}));
+    layers.push(new deck.PathLayer({id: 'published', data: [d.published.path], getPath: p => p, getColor: [...PUBLISHED, 235],
+      getWidth: LOOK.published, widthUnits: 'pixels', billboard: true, getDashArray: [6, 4], extensions: [dash], ...ON_TOP}));
   }
   if (tried) {
     layers.push(new deck.PathLayer({id: 'tried', data: [tried.path], getPath: p => p, getColor: [255, 255, 255, 170], getWidth: 2,
-      widthUnits: 'pixels', billboard: true, getDashArray: [2, 3], extensions: [dash]}));
+      widthUnits: 'pixels', billboard: true, getDashArray: [2, 3], extensions: [dash], ...ON_TOP}));
   }
-  layers.push(new deck.PathLayer({id: 'glow', data: [flown], getPath: p => p, getColor: [...GLOW, 90], getWidth: 12,
-    widthUnits: 'pixels', billboard: true, capRounded: true, jointRounded: true}));
-  layers.push(new deck.PathLayer({id: 'path', data: [flown], getPath: p => p, getColor: [...WHITE, 255], getWidth: 3,
-    widthUnits: 'pixels', billboard: true, capRounded: true, jointRounded: true}));
   if (live) {
-    layers.push(new deck.ScatterplotLayer({id: 'head', data: [headAt(d, t)], getPosition: p => p, getRadius: 6, radiusUnits: 'pixels',
-      getFillColor: [255, 255, 255], stroked: true, getLineColor: [...GLOW, 150], getLineWidth: 7, lineWidthUnits: 'pixels', billboard: true,
-      ...ON_TOP}));
+    layers.push(new deck.ScatterplotLayer({id: 'head', data: [headAt(d, t)], getPosition: p => p, getRadius: 6 * LOOK.dot,
+      radiusUnits: 'pixels', getFillColor: [255, 255, 255], stroked: true, getLineColor: [...GLOW, 150], getLineWidth: 7 * LOOK.dot,
+      lineWidthUnits: 'pixels', billboard: true, ...ON_TOP}));
   }
   layers.push(new deck.ScatterplotLayer({id: 'cams', data: d.stations, pickable: true, getPosition: s => [...s.lonlat, 0],
-    getRadius: s => (s.rays ? 5.5 : 4), radiusUnits: 'pixels', radiusMinPixels: 3.5, radiusMaxPixels: 6, getFillColor: s => (s.rays ? [...camColor(d, s), 255] : [...NIGHT, 255]),
+    getRadius: s => (s.rays ? 5.5 : 4) * LOOK.dot, radiusUnits: 'pixels', radiusMinPixels: 3.5 * LOOK.dot, radiusMaxPixels: 6 * LOOK.dot,
+    getFillColor: s => (s.rays ? [...camColor(d, s), 255] : [...NIGHT, 255]),
     stroked: true, getLineColor: s => (s.rays ? [...NIGHT, 255] : [...GRAY, 255]), getLineWidth: 1.5, lineWidthUnits: 'pixels',
     billboard: true, ...ON_TOP}));
   layers.push(text('cam-labels', d.stations, s => [...s.lonlat, 0], s => s.site,
-    {getColor: s => (s.rays ? [...INK, 255] : [150, 160, 175, 255]), updateTriggers: {getColor: d.id}}));
-  layers.push(text('heights', [first, last], p => p, p => `${fmt(p[2] / 1000, 0)} km`, {getPixelOffset: [0, -16],
-    getTextAnchor: 'middle'}));
+    {getColor: s => (s.rays ? [...INK, 255] : [...MUTED, 255]), updateTriggers: {getColor: d.id}}));
+  layers.push(text('heights', [first, last], p => p, p => `${fmt(p[2] / 1000, 0)} km`, {getTextAnchor: 'middle',
+    getPixelOffset: [0, -Math.round(LOOK.heights * 1.35)], getSize: LOOK.heights, sizeMinPixels: LOOK.heights - 1,
+    sizeMaxPixels: LOOK.heights + 1, fontWeight: video ? 600 : 500}));
   if (state.show.published && d.published && !live) {
-    layers.push(text('published-label', [d.published.path[1]], p => p, () => 'CBET 3423, published', {getColor: [...PUBLISHED, 255],
-      getPixelOffset: [0, 20], getTextAnchor: 'middle', getSize: 11.5}));
+    // The label sits at the path's east end, clear of the crossing of the lines of sight: below and to the right, under
+    // the height label, or on a phone, which has no room on the right, higher up and left of the height label, above the
+    // path and the camera names beside it. Its border carries the path's colour.
+    const east = d.published.path.reduce((a, b) => (b[0] > a[0] ? b : a));
+    layers.push(text('published-label', [east], p => p, () => 'CBET 3423, published', {getSize: LOOK.text - 0.5,
+      getBorderColor: [...PUBLISHED, 255], getBorderWidth: 1, backgroundPadding: LOOK.pad.map(v => v + 1),
+      getTextAnchor: narrow.matches ? 'end' : 'start',
+      getPixelOffset: narrow.matches ? [-(LOOK.gap + 2.5 * LOOK.heights), -2 * LOOK.heights] : [LOOK.gap, LOOK.heights + LOOK.gap]}));
   }
   return layers;
 }
 
+// Video mode, Colombia: keys 1 to 3 build the map up for a recording (1 the GOES-19 flash, 2 the Medellín line, 3 the town
+// wedges); 0 or Escape shows everything. A layer marked n shows from stage n on; n = 4 marks what only "everything" shows.
+const shows = n => state.stage === 0 || state.stage >= n;
+
+const asked = d => new Set(d.run?.block?.request?.towns || []);  // the towns the agent asked for videos from
+const filmedSites = d => d.witness.filter(w => /calibrat|orient/.test(w.status));  // witness videos with a camera site
+const townShows = (d, t) => (filmedSites(d).some(w => w.site === t.city) ? shows(2) : t.sees_it_high ? shows(3) : shows(4));
+const townRadius = (d, t) => (asked(d).has(t.city) ? 6 : 4.5) * LOOK.dot;
+// On a phone the dots stand too close for more than a name: the table under the map gives the nearest towns' height in
+// the sky, a tap on a dot gives any town's, and the map key says which bright dots the agent asked for.
+const townLabel = (d, t) => (narrow.matches ? t.city
+  : (t.sees_it_high ? `${t.city}  ${span(t.el_at_40km_deg, t.el_at_80km_deg, 0)}° up` : t.city)
+    + (asked(d).has(t.city) ? '\nrequested by the agent' : ''));
+const LINE = 1.15;  // line height of the town labels; a requested town's runs to two lines
+
 function openLayers(d) {
   const g = d.satellite, [lon, lat] = g.lonlat, [dlon, dlat] = g.extent_deg;
   const box = [[lon - dlon / 2, lat - dlat / 2], [lon + dlon / 2, lat - dlat / 2], [lon + dlon / 2, lat + dlat / 2], [lon - dlon / 2, lat + dlat / 2]];
-  const high = d.towns.filter(t => t.sees_it_high);
-  const witness = d.witness.filter(w => /calibrat|orient/.test(w.status));
-  const named = [...high].sort((a, b) => a.km - b.km).slice(0, 5).concat(d.towns.filter(t => witness.some(w => w.site === t.city)));
+  const wanted = asked(d), witness = shows(2) ? filmedSites(d) : [];
+  const towns = d.towns.filter(t => townShows(d, t));
+  const high = towns.filter(t => t.sees_it_high);
+  const named = towns.filter(t => state.spots.has(t.city));
+  const tone = t => (wanted.has(t.city) ? 'asked' : t.sees_it_high ? 'high' : 'low');
+  const fill = {asked: [...ACCENT, 255], high: [...SERIES[0], 160], low: [...GRAY, 170]};
+  const ink = {asked: [...INK, 255], high: [...MUTED, 255], low: [...FAINT, 255]};
   return [
     new deck.PolygonLayer({id: 'glm-box', data: [box], getPolygon: b => b, getFillColor: [...SERIES[1], 45], getLineColor: [...SERIES[1], 210],
       getLineWidth: 1, lineWidthUnits: 'pixels'}),
-    new deck.SolidPolygonLayer({id: 'sight', data: high, _full3d: true, getFillColor: [...SERIES[0], 22],
-      getPolygon: t => [[...t.lonlat, 0], [lon, lat, 40000], [lon, lat, 80000]]}),
+    new deck.SolidPolygonLayer({id: 'sight', data: high, _full3d: true, getFillColor: t => [...SERIES[0], wanted.has(t.city) ? 34 : 14],
+      getPolygon: t => [[...t.lonlat, 0], [lon, lat, 40000], [lon, lat, 80000]], ...SHEER}),
     new deck.PathLayer({id: 'sight-edges', data: high, getPath: t => [[lon, lat, 40000], [...t.lonlat, 0], [lon, lat, 80000]],
-      getColor: [...SERIES[0], 120], getWidth: 1, widthUnits: 'pixels', billboard: true}),
+      getColor: t => (wanted.has(t.city) ? [...ACCENT, 170] : [...SERIES[0], 85]), getWidth: t => (wanted.has(t.city) ? 1.5 : 1),
+      widthUnits: 'pixels', billboard: true}),
     new deck.PathLayer({id: 'witness', data: witness, getPath: w => [[...w.lonlat, 0], [lon, lat, 60000]], getColor: [...GRAY, 200],
-      getWidth: 1.5, widthUnits: 'pixels', billboard: true, getDashArray: [4, 3], extensions: [dash]}),
+      getWidth: 1.5 * LOOK.dot, widthUnits: 'pixels', billboard: true, getDashArray: [4, 3], extensions: [dash]}),
     new deck.LineLayer({id: 'column', data: [[lon, lat]], getSourcePosition: p => [...p, 0], getTargetPosition: p => [...p, 100000],
-      getColor: [...SERIES[1], 120], getWidth: 1.5}),
+      getColor: [...SERIES[1], 120], getWidth: 1.5 * LOOK.dot, ...ON_TOP}),
     new deck.LineLayer({id: 'column-band', data: [[lon, lat]], getSourcePosition: p => [...p, 40000], getTargetPosition: p => [...p, 80000],
-      getColor: [...SERIES[1], 255], getWidth: 4}),
-    new deck.ScatterplotLayer({id: 'glm', data: [g], pickable: true, getPosition: () => [lon, lat, 0], getRadius: 6, radiusUnits: 'pixels',
-      getFillColor: [255, 255, 255], stroked: true, getLineColor: [...SERIES[1], 230], getLineWidth: 4, lineWidthUnits: 'pixels',
-      billboard: true, ...ON_TOP}),
-    new deck.ScatterplotLayer({id: 'towns', data: d.towns, pickable: true, getPosition: t => [...t.lonlat, 0], getRadius: 4.5,
-      radiusUnits: 'pixels', getFillColor: t => [...(t.sees_it_high ? SERIES[0] : GRAY), 255], stroked: true, getLineColor: [...NIGHT, 255],
+      getColor: [...SERIES[1], 255], getWidth: 4 * LOOK.dot, ...ON_TOP}),
+    new deck.ScatterplotLayer({id: 'glm', data: [g], pickable: true, getPosition: () => [lon, lat, 0], getRadius: 6 * LOOK.dot,
+      radiusUnits: 'pixels', getFillColor: [255, 255, 255], stroked: true, getLineColor: [...SERIES[1], 230], getLineWidth: 4 * LOOK.dot,
+      lineWidthUnits: 'pixels', billboard: true, ...ON_TOP}),
+    new deck.ScatterplotLayer({id: 'towns', data: towns, pickable: true, getPosition: t => [...t.lonlat, 0], getRadius: t => townRadius(d, t),
+      radiusUnits: 'pixels', getFillColor: t => fill[tone(t)], stroked: true, getLineColor: t => (wanted.has(t.city) ? [...INK, 255] : [...NIGHT, 255]),
       getLineWidth: 1.5, lineWidthUnits: 'pixels', billboard: true, ...ON_TOP}),
-    text('town-labels', named, t => [...t.lonlat, 0], t => (t.sees_it_high ? `${t.city}  ${span(t.el_at_40km_deg, t.el_at_80km_deg, 0)}° up` : t.city),
-      {getColor: t => (t.sees_it_high ? [...INK, 255] : [150, 160, 175, 255])}),
+    text('town-labels', named, t => [...t.lonlat, 0], t => townLabel(d, t), {getColor: t => ink[tone(t)], lineHeight: LINE,
+      getTextAnchor: t => state.spots.get(t.city).anchor, getPixelOffset: t => state.spots.get(t.city).offset}),
     text('glm-label', [g], () => [lon, lat, 100000], () => 'GOES-19 flash', {getColor: [...INK, 255]}),
   ];
+}
+
+// ---- town labels, open case ------------------------------------------------------------------------------------------
+
+const ruler = document.createElement('canvas').getContext('2d');
+// Around its dot a label tries the right first, then the left, then a half or a whole height higher or lower on either
+// side, then above or below.
+const SPOTS = [['start', 0], ['end', 0], ['start', -1], ['start', 1], ['end', -1], ['end', 1], ['middle', -1], ['middle', 1],
+  ['start', -2], ['start', 2], ['end', -2], ['end', 2]];
+
+function viewport(view) {  // the map's projection for a camera, reached or not
+  const c = map.getCanvas();
+  return new deck.WebMercatorViewport({width: c.clientWidth, height: c.clientHeight, longitude: view.center[0], latitude: view.center[1],
+    zoom: view.zoom, pitch: view.pitch, bearing: view.bearing, padding: view.padding});
+}
+
+const currentView = () => ({center: map.getCenter().toArray(), zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(),
+  padding: map.getPadding()});
+
+// Where the open case's town labels go in one view. The labels that must show (the towns the agent asked for and the
+// filmed one) are placed together: of every combination of their spots, the one that covers least. Then every other
+// blue dot, from the nearest out, takes the first spot that covers nothing: no other dot, the flash, its column, the
+// witness line, a label, the map key, the zoom buttons or the edge of the map. A blue dot with no free spot keeps no label.
+function placeTowns(d, view) {
+  const vp = viewport(view), g = d.satellite.lonlat, xy = (ll, z = 0) => vp.project([ll[0], ll[1], z]);
+  // the overlay draws labels and dots smaller with distance, in step with the map's scale there
+  const scale = ll => { const a = xy(ll), b = xy([ll[0] + 0.01, ll[1]]); return Math.hypot(b[0] - a[0], b[1] - a[1]); };
+  const s0 = scale([vp.longitude, vp.latitude]);
+  const [pl, pt, pr, pb] = LOOK.pad;
+  const rect = (at, s, label, [anchor, dy]) => {
+    ruler.font = `500 ${LOOK.text}px ${FONT}`;
+    const rows = label.split('\n'), w = Math.max(...rows.map(r => ruler.measureText(r).width)), h = rows.length * LOOK.text * LINE;
+    const ox = {start: LOOK.gap, end: -LOOK.gap, middle: 0}[anchor];
+    const oy = anchor === 'middle' ? dy * (LOOK.gap + h / 2 + pt) : dy * (h / 2 + pt);
+    const x0 = {start: ox, end: ox - w, middle: ox - w / 2}[anchor] - pl;
+    return {anchor, offset: [ox, oy],
+      box: [at[0] + s * x0, at[1] + s * (oy - h / 2 - pt), at[0] + s * (x0 + w + pl + pr), at[1] + s * (oy + h / 2 + pb)]};
+  };
+  const overlaps = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+  const covers = (b, [c, r]) => Math.hypot(Math.max(b[0], Math.min(c[0], b[2])) - c[0], Math.max(b[1], Math.min(c[1], b[3])) - c[1]) < r;
+  const crosses = (b, [p, q, hw]) => {
+    const n = Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / 3);
+    for (let i = 0; i <= n; i++) {
+      const x = p[0] + ((q[0] - p[0]) * i) / n, y = p[1] + ((q[1] - p[1]) * i) / n;
+      if (x > b[0] - hw && x < b[2] + hw && y > b[1] - hw && y < b[3] + hw) return true;
+    }
+    return false;
+  };
+  const pad = view.padding, edge = [pad.left + 6, pad.top + 6, vp.width - pad.right - 6, vp.height - pad.bottom - 6];
+  const flash = xy(g);
+  const lines = [[flash, xy(g, 100000), 3], ...filmedSites(d).map(w => [xy(w.lonlat), xy(g, 60000), 2.5])];
+  const dots = d.towns.map(t => ({t, at: xy(t.lonlat), s: scale(t.lonlat) / s0}));
+  const placed = [rect(xy(g, 100000), scale(g) / s0, 'GOES-19 flash', ['start', 0]).box];
+  for (const el of [document.body.classList.contains('bare') ? null : $('#legend'), $('.maplibregl-ctrl-top-right')]) {
+    const r = el && el.getBoundingClientRect();  // the map key and the zoom buttons
+    if (r && r.width) placed.push([r.left - 6, r.top - 6, r.right + 6, r.bottom + 6]);
+  }
+  const wanted = asked(d), filmed = new Set(filmedSites(d).map(w => w.site));
+  // text over text, the flash or the edge is worst; a requested town's dot next; then any dot; then a line
+  const clashes = (me, b) => placed.filter(p => overlaps(b, p)).length * 20
+    + (b[0] < edge[0] || b[1] < edge[1] || b[2] > edge[2] || b[3] > edge[3]) * 20 + covers(b, [flash, 14 * LOOK.dot * me.s]) * 20
+    + dots.filter(o => o !== me && covers(b, [o.at, (townRadius(d, o.t) + 3) * o.s])).map(o => (wanted.has(o.t.city) ? 6 : 2))
+      .reduce((a, b) => a + b, 0)
+    + lines.filter(l => crosses(b, l)).length;
+  const tries = t => {
+    const me = dots.find(o => o.t === t);
+    return SPOTS.map(spot => rect(me.at, me.s, townLabel(d, t), spot)).map(r => ({...r, t, cost: clashes(me, r.box)}));
+  };
+  const spots = new Map(), take = r => { spots.set(r.t.city, {anchor: r.anchor, offset: r.offset}); placed.push(r.box); };
+  const must = d.towns.filter(t => wanted.has(t.city) || filmed.has(t.city)).map(t => tries(t).sort((a, b) => a.cost - b.cost));
+  const crowding = (r, others) => others.filter(c => overlaps(c.box, r.box)).length * 20;
+  let best = [], least = Infinity;
+  const search = (i, chosen, cost) => {  // branch and bound over the spots of the labels that must show
+    if (cost >= least) return;
+    if (i === must.length) { best = chosen; least = cost; return; }
+    for (const r of must[i]) search(i + 1, [...chosen, r], cost + r.cost + crowding(r, chosen));
+  };
+  if (must.length <= 5) search(0, [], 0);
+  else must.forEach(rs => best.push(rs.reduce((a, b) => (b.cost + crowding(b, best) < a.cost + crowding(a, best) ? b : a))));
+  best.forEach(take);
+  for (const t of d.towns.filter(o => o.sees_it_high && !spots.has(o.city)).sort((a, b) => a.km - b.km)) {
+    const free = tries(t).find(r => r.cost === 0);
+    if (free) take(free);
+  }
+  return spots;
 }
 
 function redraw() {
@@ -305,7 +455,7 @@ function leadOpen(d) {
     and dashcam clips from Bogotá and Medellín, reposted on 1 August 2025, have not been analysed yet. With fewer than two oriented
     cameras there is no trajectory, and the agent says so instead of guessing${d.run && d.run.block && d.run.block.request ? `: it
     asked for videos from ${esc((d.run.block.request.towns || []).join(', '))}, and the run stays blocked until they arrive` : ''}.</p>
-    ${d.reentries ? `<p>Was it space junk? No satellite or rocket re-entry in the ${esc(d.reentries.source)} has a predicted window
+    ${d.reentries ? `<p>Was it space junk? No satellite or rocket re-entry in ${/^the /i.test(d.reentries.source) ? '' : 'the '}${esc(d.reentries.source)} has a predicted window
     that includes the flash${d.reentries.nearest.length ? `; the nearest, ${esc(d.reentries.nearest[0].object)}, was due
     ${fmt(d.reentries.nearest[0].hours_between_window_and_flash, 1)} h away` : ''}. Only tracked objects are listed, so the speed
     still has to decide.</p>` : ''}
@@ -495,11 +645,17 @@ function drawLegend(d) {
   } else {
     $('#legend').innerHTML = `<details ${narrow.matches ? '' : 'open'}><summary>Map key</summary>
       <div class="key"><span class="sw box"></span>GOES-19 flash and its extent</div>
-      <div class="key"><span class="sw dot" style="background:${rgb(SERIES[0])}"></span>Towns that would see it 10–60° up</div>
-      <div class="key"><span class="sw dot" style="background:${rgb(GRAY)}"></span>Other towns: too low in their sky</div>
-      <div class="key"><span class="sw dash" style="border-top-color:${rgb(GRAY)}"></span>Medellín video, cannot be oriented</div></details>`;
+      <div class="key" data-stage="2"><span class="sw dash" style="border-top-color:${rgb(GRAY)}"></span>Witness video, camera not oriented</div>
+      ${asked(d).size ? '<div class="key" data-stage="3"><span class="sw dot asked"></span>Towns requested by the agent</div>' : ''}
+      <div class="key" data-stage="3"><span class="sw dot" style="background:${rgb(SERIES[0])}"></span>Towns that would see it 10–60° up</div>
+      <div class="key" data-stage="4"><span class="sw dot" style="background:${rgb(GRAY)}"></span>Other towns: too low in their sky</div></details>`;
+    stageKey();
   }
   $('#legend').querySelectorAll('input').forEach(i => i.addEventListener('change', () => { state.show[i.dataset.key] = i.checked; redraw(); }));
+}
+
+function stageKey() {  // the key lists only what the current stage shows
+  $('#legend').querySelectorAll('[data-stage]').forEach(el => { el.hidden = !shows(Number(el.dataset.stage)); });
 }
 
 // ---- replay ----------------------------------------------------------------------------------------------------------
@@ -568,13 +724,38 @@ async function show(id) {
   $('#play').textContent = 'Replay';
   drawLegend(d);
   readout();
-  const view = {...d.view, zoom: d.view.zoom - (narrow.matches ? 1.3 : 0), padding: padding()};
-  if (firstView) map.jumpTo(view); else map.flyTo({...view, duration: 2200, essential: true});
+  // A phone sees more of the case. In video mode the open case comes closer to the flash, so its larger labels have room,
+  // and the solved case steps back beside the wider panel, so every witness site stays in view.
+  const closer = !video ? 0 : !d.solution ? 0.5 : document.body.classList.contains('bare') ? 0 : -0.2;
+  const view = {...d.view, zoom: d.view.zoom - (narrow.matches ? 1.3 : 0) + closer, padding: padding()};
+  state.spots = d.solution ? new Map() : placeTowns(d, view);  // placed for where the camera is going
+  quietNames();
+  if (firstView) {
+    map.jumpTo(view);
+    // the replay runs once, when the map has drawn the case; a case switch before then cancels it
+    if (autoplay && d.solution) map.once('idle', () => { if (state.data === d && state.t === null && !state.playing) play(); });
+  } else map.flyTo({...view, duration: 2200, essential: true});
   firstView = false;
   redraw();
 }
 
+map.on('moveend', () => {  // after a pan, zoom, turn or resize the open case's labels find their spots again
+  const d = state.data;
+  if (!d || d.solution) return;
+  state.spots = placeTowns(d, currentView());
+  quietNames();
+  redraw();
+});
+
 addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (video && (/^[0-3]$/.test(e.key) || e.key === 'Escape')) {
+    state.stage = e.key === 'Escape' ? 0 : Number(e.key);
+    stageKey();
+    quietNames();
+    redraw();
+    return;
+  }
   if (e.target.closest('input, textarea, button')) return;
   if (e.code === 'Space') { e.preventDefault(); play(); }
   if (e.key === 'h') { document.body.classList.toggle('bare'); map.easeTo({padding: padding(), duration: 600}); }
@@ -586,6 +767,6 @@ addEventListener('keydown', e => {
   $('#cases').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { location.hash = b.dataset.id; }));
   $('#play').addEventListener('click', play);
   addEventListener('hashchange', () => show(location.hash.slice(1)));
-  try { await document.fonts.load(`500 12px ${FONT}`); } catch (e) { /* labels fall back to the system font */ }
+  try { await Promise.all([500, 600].map(w => document.fonts.load(`${w} 12px ${FONT}`))); } catch (e) { /* labels fall back to the system font */ }
   show(location.hash.slice(1));
 })();
