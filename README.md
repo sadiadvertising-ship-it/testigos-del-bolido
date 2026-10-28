@@ -9,6 +9,30 @@ for the Chelyabinsk fireball of 2013 and pointed at a green fireball seen over C
 published trajectory. Today it needs cameras that stood still (a dashcam, a security camera, a phone resting on
 something), and it has only been tested by day.
 
+[3D viewer](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/) (goes live on 31 October) · Demo video (link added on 3 November) · [![Tests](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml/badge.svg)](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml)
+
+[![Animated 3D map of the Chelyabinsk replay: the fireball's path is drawn from 89 km down to 11 km over 12.5 s while the lines of sight from Kamensk-Uralskiy and Korkino fill in; the last view adds the Monte Carlo lines and the published path](docs/replay.gif)](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/)
+
+The Chelyabinsk replay from the viewer, in real time: 12.5 s of flight, from 89 km down to 11 km. The blue lines of
+sight come from Kamensk-Uralskiy and the green ones from Korkino. The dashed grey ones come from Tyumen, which the agent
+left out. The last view adds the 500 Monte Carlo draws and the published path, CBET 3423.
+
+```mermaid
+flowchart TD
+    model["Muse Spark 1.3 picks<br>a tool and says why"]
+    code["The code runs it<br>read_witness: Muse Spark<br>track: SAM 3.1<br>calibration, planes, solve<br>check_satellite<br>missing_views, drop_clip<br>finalize, write_report<br>request_evidence"]
+    checks{{"The checks accept<br>or refuse"}}
+    person["The run ends,<br>waiting for a person"]
+    signed(["Report signed off"])
+
+    model --> code --> checks
+    checks -->|"the result or the<br>refusal goes back"| model
+    checks -->|"report accepted, or<br>evidence requested"| person
+    person -->|"signs the report off"| signed
+    person -->|"sends it back<br>with notes"| model
+    person -->|"supplies the evidence<br>it asked for"| model
+```
+
 The Global Meteor Network's 2025 report lists 36 meteor cameras in Brazil, 11 in Mexico, 2 in Chile and none in
 Colombia (Roggemans et al. 2026). When a fireball crosses Colombia, the videos people post are the only record from the
 ground.
