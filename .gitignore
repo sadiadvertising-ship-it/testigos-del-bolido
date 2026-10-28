@@ -17,3 +17,6 @@ out/sam/*
 out/sam/*.frames.json
 *.egg-info/
 out/demo/
+
+# Claude Code worktrees and local settings
+.claude/
