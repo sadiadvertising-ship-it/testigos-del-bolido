@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¿Grabaste el bólido?</title>
+<meta name="description" content="Si grabaste el bólido verde del 30 de julio de 2025 en Colombia, tu video puede ayudar a calcular su trayectoria y saber si fue un meteoro o un satélite.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #08111f; --surface: #0d1626; --raise: #132238; --line: #1c2a41;
+  --ink: #e6edf6; --ink-2: #a8b5c7; --ink-3: #75839a; --accent: #78bcff; --asked: #ffd166;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 var(--sans); }
+main { max-width: 680px; margin: 0 auto; padding: 28px 16px 56px; }
+h1 { font-size: 30px; line-height: 1.18; font-weight: 600; margin: 0 0 14px; }
+h2 { font-size: 19px; font-weight: 600; margin: 34px 0 10px; }
+p { margin: 0 0 12px; }
+a { color: var(--accent); }
+.when { color: var(--ink-3); font-size: 15px; margin: 0 0 8px; }
+.num { font-family: var(--mono); font-size: 0.94em; }
+.status { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 20px 0; }
+.status p:last-child { margin: 0; }
+.send { display: inline-block; margin: 8px 0 4px; padding: 13px 22px; border-radius: 9px; background: var(--accent); color: #06101e;
+  font-weight: 600; text-decoration: none; }
+.send[aria-disabled="true"] { background: var(--raise); color: var(--ink-2); cursor: default; }
+.soon { color: var(--ink-3); font-size: 15px; }
+table { width: 100%; border-collapse: collapse; font-size: 16px; }
+th { text-align: left; font-weight: 500; color: var(--ink-3); font-size: 14px; padding: 6px 8px 6px 0; border-bottom: 1px solid var(--line); }
+td { padding: 9px 8px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.r, th.r { text-align: right; padding-right: 0; }
+tr.asked td:first-child { color: var(--asked); font-weight: 600; }
+.tag { display: inline-block; margin-left: 6px; font-size: 12px; font-weight: 500; color: var(--asked); }
+ul { padding-left: 20px; margin: 0 0 12px; }
+li { margin-bottom: 7px; }
+.note { color: var(--ink-2); font-size: 15px; }
+footer { margin-top: 40px; color: var(--ink-3); font-size: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="when" id="when">30 de julio de 2025, 10:50 p. m., hora de Colombia</p>
+  <h1>¿Grabaste el bólido verde del 30 de julio de 2025?</h1>
+  <p>Esa noche una bola de fuego verde cruzó el cielo del nororiente de Colombia. El satélite meteorológico GOES-19
+  registró el destello <span id="flash"></span>. Con dos videos tomados desde lugares distintos se puede calcular por
+  dónde pasó, a qué velocidad iba y si fue una roca del espacio o un satélite que volvía a la atmósfera.</p>
+
+  <div class="status" id="status">
+    <p>Hasta hoy solo tenemos un video, grabado en Medellín, y no alcanza para calcular la trayectoria.</p>
+  </div>
+
+  <p><a class="send" id="send" href="#" aria-disabled="true">Enviar mi video</a></p>
+  <p class="soon" id="soon">El formulario abre el 31 de octubre de 2026.</p>
+
+  <h2>Desde dónde serviría más un video</h2>
+  <p>Desde estos municipios el destello se vio alto en el cielo. La tabla dice hacia dónde mirar y qué tan alto estaba,
+  según si ocurrió a 40 o a 80 km de altura.</p>
+  <table>
+    <thead><tr><th>Municipio</th><th class="r">Distancia</th><th class="r">Mirar hacia</th><th class="r">Altura en el cielo</th></tr></thead>
+    <tbody id="towns"></tbody>
+  </table>
+  <p class="note" style="margin-top:10px">El satélite da el lugar del destello, no su altura; por eso la altura en el cielo es un rango.</p>
+
+  <h2>Cómo saber si tu video sirve</h2>
+  <ul>
+    <li>La cámara estaba quieta: una cámara de seguridad, una cámara de carro o un celular apoyado en algo.</li>
+    <li>Se ve algo fijo que se pueda ubicar en un mapa: un edificio, una torre, una calle, la silueta de un cerro.</li>
+    <li>Sabes desde dónde se grabó, aunque sea el barrio o el sitio.</li>
+  </ul>
+  <p>No importa que el video sea corto, oscuro o de baja calidad. Si tienes el archivo original, sin recortar ni
+  editar, mejor.</p>
+
+  <h2>Qué hacemos con tu video</h2>
+  <p>Lo usamos solo para medir el bólido: hacia dónde estaba en cada cuadro y en qué momento. Publicamos esas
+  direcciones y tiempos, no el video. Nunca publicamos la dirección de tu casa, y te damos crédito como tú digas.</p>
+
+  <footer>
+    <p>Testigos del Bólido es un proyecto de código abierto hecho para el hackathon global de IA de Meta, con
+    Muse Spark y SAM 3.1. <a href="./">Ver el mapa 3D del caso</a>.</p>
+  </footer>
+</main>
+<script src="enviar.js"></script>
+</body>
+</html>
