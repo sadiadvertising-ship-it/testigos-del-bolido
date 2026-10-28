@@ -38,7 +38,7 @@ flowchart TD
 
 The Global Meteor Network's report for 2025 counts the cameras that produced meteor orbits that year: 36 in Brazil, 11
 in Mexico, 2 in Chile and none in Colombia (Roggemans et al. 2026, Table 5). When a fireball crosses Colombia, the videos
-people post are the only record from the ground.
+people post may be the only record from the ground.
 
 Built during the Meta Global AI Developer Hackathon (26 October to 4 November 2026) with Muse Spark and SAM 3.1.
 The 3D viewer runs from this repository: `python3 -m http.server -d web 8000`, then open http://localhost:8000.
@@ -47,8 +47,9 @@ The 3D viewer runs from this repository: `python3 -m http.server -d web 8000`, t
 
 1. **Muse Spark reads each video**: camera type, edits, on-screen clock, when the fireball shows, and landmarks a map
    could locate (`src/testigos/witness.py`).
-2. **SAM 3.1 tracks the fireball** frame by frame from the phrase "bright light", the only phrase that found it
-   ("fireball" and "meteor" returned nothing) (`track.py`). The agent runs it itself on any clip nobody has tracked yet.
+2. **SAM 3.1 tracks the fireball** frame by frame from the phrase "bright light"; on the two clips where other phrases
+   were tried (Beloretsk and Chebarkul), "fireball" and "meteor" returned nothing, and so did "light streak" on
+   Chebarkul (`track.py`). The agent runs it itself on any clip nobody has tracked yet.
 3. **Each camera is oriented** from lines and landmarks in one frame: a camera model (pinhole with radial distortion) is
    fitted to them and to OpenStreetMap, so every pixel becomes a direction in the sky (`camera.py`). This step is not
    automated in the product yet. During development an AI coding assistant (Claude Code, not a Meta model) did it: two
@@ -58,7 +59,8 @@ The 3D viewer runs from this repository: `python3 -m http.server -d web 8000`, t
    two planes that cross in the trajectory, refined by least squares over every ray (`solve.py`; Ceplecha 1987,
    Borovička 1990). The speed comes from each video's own frame times.
 5. **Verdict.** Natural if the speed's 95% range lies above 11 km/s (Earth's escape speed is 11.2 km/s); re-entry if it
-   lies below 8.5 km/s and the passage is long; inconclusive otherwise (`verdict.py`). The range is the Monte Carlo's.
+   lies below 8.5 km/s and the passage is long; inconclusive otherwise (`verdict.py`). The range is the Monte Carlo's when there is one, else the speed ± 2σ with σ at
+   least 10% of the speed.
 
 ## The agent
 
@@ -78,8 +80,8 @@ case agent works (`src/testigos/agent.py`):
     camera's under 10°, or a rise of every other camera's residual by more than 25% and 0.1°.
   - `finalize` re-solves the chosen cameras and refuses them when an oriented camera was left out without an accepted
     drop, when a much wider pair was left aside, or when an added camera raises every other camera's residual.
-  - `write_report` writes the report in English and Spanish. Every figure must match a tool result of the run, as the
-    same kind of quantity: a convergence angle cannot pass as a speed (`verify.py`). Hemisphere letters must agree, and
+  - `write_report` writes the report in English and Spanish. Every figure must match a tool result of the run, and one
+    printed with a unit must match a result of that kind: a convergence angle cannot pass as a speed (`verify.py`). Hemisphere letters must agree, and
     the text must not state a verdict other than the code's, which the code writes at the top. An open case's report
     waits until the satellite detections and the towns were checked. Refused drafts stay in the run record.
   - `request_evidence` stops the run until a person supplies videos, a camera position or a landmark confirmation, and
@@ -90,12 +92,13 @@ case agent works (`src/testigos/agent.py`):
   asked for. A reviewer can send the report back with notes, and can withdraw a signature the same way; the history keeps
   every entry. A blocked run does not call the model again until one of its inputs changes or a reviewer sends notes
   (`python -m testigos resume`), and the notes reach both the planner and the model that writes the report.
-- **Records.** Every run is kept in `events/<id>/runs/<run_id>.json`, never overwritten: code version, hashes of every
+- **Records.** Every run is kept in `events/<id>/runs/<run_id>.json`, never replaced by a later run (a review only changes its status and adds to its history): code version, hashes of every
   input, model, each step with its reason and result, the checks, refused drafts and the API cost.
   `python -m testigos replay <event> <run_id> --echo` re-runs a recorded run's tools offline and lists any difference.
 - **The answer is out of reach.** The published solutions and every comparison with them live in `validation/`; a test
-  fails if anything in `src/` reads them, and no agent input holds a value derived from them. `scripts/grade.py` grades a
-  run afterwards.
+  fails if anything in `src/` reads them, and no agent input holds a published value or a comparison with one, although
+  the camera fits and the Monte Carlo's field-of-view range were settled with CBET in view (see What these numbers do not
+  say). `scripts/grade.py` grades a run afterwards.
 
 What the agent did on Chelyabinsk (run `20261027T220006-4e3e`, 14 steps, US$ 0.07):
 
@@ -110,11 +113,11 @@ What the agent did on Chelyabinsk (run `20261027T220006-4e3e`, 14 steps, US$ 0.0
 14  write_report            figures traced: es 22 of 22, en 23 of 23 -> awaiting review, then signed off
 ```
 
-This is the case's fourth complete run (an earlier attempt, `20261027T132145-7dce`, failed on an API error after three
+This is the fourth complete run of the tool-calling agent on this case (an earlier attempt, `20261027T132145-7dce`, failed on an API error after three
 steps). Every review is kept in the run record's history. What happened, run by run, on 27 October 2026:
 
-- **`20261027T132419-a996`** chose the same cameras. It dropped Tyumen citing a rise in residuals that was under the
-  code's own threshold, because the code then checked only that the reason quoted numbers from the tools. Its report gave
+- **`20261027T132419-a996`** chose the same cameras. It dropped Tyumen citing its 7.5° crossing with Kamensk-Uralskiy and a
+  rise in residuals that was under the code's own threshold, because the code then checked only that the reason quoted numbers from the tools. Its report gave
   ±0.29 km/s as the speed's uncertainty (the spread between the two cameras' speeds) and called the geometry solid.
   Diego Burbano signed it off at 13:55. That evening a review by the AI coding assistant found both problems. Drops now
   need a criterion the code measures, the verdict and the report read the Monte Carlo's range, and the run was resumed
@@ -140,7 +143,9 @@ steps). Every review is kept in the run record's history. What happened, run by 
 The case holds eight witness videos chosen from the Ondřejov catalogue of Chelyabinsk videos (Borovička et al. 2016),
 which also gives each camera's position: stopped cars and fixed cameras, with buildings or streets in view. Muse later
 reported camera motion in three of them (Beloretsk, Chebarkul and Magnitogorsk), and none of those three could be
-oriented. Two more were no longer online. Three of the cameras could be oriented: Kamensk-Uralskiy (a stopped car),
+oriented, and neither could Yekaterinburg or Plast (Plast's fit was set aside after it missed CBET's plane by 9.3°).
+Two more chosen from the catalogue, Verkhnaya Pyshma and Mezhozernyi, were no longer online and are not among the
+eight. Three of the cameras could be oriented: Kamensk-Uralskiy (a stopped car),
 Korkino (a standing car) and Tyumen (a car at a traffic light). The agent kept Kamensk-Uralskiy and Korkino, 173 km
 apart, whose planes cross at 66°, and left Tyumen out as the weaker of a near-parallel pair: its planes cross
 Kamensk-Uralskiy's at 7.5°.
@@ -153,13 +158,15 @@ Kamensk-Uralskiy's at 7.5°.
 | Height where CBET puts the major flare | 29.2 km on our fitted line; Monte Carlo median 29.4 km (1σ 24.9–34.0) | 31.7 km | peak radiation at 29.7 km (Popova) | |
 | Distance from CBET's end point to our line | 3.7 km by the fit; Monte Carlo median 7.0 km (1σ 3.8–10.8) | | | |
 
-The refereed values are Borovička et al. (2013, Nature) and Popova et al. (2013, Science); CBET 3423 was the same team's
-preliminary telegram. Neither paper's full text was read here: each value was read in a later paper, an abstract or a
-press release that quotes it, named in `validation/chelyabinsk-2013/refereed.json`. The Monte Carlo
+The refereed values are Borovička et al. (2013, Nature) and Popova et al. (2013, Science); CBET 3423 was the preliminary
+telegram of Borovička's team. Neither paper's full text was read here: each value was read in a later paper that cites
+it, a press release, or a search-engine excerpt of a PDF (for Popova's 18.3°, of the paper itself), as named in
+`validation/chelyabinsk-2013/refereed.json`. The Monte Carlo
 (`scripts/montecarlo.py`, 500 draws) re-fits both cameras from perturbed evidence
 on every draw: line and landmark pixels, street bearings, camera positions (8 m), Korkino's field of view (anywhere from
-76 to 95°) and distortion, the SAM points, and each camera's clock. Its median heading sits 2.8° from the fit's because
-the field of view it draws is wider on average than the fit's 79.5°.
+76 to 95°) and distortion, the SAM points, and each camera's clock. Its median heading sits 2.8° below the fit's; the
+field of view it draws averages 85.5°, wider than the fit's 79.5°, and a wider field of view lowers the heading (91.9°
+gave 275.9°: `validation/chelyabinsk-2013/history/solution-2-10-v2.json`).
 
 `scripts/grade.py` graded the run afterwards. Four criteria were committed on 26 October at 20:33, before the first
 camera was calibrated at 21:25: heading within 3°, slope within 3°, height at CBET's major flare within 5 km and CBET's
@@ -172,15 +179,17 @@ not. Against the refereed speeds, a comparison added after the first graded run 
 Three checks that do not use any published value:
 
 - **Tyumen, held out.** Its 223 lines of sight miss the Kamensk-Uralskiy and Korkino path by 0.45° (median; 90% within
-  0.54°), and its own clock gives 19.17 ± 0.08 km/s along it (`scripts/holdout.py`).
+  0.54°), and its own clock gives 19.17 ± 0.08 km/s along it (`scripts/holdout.py`). Its camera was refitted after
+  it missed CBET's plane by 3.4°, so this check is independent of the fit, not of CBET.
 - **Why Tyumen is out.** Kamensk-Uralskiy's and Tyumen's planes cross at 7.1° in the median Monte Carlo draw and at 3.1°
-  in the narrowest, and their rays pull the fit along their shared plane. With all three cameras, 51 of 200 draws end
+  in the narrowest, and their rays can pull the fit along their shared plane (the draws that slide have a median of 6.2° between those planes,
+  the others 7.7°). With all three cameras, 51 of 200 draws end
   more than 10° from that fit's own heading or below a 12° slope (62 measured from the two-camera heading); with
   Kamensk-Uralskiy and Korkino, 4 of 500 do (`scripts/mc_stability.py`).
 - **SAM against a brightness threshold.** The numpy baseline that runs beside SAM, fed to the same solver on the same
   frames, gives a heading of 303.7° and a speed of 0.01 km/s for the same two cameras: it follows the glare. With all
-  three cameras it gives 290.5° and 19.15 km/s. With SAM's points, 282.1° and 19.65 km/s
-  (`scripts/sam_vs_threshold.py`). The baseline is a plain threshold, not a tuned tracker.
+  three cameras it gives 290.5° and 19.15 km/s. With SAM's points, the same two cameras give 282.1° and
+  19.65 km/s, and all three 278.5° and 19.49 km/s (`scripts/sam_vs_threshold.py`). The baseline is a plain threshold, not a tuned tracker.
 
 What these numbers do not say:
 
@@ -188,12 +197,13 @@ What these numbers do not say:
   Kamensk-Uralskiy was checked against CBET's plane as soon as it was fitted. Tyumen was recalibrated after missing
   CBET's plane by 3.4°, and Plast was left without a camera after missing by 9.3°. Korkino's field of view was settled
   while the pair was graded against CBET: a self-calibration at 91.9° turned the heading to about 276° and failed the 3°
-  criterion, then 78.8° missed it by 0.04° and 79.5° passed, both fitted at 22:40 on 26 October. 79.5° is the value
+  criterion, then 78.8° missed it by 0.04° and 79.5° passed, both committed at 22:40 on 26 October (39492ef). 79.5° is the value
   where Korkino's speed agrees with Kamensk-Uralskiy's, and its rays sit 3.4° from CBET's plane, about as far as
-  Tyumen's before its refit (`validation/chelyabinsk-2013/history/`).
+  Tyumen's before its refit (`validation/chelyabinsk-2013/history/`, `calibration-vs-cbet.json` and
+  `calibration-checks-vs-cbet.json`).
 - **The Monte Carlo's range for that field of view was widened after a run.** On 27 October a 500-draw run with
   N(79.5°, 2.5°) left CBET's slope outside its 2σ range and its heading outside 1σ. The range was then widened to 76 to
-  95°, which covers both fitted values, and CBET's heading and slope now fall inside 1σ.
+  95°, which covers the three fitted values, 78.8°, 79.5° and 91.9°, and CBET's heading and slope now fall inside 1σ.
 - **The head point changes definition mid-track.** It is the leading end of a streak and the centre of a round glow.
   Split where SAM's box stops being longer along the motion (10.1 s), Kamensk-Uralskiy's points give, with Korkino, a
   15.8° slope and 16.7 km/s before the change and 20.2° and 19.1 km/s after it (`scripts/head_split.py`). The Monte
@@ -204,8 +214,8 @@ What these numbers do not say:
 
 At 10:50 pm Colombian time a green fireball crossed the sky. The Geostationary Lightning Mapper on GOES-19 recorded a
 1.05 s flash at 6.46° N, 72.21° W, which NASA's analysts classified as a bolide, with medium confidence and lightning
-nearby. NASA's GLM bolide catalogue was kept all year from 2020 to 2025. In those six years it lists 42 events over
-mainland Colombia, 4 to 13 a year, and rates 35 of them low confidence. For 3 of them, all in 2025, GOES-East saw the
+nearby. NASA's GLM bolide catalogue was kept all year from 2020 to 2025. In those six years it lists 42 events inside a
+coarse outline of mainland Colombia (40 to 54 when the outline is moved 30 km in or out), 4 to 13 a year, and rates 35 of them low confidence. For 3 of them, all in 2025, GOES-East saw the
 flash within 2° of sun glint, so they may be sunlight reflected by water or a roof rather than bolides
 (`scripts/glm_by_country.py`, `events/colombia-2025-07-30/glm-colombia.json`). A Colombian team documented the
 fireballs of 31 May 2024 (Araujo-Salcedo et al. 2024, a poster at the VIII Colombian Congress of Astronomy).
@@ -213,7 +223,7 @@ fireballs of 31 May 2024 (Araujo-Salcedo et al. 2024, a poster at the VIII Colom
 The only video analysed so far was filmed in Medellín, 373 km away: a handheld phone video that replays the moment in
 cuts. The agent ran SAM 3.1 on it, which found the flash in 79 of 132 frames, but nothing in view can be located on a
 map and the filming spot is unknown, so the camera cannot be oriented. Security-camera and dashcam clips from Bogotá and
-Medellín, posted on X by @ColombiaOscura on 1 August 2025, have not been analysed yet.
+Medellín, posted on X by @ColombiaOscura (x.com/ColombiaOscura) on 1 August 2025, have not been analysed yet.
 
 Was it space junk? No satellite or rocket re-entry in the Aerospace Corporation's CORDS database has a predicted window
 that includes the flash. The nearest window, OBJECT C's (07:54 UTC on 31 July, ± 2 hours), opens 2.1 hours after the
@@ -236,7 +246,7 @@ agent tracked the Medellín clip with SAM 3.1 itself in an earlier run, `2026102
 06  request_evidence            blocked: waiting for videos from Málaga, Saravena and San Gil
 ```
 
-Two earlier reports of this case were wrong without a wrong figure. Run `20261027T132811-1934` wrote its report before
+Three earlier reports of this case were wrong without a wrong figure. Run `20261027T132811-1934` wrote its report before
 checking the satellite, and the report spoke of two submitted videos, from Bucaramanga and Medellín. Runs 867d and
 `20261027T184659-28c2` said there was no Bucaramanga video because the account had been suspended. That post never had a video:
 it was text only, and the case's note did not say so plainly. An open case's report now waits for both checks, its
@@ -267,8 +277,8 @@ What Muse saw, against what was measured later: in Kamensk-Uralskiy it named the
 put it at 0.89 of the frame's width, where the point matched to OpenStreetMap sits at 0.884, about 7 pixels away (only
 the column compares: the marked point is the chapel's base); it read the dashcam clock as 09:20:18 at the start of the
 clip, within a few seconds of CBET's time in local hours; in Korkino it read a clock 22 minutes off,
-which is why the method uses each video's frame times and never its clock; in Tyumen it missed the power tower the
-orientation uses. Muse Spark 1.2 ran to its token cap on 4 of its 11 video reads; the retries recovered all of them.
+an example of why the method, from its first commit, uses each video's frame times and never its clock; in Tyumen it missed the power tower the
+orientation uses. Muse Spark 1.2 ran to its token cap on 4 of its 11 video reads; a retry recovered each of them, Tyumen's on the next day's run.
 
 API spending is capped in code (`TESTIGOS_BUDGET_USD` a day, `TESTIGOS_TOTAL_BUDGET_USD` in total) and logged per call in
 `out/costs.jsonl`: US$ 2.73 for the whole project so far.
@@ -287,7 +297,7 @@ python3 -m venv .venv && .venv/bin/pip install -U pip && .venv/bin/pip install -
 .venv/bin/python scripts/drop_criteria.py          # Tyumen's four drop criteria, measured by the agent's code
 .venv/bin/python scripts/head_split.py             # Kamensk-Uralskiy's head point, before and after it changes
 .venv/bin/python scripts/glm_by_country.py         # GLM events over Colombia per year (needs scripts/fetch_glm.py)
-.venv/bin/python scripts/montecarlo.py 500 2 10     # the uncertainty (about half an hour)
+.venv/bin/python scripts/montecarlo.py 500 2 10     # the uncertainty (about a quarter of an hour)
 .venv/bin/python scripts/export_web.py && python3 -m http.server -d web 8000
 ```
 
@@ -301,7 +311,7 @@ The witness videos are not in this repository, and neither are their frames. `ev
 video's source, uploader, permission status and where its camera position comes from. No frame and no audio is
 published: only numbers and text measured from the videos (SAM's pixel tracks, the annotated line and landmark pixels,
 and Muse's structured readings). Muse's readings keep no transcript of what the witnesses say; three short transcripts
-were in commits f0e6f19 to 54d2875 and remain in the history. The Chelyabinsk camera positions are the Ondřejov
+were in commits f88a059 to 54d2875 and remain in the history. The Chelyabinsk camera positions are the Ondřejov
 catalogue's as published (cars on public roads and security cameras), and the viewer rounds them to about 100 m. For
 new witnesses, the filming spot is published rounded to about 100 m, and the exact spot used to orient the camera
 stays out of the repository. The demo video shows cards drawn from the measurements (`scripts/track_cards.py`,
@@ -318,9 +328,10 @@ credits it to Håskę Bräyãn.
   cannot yet do it from OpenStreetMap alone.
 - Handheld videos are not supported: the camera must stay still while the fireball crosses. Night videos are untested
   for orientation and trajectory; SAM 3.1 tracked the one night clip (Medellín, 79 of 132 frames).
-- The verifier checks every figure, its kind of quantity, the hemispheres and the verdict; it cannot judge other
-  qualitative claims, and a bare small integer can still match an unrelated result. Two signed reports carried a false
-  sentence with no wrong figure; reviews caught them, not the checks.
+- The verifier checks every figure, the kind of quantity of those printed with a unit, the hemispheres and the verdict;
+  it cannot judge other qualitative claims, and a bare small integer can still match an unrelated result. Three
+  Chelyabinsk reports passed every check and still said something wrong with no wrong numeral, and two of them had
+  been signed; reviews caught them, not the checks.
 - GLM gives where a flash projects onto a reference altitude, not the fireball's height.
 
 ## References

@@ -46,23 +46,25 @@ cannot pin its field of view or its distortion, so `k1` is fixed at −0.15 (a t
 at 79.5°, the value where Korkino's speed agrees with Kamensk-Uralskiy's. CBET is not an input to that choice, but the
 choice was made while the pair was graded against CBET on 26 October: a first self-calibration ran to its 70° bound and
 was rejected (117b920); a second gave 91.9° and a heading near 276°, which fails the 3° heading criterion (f8e6f05,
-22:16); then 78.8° missed it by 0.04° and 79.5° passed, both fitted at 22:40 (39492ef). The fits leave 0.03 to 0.07° of
+22:16); then 78.8° missed it by 0.04° and 79.5° passed, both committed at 22:40 (39492ef). The fits leave 0.03 to 0.07° of
 residual (`events/chelyabinsk-2013/calibration.json`). Measured against the plane that CBET's published path makes with
 each camera, the cameras are off by 0.62° (Kamensk-Uralskiy), 0.98° (Tyumen) and 3.39° (Korkino); that check uses the
 published answer, so it lives in `validation/chelyabinsk-2013/calibration-vs-cbet.json`. The OSM extracts were fetched
 from Overpass with curl; the annotators' notes are in `events/chelyabinsk-2013/lines-*.json` and `plumb-48.json`. The
-superseded fits and solutions, each graded against CBET as the work went, are in `validation/chelyabinsk-2013/history/`.
+superseded fits and solutions, most of them graded against CBET as the work went, are in `validation/chelyabinsk-2013/history/`.
 
 ## 4. The fireball in the image (`src/testigos/track.py`, `scripts/sam_probe.py`)
 
-Each clip is trimmed to the fireball's window and sent to SAM 3.1 in video mode with the phrase "bright light" (the only
-phrase that found it; "fireball", "meteor" and "light streak" returned nothing). SAM returns a box per frame for every
+Each clip is trimmed to the fireball's window and sent to SAM 3.1 in video mode with the phrase "bright light" (on Beloretsk
+and Chebarkul, the two clips where other phrases were tried, "fireball" and "meteor" returned nothing, and so did "light
+streak" on Chebarkul). SAM returns a box per frame for every
 bright object, headlights included; the fireball is the object that travels farthest across the frame. Its point is
 the leading edge for a streak and the centroid for a round glow; a ring-contrast test drops frames where it is not
 brighter than its surroundings, a smooth cubic path drops jumps, and frames whose bytes repeat the previous frame
 (md5) are flagged as duplicates and left out. Frame times are ffprobe's timestamps, not a nominal frame rate.
 
-A plain numpy tracker runs alongside: the largest saturated blob per frame, kept only if it moves smoothly. Fed to the
+A plain numpy tracker runs alongside: the centre of the largest saturated blob (pixels at 200 or more, at least 3 of
+them) in each frame, with no test of how it moves. Fed to the
 same solver on the same frames, it gives a heading of 303.7° and a speed of 0.01 km/s for Kamensk-Uralskiy and Korkino,
 against 282.1° and 19.65 km/s with SAM's points; on Korkino its rays sit 16.75° (median) from CBET's plane, SAM's 3.39°.
 The threshold locks onto the glare, SAM onto the object (`scripts/sam_vs_threshold.py`,
@@ -106,7 +108,7 @@ through the camera.
 
 Every draw re-fits each camera from perturbed evidence and solves again: annotated line points (0.7 px), landmark pixels
 (3 px), street bearings (0.7 to 1.0°), camera positions (8 m), Korkino's field of view drawn uniformly from 76 to 95°
-(both fitted values, 79.5° and 91.9°, lie inside; the rejected self-calibration ran to its 70° bound) and its `k1`
+(the fitted values 78.8°, 79.5° and 91.9° lie inside; the rejected self-calibration ran to its 70° bound) and its `k1`
 N(−0.15, 0.07), the SAM points (1.5 px), each camera's clock scale N(1, 0.01) and every timestamp (± half a frame). That
 range was widened on 27 October: a 500-draw run with N(79.5°, 2.5°) had left CBET's slope outside its 2σ range and its
 heading outside 1σ (54d2875); with 76 to 95° both fall inside 1σ (394dca1). The results quote the 2.5, 16, 50, 84 and
@@ -153,8 +155,8 @@ turn, one call per turn, at most 16 turns); the code runs it and records it. The
   oriented cameras it records insufficient geometry, and the report then waits until the satellite detections and the
   towns that would close the geometry have been checked.
 - `write_report` asks Muse Spark 1.3 for the report in English and Spanish and checks each with `verify.check_report`:
-  every number in the text (decimal comma or point, ranges, dates, times, scientific notation; list numbers and the 1 in
-  "1σ" excepted) must equal a number in the run's tool results within half a unit of its last printed digit, and a
+  every number in the text (decimal comma or point, ranges, dates, times, scientific notation; list numbers and the 1, 2 or 3
+  in "1σ", "2σ" and "3σ" excepted) must equal a number in the run's tool results within half a unit of its last printed digit, and a
   number printed with a unit (km/s, km, degrees, seconds, percent) must equal a result of that kind, so a convergence
   angle cannot pass as a speed. Every hemisphere letter next to a coordinate must agree with the results, and the text
   must not state a verdict other than the code's, which the code writes at the top. One retry names what was wrong; a
@@ -170,16 +172,17 @@ resumes one sent back passes the notes to the planner and to the model that writ
 reached only the planner). Each run is recorded with the code version, the hashes of every input and every step;
 `resume` refuses to call the model while no input changed and no notes were given, and `replay` re-runs the recorded
 tool calls with today's code and no model (`--echo` prints every step). The published answers live in `validation/`,
-which no file in `src/` reads, and no agent input holds a value derived from them. The CBET gate that
+which no file in `src/` reads, and no agent input holds a published value or a comparison with one, although the
+camera fits and the Monte Carlo's field-of-view range were settled with CBET in view (sections 3 and 6). The CBET gate that
 `scripts/triangulate.py` prints is written to `out/`, which no agent input reads either.
 
 `scripts/grade.py` grades a run afterwards. Four criteria were committed on 26 October at 20:33
-(`validation/truth.json`), before the first camera was calibrated at 21:25: heading and slope within 3°, height at
+(`validation/chelyabinsk-2013/truth.json`), before the first camera was calibrated at 21:25: heading and slope within 3°, height at
 CBET's major flare within 5 km, and CBET's end point within 15 km of the line. All four pass. A speed criterion, within
 1.5 km/s of CBET's 17.5 km/s, was added to `grade.py` on 27 October at 12:14, when every camera was calibrated and the
 19.65 km/s fit was on record; it fails. A fifth criterion in `truth.json`, a calibration residual under 0.3°, is not
-graded: the internal fits pass it, and Korkino's 3.39° from CBET's plane would not. The criteria were fixed before the
-work, but the camera fits were not made blind to CBET (section 3). The refereed solutions that followed CBET are compared
+graded: the internal fits pass it, and Korkino's 3.39° from CBET's plane would not. The four geometric criteria were
+fixed before the work, but the camera fits were not made blind to CBET (section 3). The refereed solutions that followed CBET are compared
 separately (`validation/chelyabinsk-2013/refereed.json`, which names the source each value was read in), and that
 comparison never changes the grade.
 

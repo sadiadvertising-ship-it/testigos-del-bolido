@@ -42,7 +42,7 @@
    "sources": [
     {
      "values": "v_initial_kms 19.16 +/- 0.15",
-     "read_in": "de la Fuente Marcos et al. 2015, section V, citing Table S1 of the Science paper (its Table 1 gives +/- 0.30 at 2 sigma)",
+     "read_in": "de la Fuente Marcos et al. 2015, section V, citing Table S1 of the Science paper (its Table 1 gives +/- 0.30 at 2 sigma, seen only as a search excerpt)",
      "url": "https://arxiv.org/abs/1508.05907"
     },
     {

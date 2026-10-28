@@ -1,10 +1,10 @@
 # Chelyabinsk: how the solution got here
 
-Superseded triangulations and camera fits, all made on 26 October 2026 between 21:25 and 22:40 and moved here on
+Superseded triangulations and camera fits, all committed on 26 October 2026 between 21:25 and 22:40 and moved here on
 27 October from `events/chelyabinsk-2013/` and `out/` so that no agent input holds a comparison with CBET 3423. They
-are kept, not deleted: the path from the first fits to the current cameras was graded against CBET at every step,
+are kept, not deleted: the path from the first fits to the current cameras was graded against CBET at most steps,
 which is why the README says "The validation is blind for the agent, not for the calibration." Each row gives the
-commit that first added the file at its old path, with that commit's message.
+commit that first added the file at its old path, with the start of that commit's message.
 
 | File | Was | Added | Commit | What it holds |
 |---|---|---|---|---|

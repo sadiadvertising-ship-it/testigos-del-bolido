@@ -146,7 +146,8 @@ def measure(track_, grays, min_contrast=30.0, max_resid_px=15.0, min_step_px=0.5
 
 
 def blob_track(frames, min_level=200, min_area=3):
-    """Baseline without any model: the largest saturated blob per frame, kept only if it moves smoothly."""
+    """Baseline without any model: the centre of the largest blob of pixels at min_level or more (at least min_area
+    of them) in each frame, with no test of how it moves."""
     pts = []
     for f in frames:
         lab, n = ndimage.label(f >= min_level)

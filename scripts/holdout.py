@@ -3,7 +3,7 @@
 The agent leaves Tyumen out of the trajectory fit (its planes nearly coincide with Kamensk's). Its rays and its own clock
 are still evidence: each ray's angular miss of the Kamensk + Korkino line, and the speed Tyumen's frame times give along
 that line over the first 60% of its track (the solver's speed window, before the fireball slows). No published value is
-used. Its calibration was curated with CBET 3423 in view, so the check is independent of the fit, not of the people.
+used. Its calibration was curated with CBET 3423 in view, so the check is independent of the fit, not of CBET.
 Writes validation/chelyabinsk-2013/holdout-tyumen.json.
 Usage: .venv/bin/python scripts/holdout.py
 """
