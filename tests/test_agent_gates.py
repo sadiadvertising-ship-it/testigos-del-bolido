@@ -237,6 +237,17 @@ def test_a_rejected_report_resumes_with_the_reviewers_notes(case_with, monkeypat
     rejected = agent.review('synthetic', case.run_id, approve=False, notes='Quiten la frase sobre la base corta.', by='Diego')
     assert rejected['status'] == 'rejected'
     assert agent.rejection_notes('synthetic', case.run_id) == 'Quiten la frase sobre la base corta.'
+    asked = []  # the resumed run's report writer gets the notes, not only the planner
+
+    def writer(content, **kw):
+        asked.append(content[0]['text'])
+        return _report_from_facts(content, **kw)
+    monkeypatch.setattr(agent.api, 'spark', writer)
+    again = agent.Case('synthetic')
+    again._start(case.run_id, agent.rejection_notes('synthetic', case.run_id), 'json')
+    again.call('finalize', {'clips': ['chelyabinsk', 'south'], 'why': 'x'})
+    again.call('write_report', {'why': 'x'})
+    assert asked and all('Quiten la frase sobre la base corta.' in a for a in asked)
 
 
 def test_no_agent_code_reads_the_published_answer():

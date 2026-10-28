@@ -492,6 +492,9 @@ class Case:
                    'For the speed, quote the 95% range the results give, not the fit\'s formal error. Do not say what the object '
                    'was (a natural meteoroid or a re-entering spacecraft): the code writes that sentence above your text. Say '
                    'what is solid, what is uncertain and what is missing.')
+            notes = (getattr(self, 'record', None) or {}).get('notes')
+            if notes:  # the reviewer's notes on the report this run resumes; the planner alone does not write the report
+                ask += f' A reviewer sent an earlier report on this case back with these notes; follow them: {notes}'
             check, body, feedback, drafts = None, '', '', []
             for attempt in range(2):
                 if self.replaying:
