@@ -1,11 +1,61 @@
 {
- "note": "Refereed solutions of the Chelyabinsk superbolide, added on 27 October 2026, after run 20261027T132419-a996 was graded against CBET 3423. CBET 3423, the reference chosen before the work, was a preliminary telegram (seven casual videos 'provisionally calibrated with Google Maps tools'); refereed papers followed later in 2013. Values as the sources below quote them; check them against the papers before citing.",
+ "note": "Refereed solutions of the Chelyabinsk superbolide, added on 27 October 2026, after run 20261027T132419-a996 was graded against CBET 3423. CBET 3423, the reference chosen before the work, was a preliminary telegram (seven casual videos 'provisionally calibrated with Google Maps tools', a trajectory assumed linear); refereed papers followed later in 2013. Neither paper's full text was read here: Nature's Table 1 is an image behind the paywall and Science's page refused the request. Each value below names the source it was read in, checked on 27 October 2026.",
  "solutions": [
-  {"who": "Borovička et al. 2013, Nature 503, 235", "doi": "10.1038/nature12671", "v_initial_kms": 19.03, "v_sigma_kms": 0.13,
-   "slope_deg_begin": 18.5, "slope_deg_end": 17.0, "heights_km": [95.1, 12.6],
-   "quoted_by": "https://www.cambridge.org/core/journals/proceedings-of-the-international-astronomical-union/article/chelyabinsk-event/8B9AF6EF233C58B2430540CB4EF79114"},
-  {"who": "Popova et al. 2013, Science 342, 1069", "doi": "10.1126/science.1242642", "v_initial_kms": 19.16, "v_sigma_kms": 0.15,
-   "entry_angle_deg": 18.3, "entry_angle_sigma_deg": 0.2, "first_seen_h_km": 97, "peak_brightness_h_km": 29.7,
-   "quoted_by": "https://www.ucdavis.edu/news/first-study-russian-meteorite"}
+  {
+   "who": "Borovička et al. 2013, Nature 503, 235",
+   "doi": "10.1038/nature12671",
+   "v_initial_kms": 19.03,
+   "v_sigma_kms": 0.13,
+   "slope_deg_begin": 18.5,
+   "slope_deg_end": 17.0,
+   "heights_km": [
+    95.1,
+    12.6
+   ],
+   "sources": [
+    {
+     "values": "v_initial_kms 19.03 +/- 0.13",
+     "read_in": "de la Fuente Marcos, de la Fuente Marcos & Aarseth 2015, ApJ 812, 26, section V, which cites Table 1 of the Nature paper",
+     "url": "https://arxiv.org/abs/1508.05907"
+    },
+    {
+     "values": "slope_deg_begin 18.5, slope_deg_end 17.0",
+     "read_in": "Borovička, 'The Chelyabinsk event', Proc. IAU 11 (A29A), 247, attributing them to the Nature paper; seen only as a search excerpt of the PDF. Its HTML abstract says 18 degrees",
+     "url": "https://www.cambridge.org/core/journals/proceedings-of-the-international-astronomical-union/article/chelyabinsk-event/8B9AF6EF233C58B2430540CB4EF79114"
+    },
+    {
+     "values": "heights_km 95.1 to 12.6",
+     "read_in": "UNOOSA STSC 2014 slides, seen only as a search excerpt; Borovička's 2016 abstract gives the end as 12.5 km",
+     "url": "https://www.unoosa.org/pdf/pres/stsc2014/tech-04E.pdf"
+    }
+   ]
+  },
+  {
+   "who": "Popova et al. 2013, Science 342, 1069",
+   "doi": "10.1126/science.1242642",
+   "v_initial_kms": 19.16,
+   "v_sigma_kms": 0.15,
+   "entry_angle_deg": 18.3,
+   "entry_angle_sigma_deg": 0.2,
+   "first_seen_h_km": 97,
+   "peak_brightness_h_km": 29.7,
+   "sources": [
+    {
+     "values": "v_initial_kms 19.16 +/- 0.15",
+     "read_in": "de la Fuente Marcos et al. 2015, section V, citing Table S1 of the Science paper (its Table 1 gives +/- 0.30 at 2 sigma)",
+     "url": "https://arxiv.org/abs/1508.05907"
+    },
+    {
+     "values": "peak_brightness_h_km 29.7",
+     "read_in": "UC Davis release, 6 November 2013 ('peak radiation' in the paper, 29.7 +/- 0.7 km, seen only as a search excerpt)",
+     "url": "https://phys.org/news/2013-11-results-russian-chelyabinsk-meteor-published.html"
+    },
+    {
+     "values": "entry_angle_deg 18.3 +/- 0.2, first_seen_h_km 97",
+     "read_in": "the paper, seen only as a search excerpt of its PDF",
+     "url": "https://doi.org/10.1126/science.1242642"
+    }
+   ]
+  }
  ]
 }

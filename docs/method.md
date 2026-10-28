@@ -43,7 +43,10 @@ person checked the points by hand; every point file and every fit residual is in
 
 Parallel edges alone leave the rotation about the vanishing point free; vertical lines close it. Korkino's 480×360 frame
 cannot pin its field of view or its distortion, so `k1` is fixed at −0.15 (a typical wide dashcam) and the field of view
-at 79.5°, the value where Korkino's speed agrees with Kamensk's; CBET is not used. The fits leave 0.03 to 0.07° of
+at 79.5°, the value where Korkino's speed agrees with Kamensk-Uralskiy's. CBET is not an input to that choice, but the
+choice was made while the pair was graded against CBET on 26 October: a first self-calibration ran to its 70° bound and
+was rejected (117b920); a second gave 91.9° and a heading near 276°, which fails the 3° heading criterion (f8e6f05,
+22:16); then 78.8° missed it by 0.04° and 79.5° passed, both fitted at 22:40 (39492ef). The fits leave 0.03 to 0.07° of
 residual (`events/chelyabinsk-2013/calibration.json`). Measured against the plane that CBET's published path makes with
 each camera, the cameras are off by 0.62° (Kamensk-Uralskiy), 0.98° (Tyumen) and 3.39° (Korkino); that check uses the
 published answer, so it lives in `validation/chelyabinsk-2013/calibration-vs-cbet.json`. The OSM extracts were fetched
@@ -90,22 +93,30 @@ through the camera.
    that median) is left out of the speed and named: its clock, not the path, is the likely fault.
 5. **Nearly parallel planes.** Two cameras whose planes cross under 10° add little convergence to each other, and in a
    joint least-squares fit their many rays can pull the line along their shared plane. In Chelyabinsk the
-   Kamensk-Uralskiy and Tyumen planes cross at 7.5°, and as close as 3.7° in some Monte Carlo draws: with all three
-   cameras, 62 of 200 draws slide more than 10° off the fit's heading or below a 12° slope, against 4 of 500 for
-   Kamensk-Uralskiy and Korkino alone. So the weaker camera of such a pair, the one that crosses the rest less widely,
-   may leave the fit; it stays a check (`scripts/holdout.py`: Tyumen's rays miss the two-camera line by 0.45°, median,
-   and its own clock gives 19.17 ± 0.08 km/s).
+   Kamensk-Uralskiy and Tyumen planes cross at 7.5°, and at 3.1° to 11.1° across the Monte Carlo draws (median 7.1°;
+   under 5°, where a two-camera solution is refused, in 10 of 200). With all three cameras, 51 of 200 draws end more
+   than 10° from that fit's own heading (278.5°) or below a 12° slope, and 62 measured from the two-camera heading
+   (282.1°); with Kamensk-Uralskiy and Korkino alone, 4 of 500 (`scripts/mc_stability.py`,
+   `validation/chelyabinsk-2013/montecarlo-stability.json`). So the weaker camera of such a pair, the one that crosses
+   the rest less widely, may leave the fit; of the four drop criteria, it is the only one that holds for Tyumen
+   (`scripts/drop_criteria.py`, `validation/chelyabinsk-2013/drop-48-criteria.json`). Tyumen stays a check
+   (`scripts/holdout.py`: its rays miss the two-camera line by 0.45°, median, and its own clock gives 19.17 ± 0.08 km/s).
 
 ## 6. Uncertainty (`scripts/montecarlo.py`)
 
 Every draw re-fits each camera from perturbed evidence and solves again: annotated line points (0.7 px), landmark pixels
 (3 px), street bearings (0.7 to 1.0°), camera positions (8 m), Korkino's field of view drawn uniformly from 76 to 95°
-(every value tried while calibrating it, 79.5° and 91.9°, lies inside) and its `k1` N(−0.15, 0.07), the SAM points
-(1.5 px), each camera's clock scale N(1, 0.01) and every timestamp (± half a frame). The results quote the 2.5, 16, 50,
-84 and 97.5 percentiles; `events/<id>/montecarlo-<cameras>.json` holds them and the agent's `solve` reads them, and the
+(both fitted values, 79.5° and 91.9°, lie inside; the rejected self-calibration ran to its 70° bound) and its `k1`
+N(−0.15, 0.07), the SAM points (1.5 px), each camera's clock scale N(1, 0.01) and every timestamp (± half a frame). That
+range was widened on 27 October: a 500-draw run with N(79.5°, 2.5°) had left CBET's slope outside its 2σ range and its
+heading outside 1σ (54d2875); with 76 to 95° both fall inside 1σ (394dca1). The results quote the 2.5, 16, 50, 84 and
+97.5 percentiles; `events/<id>/montecarlo-<cameras>.json` holds them and the agent's `solve` reads them, and the
 comparison with CBET goes to `validation/`. Systematic errors outside these draws do not show up in them: a
 misidentified landmark, a lens model that does not fit, or the head point's definition, which is the leading end of a
-streak and the centre of a round glow, so the point jumps when the fireball's look changes mid-track.
+streak and the centre of a round glow, so the point jumps when the fireball's look changes mid-track. Split where SAM's
+box stops being longer along the motion (frame 304, 10.1 s), Kamensk-Uralskiy's points give, with Korkino, a 15.8° slope
+and 16.7 km/s before it and 20.2° and 19.1 km/s after it (`scripts/head_split.py`,
+`validation/chelyabinsk-2013/head-point-split.json`).
 
 ## 7. Verdict (`src/testigos/verdict.py`)
 
@@ -122,7 +133,10 @@ search strip along the ground track, not a fall zone: dark flight after the ligh
 (`events/<id>/glm-window.json`). GLM places a flash where it projects onto a reference altitude, so it gives a place,
 not a height. For an open case, `events/<id>/city-geometry.json` lists towns with their distance to the GLM point, the
 direction to look and the flash's elevation if it was 40 or 80 km up; towns that would see it 10° to 60° up are the
-ones whose videos would close the geometry.
+ones whose videos would close the geometry. `scripts/glm_by_country.py` counts the catalogue's events per year over a
+coarse outline of mainland Colombia, moved 30 km in and out to bound its errors, and gives each one its angle from sun
+glint as its satellite saw it (Meeus' low-accuracy Sun on the WGS84 ellipsoid): a flash within 2° of glint can be
+sunlight reflected by water or a roof (`events/colombia-2025-07-30/glm-colombia.json`).
 
 ## 9. The agent and its checks (`src/testigos/agent.py`, `verify.py`)
 
@@ -150,16 +164,24 @@ turn, one call per turn, at most 16 turns); the code runs it and records it. The
   refused while two cameras are oriented, before the satellite check, or while a clip with a video is unread; when
   accepted it appends the request to `events/<id>/requests.json` and blocks the run.
 
-A run ends waiting for review or for the evidence it asked for. Each run is recorded with the code version, the hashes
-of every input and every step; `resume` refuses to call the model while no input changed, and `replay` re-runs the
-recorded tool calls with today's code and no model (`--echo` prints every step). The published answers live in
-`validation/`, which no file in `src/` reads, and no agent input holds a value derived from them. `scripts/grade.py`
-applies, after the run, the criteria written before the work: heading and slope within 3°, height at CBET's main flare
-within 5 km and CBET's end point within 15 km of the line (committed on 26 October at 20:33, before the first camera was
-calibrated at 21:25), and speed within 1.5 km/s (in the plan that day, committed on 27 October). A fifth criterion in
-`truth.json`, a calibration residual under 0.3°, was written for landmark fits: the internal fits pass it, and
-Korkino's 3.39° from CBET's plane would not. The refereed solutions that followed CBET are compared separately
-(`validation/chelyabinsk-2013/refereed.json`), and that comparison never changes the pre-registered grade.
+A run ends waiting for review or for the evidence it asked for. A reviewer signs the report off or sends it back with
+notes (`review --reject --notes`), and can withdraw a signature the same way; the history keeps every entry. A run that
+resumes one sent back passes the notes to the planner and to the model that writes the report (until 27 October they
+reached only the planner). Each run is recorded with the code version, the hashes of every input and every step;
+`resume` refuses to call the model while no input changed and no notes were given, and `replay` re-runs the recorded
+tool calls with today's code and no model (`--echo` prints every step). The published answers live in `validation/`,
+which no file in `src/` reads, and no agent input holds a value derived from them. The CBET gate that
+`scripts/triangulate.py` prints is written to `out/`, which no agent input reads either.
+
+`scripts/grade.py` grades a run afterwards. Four criteria were committed on 26 October at 20:33
+(`validation/truth.json`), before the first camera was calibrated at 21:25: heading and slope within 3°, height at
+CBET's major flare within 5 km, and CBET's end point within 15 km of the line. All four pass. A speed criterion, within
+1.5 km/s of CBET's 17.5 km/s, was added to `grade.py` on 27 October at 12:14, when every camera was calibrated and the
+19.65 km/s fit was on record; it fails. A fifth criterion in `truth.json`, a calibration residual under 0.3°, is not
+graded: the internal fits pass it, and Korkino's 3.39° from CBET's plane would not. The criteria were fixed before the
+work, but the camera fits were not made blind to CBET (section 3). The refereed solutions that followed CBET are compared
+separately (`validation/chelyabinsk-2013/refereed.json`, which names the source each value was read in), and that
+comparison never changes the grade.
 
 ## References
 
@@ -173,4 +195,7 @@ Korkino's 3.39° from CBET's plane would not. The refereed solutions that follow
 - Borovička, J. et al. (2016). A&A, doi:10.1051/0004-6361/201526680.
 - Zuluaga, J. I., Ferrín, I., Geens, S. (2013). arXiv:1303.1796.
 - NASA neo-bolide catalogue (GOES GLM): https://neo-bolide.ndc.nasa.gov
-- Roggemans, P. et al. (2026). Global Meteor Network report 2025. eMeteorNews 2026-2.
+- Roggemans, P. et al. (2026). Global Meteor Network report 2025. eMeteorNews 2026-2, 89.
+  https://www.emeteornews.net/2026/02/06/global-meteor-network-report-2025/
+- de la Fuente Marcos, C., de la Fuente Marcos, R., Aarseth, S. J. (2015). ApJ 812, 26. arXiv:1508.05907.
+- Meeus, J. (1998). Astronomical Algorithms, 2nd ed. Willmann-Bell.

@@ -1,25 +1,25 @@
 # Chelyabinsk: how the solution got here
 
-Superseded triangulations and camera fits from the first two days, moved here on 27 October 2026 from
-`events/chelyabinsk-2013/` and `out/` so that no agent input holds a comparison with CBET 3423. They are kept, not
-deleted: the path from the first fits to the current cameras was graded against CBET at every step, which is why
-the README calls the validation "blind for the agent, not for the people". Each row gives the commit that added the
-file and its message.
+Superseded triangulations and camera fits, all made on 26 October 2026 between 21:25 and 22:40 and moved here on
+27 October from `events/chelyabinsk-2013/` and `out/` so that no agent input holds a comparison with CBET 3423. They
+are kept, not deleted: the path from the first fits to the current cameras was graded against CBET at every step,
+which is why the README says "The validation is blind for the agent, not for the calibration." Each row gives the
+commit that first added the file at its old path, with that commit's message.
 
 | File | Was | Added | Commit | What it holds |
 |---|---|---|---|---|
 | `triangulation-2-10-48-v4.json` | `events/chelyabinsk-2013/triangulation-2-10-48-v4.json` | 26 Oct 22:40 | 39492ef: Korkino field of view from speed agreement (79.5 deg) with k1 as a nuisance; both Kamensk+Korkino and the thre | 2+10+48: 278.5° heading, 16.8° slope, 19.49 km/s, CBET end point 11.82 km off |
 | `triangulation-2-10-48.json` | `events/chelyabinsk-2013/triangulation-2-10-48.json` | 26 Oct 22:16 | f8e6f05: Korkino calibrated from annotated alley lines with its field of view self-calibrated; Kamensk+Korkino passes 3 | 2+10+48: 272.7° heading, 15.8° slope, 19.14 km/s, CBET end point 15.89 km off |
-| `triangulation-2-10-v2.json` | `events/chelyabinsk-2013/triangulation-2-10-v2.json` | 26 Oct 22:16 | f8e6f05: Korkino calibrated from annotated alley lines with its field of view self-calibrated; Kamensk+Korkino passes 3 | 2+10: 275.9° heading, 16.5° slope, 17.38 km/s, CBET end point 7.31 km off |
-| `triangulation-2-10-v4.json` | `events/chelyabinsk-2013/triangulation-2-10-v4.json` | 26 Oct 22:16 | f8e6f05: Korkino calibrated from annotated alley lines with its field of view self-calibrated; Kamensk+Korkino passes 3 | 2+10: 282.1° heading, 17.5° slope, 19.65 km/s, CBET end point 3.68 km off |
+| `triangulation-2-10-v2.json` | `events/chelyabinsk-2013/triangulation-2-10-v2.json` | 26 Oct 22:25 | 625b104: Monte Carlo of Kamensk+Korkino (CBET inside 1 sigma for azimuth, slope, flare height and speed); Kamensk recal | 2+10: 275.9° heading, 16.5° slope, 17.38 km/s, CBET end point 7.31 km off |
+| `triangulation-2-10-v4.json` | `events/chelyabinsk-2013/triangulation-2-10-v4.json` | 26 Oct 22:40 | 39492ef: Korkino field of view from speed agreement (79.5 deg) with k1 as a nuisance; both Kamensk+Korkino and the thre | 2+10: 282.1° heading, 17.5° slope, 19.65 km/s, CBET end point 3.68 km off |
 | `triangulation-2-10.json` | `events/chelyabinsk-2013/triangulation-2-10.json` | 26 Oct 22:16 | f8e6f05: Korkino calibrated from annotated alley lines with its field of view self-calibrated; Kamensk+Korkino passes 3 | 2+10: 276.1° heading, 16.9° slope, 14.53 km/s, CBET end point 7.92 km off |
 | `triangulation-2-48.json` | `events/chelyabinsk-2013/triangulation-2-48.json` | 26 Oct 21:56 | 1f3a4c6: Horizon constraint in the camera fit; Plast cropped, tracked and calibrated (v1 misses CBET by 9 deg: landmark | 2+48: 291.7° heading, 19.2° slope, 22.33 km/s, CBET end point 34.84 km off |
 | `solution-2-10-48-v3.json` | `out/chelyabinsk-2013/solution-2-10-48-v3.json` | 26 Oct 22:40 | 39492ef: Korkino field of view from speed agreement (79.5 deg) with k1 as a nuisance; both Kamensk+Korkino and the thre | 2+10+48: 279.2° heading, 16.9° slope, 19.35 km/s, CBET end point 8.68 km off |
 | `solution-2-10-48-v4.json` | `out/chelyabinsk-2013/solution-2-10-48-v4.json` | 26 Oct 22:40 | 39492ef: Korkino field of view from speed agreement (79.5 deg) with k1 as a nuisance; both Kamensk+Korkino and the thre | 2+10+48: 278.5° heading, 16.8° slope, 19.49 km/s, CBET end point 11.82 km off |
 | `solution-2-10-48.json` | `out/chelyabinsk-2013/solution-2-10-48.json` | 26 Oct 22:16 | f8e6f05: Korkino calibrated from annotated alley lines with its field of view self-calibrated; Kamensk+Korkino passes 3 | 2+10+48: 272.7° heading, 15.8° slope, 19.14 km/s, CBET end point 15.89 km off |
-| `solution-2-10-v2.json` | `out/chelyabinsk-2013/solution-2-10-v2.json` | 26 Oct 22:16 | f8e6f05: Korkino calibrated from annotated alley lines with its field of view self-calibrated; Kamensk+Korkino passes 3 | 2+10: 275.9° heading, 16.5° slope, 17.38 km/s, CBET end point 7.31 km off |
-| `solution-2-10-v3.json` | `out/chelyabinsk-2013/solution-2-10-v3.json` | 26 Oct 22:16 | f8e6f05: Korkino calibrated from annotated alley lines with its field of view self-calibrated; Kamensk+Korkino passes 3 | 2+10: 282.5° heading, 17.5° slope, 19.59 km/s, CBET end point 4.25 km off |
-| `solution-2-10-v4.json` | `out/chelyabinsk-2013/solution-2-10-v4.json` | 26 Oct 22:16 | f8e6f05: Korkino calibrated from annotated alley lines with its field of view self-calibrated; Kamensk+Korkino passes 3 | 2+10: 282.1° heading, 17.5° slope, 19.65 km/s, CBET end point 3.68 km off |
+| `solution-2-10-v2.json` | `out/chelyabinsk-2013/solution-2-10-v2.json` | 26 Oct 22:25 | 625b104: Monte Carlo of Kamensk+Korkino (CBET inside 1 sigma for azimuth, slope, flare height and speed); Kamensk recal | 2+10: 275.9° heading, 16.5° slope, 17.38 km/s, CBET end point 7.31 km off |
+| `solution-2-10-v3.json` | `out/chelyabinsk-2013/solution-2-10-v3.json` | 26 Oct 22:40 | 39492ef: Korkino field of view from speed agreement (79.5 deg) with k1 as a nuisance; both Kamensk+Korkino and the thre | 2+10: 282.5° heading, 17.5° slope, 19.59 km/s, CBET end point 4.25 km off |
+| `solution-2-10-v4.json` | `out/chelyabinsk-2013/solution-2-10-v4.json` | 26 Oct 22:40 | 39492ef: Korkino field of view from speed agreement (79.5 deg) with k1 as a nuisance; both Kamensk+Korkino and the thre | 2+10: 282.1° heading, 17.5° slope, 19.65 km/s, CBET end point 3.68 km off |
 | `solution-2-10.json` | `out/chelyabinsk-2013/solution-2-10.json` | 26 Oct 22:16 | f8e6f05: Korkino calibrated from annotated alley lines with its field of view self-calibrated; Kamensk+Korkino passes 3 | 2+10: 276.1° heading, 16.9° slope, 14.53 km/s, CBET end point 7.92 km off |
 | `cam-kamensk-lines-chapel.json` | `out/cam-kamensk-lines-chapel.json` | 26 Oct 22:25 | 625b104: Monte Carlo of Kamensk+Korkino (CBET inside 1 sigma for azimuth, slope, flare height and speed); Kamensk recal | camera: yaw 185.43, pitch -1.75, roll 0.55, hfov 66.60, k1 -0.27 |
 | `cam-kamensk-lines.json` | `out/cam-kamensk-lines.json` | 26 Oct 22:25 | 625b104: Monte Carlo of Kamensk+Korkino (CBET inside 1 sigma for azimuth, slope, flare height and speed); Kamensk recal | camera: yaw 201.78, pitch 4.10, roll 2.14, hfov 151.17, k1 0.07 |
