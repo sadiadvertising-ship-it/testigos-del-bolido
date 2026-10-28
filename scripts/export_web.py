@@ -151,6 +151,14 @@ def criteria(case_id, truth):
             'speed': {'gates': ['speed'], **(first_commit('-S', 'abs(speed - ref) <= 1.5', '--', 'scripts/grade.py') or {})}}
 
 
+def widened():
+    """When the Monte Carlo's range for Korkino's field of view was widened, from the repository's history. The 500-draw run
+    committed before it (54d2875) drew N(79.5, 2.5) deg and left CBET 3423's slope outside its 2 sigma range."""
+    c = first_commit('-S', 'rng.uniform(76.0, 95.0)', '--', 'scripts/montecarlo.py')
+    return c and {**c, 'what': "Korkino's field of view", 'from': 'N(79.5°, 2.5°)', 'to': '76 to 95°',
+                  'after': "a 500-draw run with the narrower range had left CBET 3423's slope outside its 2 sigma range"}
+
+
 def chelyabinsk():
     case = Case('chelyabinsk-2013')
     log = json.loads((case.dir / 'agent_log.json').read_text())
@@ -228,7 +236,7 @@ def chelyabinsk():
         'calibration_history': f'{history.relative_to(ROOT)}/' if history.is_dir() else None,
         'stations': stations,
         'tried': tried,
-        'montecarlo': mc and {'draws': mc['draws'], 'stats': mc['stats'],
+        'montecarlo': mc and {'draws': mc['draws'], 'stats': mc['stats'], 'widened': widened(),
                               'lines': [between_heights(r, top, bottom) for r in mc['lines']['rows']]},
         'published': {
             'path': [[p['lon'], p['lat'], round(p['h_km'] * 1000)] for p in truth['trajectory']],

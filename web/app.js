@@ -579,7 +579,7 @@ function leadSolved(d) {
 // The speed, then the verdict as the code's rule gave it (the rule and the 95% range are recorded with the run).
 function verdictText(d) {
   const s = d.solution, mc = d.montecarlo && d.montecarlo.stats, r = s.rule, band = s.speed_band_95_kms;
-  const fit = `Speed ${fmt(s.speed_kms, 1)} km/s by the fit${mc ? `; the Monte Carlo puts it at ${fmt(mc.speed.median, 1)} km/s
+  const fit = `Speed ${fmt(s.speed_kms, 2)} km/s by the fit${mc ? `; the Monte Carlo puts it at ${fmt(mc.speed.median, 1)} km/s
     (1 sigma ${between(...mc.speed['1sigma'])})` : ''}.`;
   if (!r || !band) return `${fit} The code's verdict: ${esc(s.verdict)}, ${esc(s.verdict_reason)}.`;
   const rule = `The code's rule: natural if the whole 95% speed range lies above ${r.natural_above_kms} km/s (Earth's escape speed
@@ -613,27 +613,39 @@ function gradeNote(d) {
     out.push(`The camera fits were made while comparing them with ${esc(cbet(d))} (${esc(d.calibration_history)} in the
       repository), so this check is blind for the agent but not for the calibration.`);
   }
+  const w = d.montecarlo && d.montecarlo.widened;
+  if (w && w.at) {
+    out.push(`The Monte Carlo's range for ${esc(w.what)} was widened on ${localTime(w.at).day}, from ${esc(w.from)} to anywhere
+      from ${esc(w.to)}, after ${esc(w.after)}.`);
+  }
   if (geo && geo.at) {
     out.push(`The ${count(geo.gates.length)} geometric criteria (${list(geo.gates.map(k => words[k]))}) were committed
       ${when(geo)}${fit ? `, before the first camera was calibrated ${when(fit, geo)}` : ''}, and ${say(geo.gates)}.`);
   }
-  if (speed && speed.at) out.push(`The speed criterion was added on ${localTime(speed.at).day} and ${say(speed.gates)}.`);
+  if (speed && speed.at) {
+    out.push(`The speed criterion was added on ${localTime(speed.at).day}, after the fit's ${fmt(d.solution.speed_kms, 2)} km/s was on
+      record, and ${say(speed.gates)}.`);
+  }
   return out.join(' ');
 }
 
 function compareSolved(d) {
   const s = d.solution, mc = d.montecarlo && d.montecarlo.stats, [first, zul] = d.published.values, name = esc(cbet(d));
   const cell = (v, unit = '') => (v === null || v === undefined ? 'not given' : `${fmt(v, 1)}${unit}`);
-  const range = k => (mc ? `<span class="range">1σ ${span(...mc[k]['1sigma'])}</span>` : '');
-  const row = (label, k, ours, key, unit) => `<tr><th scope="row">${label}</th>
-    <td class="r ours"><span class="num">${fmt(ours, 1)}${unit}</span>${range(k)}</td>
+  // the fit's value, then the Monte Carlo's median and 1 sigma range, each named
+  const range = (k, unit) => (mc ? `<span class="range">Monte Carlo ${fmt(mc[k].median, 1)}${unit}</span>
+    <span class="range">1σ ${span(...mc[k]['1sigma'])}</span>` : '');
+  const row = (label, k, ours, key, unit, d = 1) => `<tr><th scope="row">${label}</th>
+    <td class="r ours"><span class="num">${fmt(ours, d)}${unit}</span> <span class="by">by the fit</span>${range(k, unit)}</td>
     <td class="r"><span class="num">${cell(first[key], unit)}</span></td><td class="r"><span class="num">${cell(zul[key], unit)}</span></td></tr>`;
   const notes = [];
   if (mc) {
-    const az = mc.azimuth, sl = mc.slope;
-    notes.push(az.cbet_within_1sigma ? `${name}'s heading is inside our 1 sigma range.`
-      : az.cbet_within_2sigma ? `${name}'s heading is inside our 2 sigma range, not our 1 sigma.`
-        : `${name}'s heading is outside our 2 sigma range.`);
+    const sl = mc.slope, what = {azimuth: 'heading', slope: 'slope', speed: 'speed'}, keys = Object.keys(what);
+    const say = (ks, where) => (ks.length ? `${name}'s ${list(ks.map(k => what[k]))} ${ks.length > 1 ? 'are' : 'is'}
+      ${where.replace(/range/g, ks.length > 1 ? 'ranges' : 'range')}.` : '');
+    notes.push([say(keys.filter(k => mc[k].cbet_within_1sigma), 'inside the Monte Carlo\'s 1 sigma range'),
+      say(keys.filter(k => !mc[k].cbet_within_1sigma && mc[k].cbet_within_2sigma), 'inside the Monte Carlo\'s 2 sigma range, not its 1 sigma range'),
+      say(keys.filter(k => !mc[k].cbet_within_2sigma), 'outside the Monte Carlo\'s 2 sigma range')].filter(Boolean).join(' '));
     if (!sl.cbet_within_2sigma) {
       notes.push(`Our slope is ${fmt(Math.abs(s.slope_deg - first.slope_deg), 1)}° ${s.slope_deg > first.slope_deg ? 'steeper' : 'shallower'}
         than theirs and outside our 2 sigma range: an error the Monte Carlo does not model.`);
@@ -667,7 +679,7 @@ function compareSolved(d) {
     <table class="compare"><thead><tr><th></th><th class="r">This agent</th><th class="r">${name}</th>
     <th class="r">${esc(zul.who.split(',')[0])} et al.</th></tr></thead>
     <tbody>${row('Heading', 'azimuth', s.azimuth_deg, 'azimuth_deg', '°')}${row('Slope', 'slope', s.slope_deg, 'slope_deg', '°')}
-    ${row('Speed, km/s', 'speed', s.speed_kms, 'speed_kms', '')}
+    ${row('Speed, km/s', 'speed', s.speed_kms, 'speed_kms', '', 2)}
     <tr class="src"><th scope="row">From</th><td class="r">${s.clips.length} cameras${mc ? `, ${d.montecarlo.draws} Monte Carlo draws` : ''}</td>
     <td class="r">${esc(first.how)}</td><td class="r">${esc(zul.how)}</td></tr></tbody></table>
     <p class="note" style="margin-top:8px">${notes.join(' ')}</p>

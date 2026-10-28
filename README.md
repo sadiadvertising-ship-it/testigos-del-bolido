@@ -13,11 +13,15 @@ something), and its orientation and trajectory steps have only been tested by da
 The [3D viewer](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/) goes live on 31 October, and the demo
 video's link is added here on 3 November. [![Tests](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml/badge.svg)](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml)
 
-[![Animated 3D map of the Chelyabinsk replay: the fireball's path is drawn from 89 km down to 11 km over 12.5 s while the lines of sight from Kamensk-Uralskiy and Korkino fill in; the last view adds the Monte Carlo lines and the published path](docs/replay.gif)](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/)
+[![Replay of the Chelyabinsk fireball on a dark 3D map. A white point flies the agent's fitted line from 89 km down to 11 km, with its time and height in a readout, while lines of sight appear: blue from Kamensk-Uralskiy, green from Korkino, and grey dashed from Tyumen, which was left out. Then the still view: the white path beside the dashed yellow path published in CBET 3423, first alone, then over a pale blue band of 500 Monte Carlo lines](docs/replay.gif)](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/)
 
-The Chelyabinsk replay from the viewer, in real time: 12.5 s of flight, from 89 km down to 11 km. The blue lines of
-sight come from Kamensk-Uralskiy and the green ones from Korkino. The dashed grey ones come from Tyumen, which the agent
-left out. The last view adds the 500 Monte Carlo draws and the published path, CBET 3423.
+The Chelyabinsk validation case in the viewer, recorded by scripts/capture_replay.mjs. The replay's 12.5 s are the
+fitted line flown at the fitted speed, in real time, not how long a camera saw the fireball (Kamensk-Uralskiy tracked it
+for 13.7 s). As the white point descends from 89 km to 11 km, each camera's lines of sight appear: blue from
+Kamensk-Uralskiy and green from Korkino, the two cameras of the solution, and grey dashed from Tyumen, which the agent
+left out because its planes cross Kamensk-Uralskiy's at 7.5°. The cameras that were never oriented show as hollow dots.
+The last instant holds for 0.9 s; then the still view shows the agent's white path beside the dashed yellow path of CBET
+3423, the published solution, for 1.5 s, and for 1.5 s more with the 500 Monte Carlo lines as a pale blue band.
 
 ```mermaid
 flowchart TD
