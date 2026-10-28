@@ -157,11 +157,11 @@ apart, whose planes cross at 66°, and left Tyumen out as the weaker of a near-p
 Kamensk-Uralskiy's at 7.5°.
 
 In everyday terms: the stretch the two cameras saw, from 89 km down to 11 km, is 246 km long, about as far as Bogotá is
-from Medellín in a straight line (246 km between the points Wikidata gives for the two cities). At the fit's 19.65 km/s
-it takes 12.5 s, the length of the replay above; at the Monte Carlo's median, 17.6 km/s, 14.0 s. CBET's major flare sits
-29 km up on our line, about three times as high as an airliner cruising at 10 km. And even the low end of the speed's
-95% range, 12.1 km/s, is faster than anything that orbits the Earth can enter the atmosphere: it was a rock from space,
-not space junk (`scripts/export_web.py` computes these comparisons for the viewer).
+from Medellín in a straight line (245 km between the points Wikidata gives for the two cities), and Kamensk-Uralskiy's
+camera followed the fireball from 89 km down to 12 km in 13.7 s. CBET's major flare sits 29 km up on our fitted line,
+about three times as high as an airliner cruising at 10 km. And even the low end of the Monte Carlo's 95% speed range,
+12.1 km/s, is faster than anything that orbits the Earth can enter the atmosphere: it was a rock from space, not space
+junk (`scripts/export_web.py` computes these comparisons for the viewer).
 
 | | This agent | CBET 3423 | Refereed, 2013 | Zuluaga, Ferrín & Geens |
 |---|---|---|---|---|

@@ -578,26 +578,29 @@ function leadSolved(d) {
 }
 
 // Escape speed in plain terms: what nothing that orbits the Earth can exceed when it enters the atmosphere.
-const escapeText = e => `nothing that orbits the Earth can enter the atmosphere faster than ${e.escape_kms} km/s, Earth's escape speed
-  (from a low orbit, satellites and rocket stages enter at about ${e.orbital_kms} km/s), and anything that orbits the Sun enters faster`;
+const escapeText = e => `nothing that orbits the Earth can enter the atmosphere faster than ${e.escape_kms}&nbsp;km/s, Earth's escape speed
+  (from a low orbit, satellites and rocket stages enter at about ${e.orbital_kms}&nbsp;km/s), and anything that orbits the Sun enters faster`;
 
-// The solved case's figures in everyday terms: the stretch the cameras saw beside the distance between two cities, the
-// flare's height on our line beside a cruising airliner, and the speeds the verdict tells apart.
+// The solved case's figures in everyday terms: the stretch the cameras saw beside the distance between two cities, and how
+// long the camera that followed it longest took; the flare's height on our fitted line beside a cruising airliner; and the
+// speeds the verdict tells apart.
 function everyday(d, top, low) {
-  const e = d.everyday, s = d.solution, mc = d.montecarlo && d.montecarlo.stats, g = d.grade, band = s.speed_band_95_kms;
+  const e = d.everyday, s = d.solution, g = d.grade, band = s.speed_band_95_kms;
   if (!e) return '';
-  const out = [`The stretch the ${count(s.clips.length)} cameras saw, from ${fmt(top, 0)} km down to ${fmt(low, 0)} km, is
-    ${fmt(e.path_km, 0)} km long, about as far as ${esc(e.cities[0])} is from ${esc(e.cities[1])} in a straight line
-    (${fmt(e.cities_km, 0)} km). At the fit's ${fmt(s.speed_kms, 2)} km/s it takes ${fmt(e.path_km / s.speed_kms, 1)} s${mc ? `;
-    at the Monte Carlo's ${fmt(mc.speed.median, 1)} km/s, ${fmt(e.path_km / mc.speed.median, 1)} s` : ''}.`];
+  const tracked = x => x.track[x.track.length - 1][0] - x.track[0][0];
+  const cam = d.stations.filter(x => s.clips.includes(x.id) && x.track).sort((a, b) => tracked(b) - tracked(a))[0];
+  const out = [`The stretch the ${count(s.clips.length)} cameras saw, from ${fmt(top, 0)}&nbsp;km down to ${fmt(low, 0)}&nbsp;km, is
+    ${fmt(e.path_km, 0)}&nbsp;km long, about as far as ${esc(e.cities[0])} is from ${esc(e.cities[1])} in a straight line
+    (${fmt(e.cities_km, 0)}&nbsp;km)${cam ? `; ${esc(cam.site)}'s camera followed the fireball from ${fmt(cam.track[0][1], 0)}&nbsp;km down to
+    ${fmt(cam.track[cam.track.length - 1][1], 0)}&nbsp;km in ${fmt(tracked(cam), 1)}&nbsp;s` : ''}.`];
   if (g && g.our_height_near_flare_km) {
     const h = g.our_height_near_flare_km[0];
-    out.push(`Its major flare, ${fmt(h, 0)} km up on our line, was about ${count(Math.round(h / e.cruise_km))} times as high as
-      an airliner cruising at ${e.cruise_km} km.`);
+    out.push(`${esc(cbet(d))}'s major flare sits ${fmt(h, 0)}&nbsp;km up on our fitted line, about ${count(Math.round(h / e.cruise_km))}
+      times as high as an airliner cruising at ${e.cruise_km}&nbsp;km.`);
   }
   const fast = band && band[0] > e.escape_kms;
-  out.push(`${escapeText(e).replace(/^n/, 'N')}${fast ? `: even the low end of this fireball's 95% range, ${fmt(band[0], 1)} km/s,
-    is too fast for space junk` : ''}.`);
+  out.push(`${escapeText(e).replace(/^n/, 'N')}${fast ? `: even the low end of this fireball's 95% speed range
+    (${esc(s.speed_band_source)}), ${fmt(band[0], 1)}&nbsp;km/s, is too fast for space junk` : ''}.`);
   return `<p><b>In everyday terms.</b> ${out.join(' ')}</p>`;
 }
 

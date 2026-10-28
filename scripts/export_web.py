@@ -136,11 +136,10 @@ def when(event, where):
     return (f"{loc.day} {loc:%B %Y}, {clock} {where} ({t:%H:%M} UTC" + ('' if t.date() == loc.date() else f" on {t.day} {t:%B}") + ')')
 
 
-def great_circle_km(a, b):
-    """Distance along the ground between two (lat, lon) points, on a sphere of the Earth's mean radius."""
-    (la1, lo1), (la2, lo2) = np.radians(a), np.radians(b)
-    h = np.sin((la2 - la1) / 2) ** 2 + np.cos(la1) * np.cos(la2) * np.sin((lo2 - lo1) / 2) ** 2
-    return float(2 * 6371.0088 * np.arcsin(np.sqrt(h)))
+def straight_line_km(a, b):
+    """The straight line between two (lat, lon) points on the WGS84 ellipsoid; over a few hundred km it is within metres of
+    the distance along the ground."""
+    return float(np.linalg.norm(np.subtract(to_ecef(*a, 0.0), to_ecef(*b, 0.0)))) / 1000
 
 
 def git(*args):
@@ -259,7 +258,7 @@ def chelyabinsk():
         # the stretch the cameras saw beside the distance between two cities, the flare's height on our line beside a
         # cruising airliner, and the speeds the verdict tells apart
         'everyday': {'path_km': round(float(s1 - s0) / 1000, 1), 'cities': [c[0] for c in CITIES],
-                     'cities_km': round(great_circle_km(CITIES[0][1:], CITIES[1][1:]), 1), 'cruise_km': CRUISE_KM, **SPEEDS},
+                     'cities_km': round(straight_line_km(CITIES[0][1:], CITIES[1][1:]), 1), 'cruise_km': CRUISE_KM, **SPEEDS},
         'montecarlo': mc and {'draws': mc['draws'], 'stats': mc['stats'], 'widened': widened(),
                               'lines': [between_heights(r, top, bottom) for r in mc['lines']['rows']]},
         'published': {
