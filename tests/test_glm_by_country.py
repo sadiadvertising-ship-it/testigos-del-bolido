@@ -1,10 +1,12 @@
-"""The coarse outline of mainland Colombia in scripts/glm_by_country.py and the counts it wrote. No catalogue needed."""
+"""The coarse outline of mainland Colombia in scripts/glm_by_country.py, its Sun and glint geometry, and the counts it
+wrote. No catalogue needed."""
 import collections
 import datetime as dt
 import importlib.util
 import json
 import math
 import pathlib
+import re
 
 import pytest
 
@@ -12,6 +14,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 _spec = importlib.util.spec_from_file_location('glm_by_country', ROOT / 'scripts' / 'glm_by_country.py')
 glm = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(glm)
+COMMITTED = ROOT / 'events' / 'colombia-2025-07-30' / 'glm-colombia.json'
 
 INSIDE = {  # (longitude, latitude)
     'GLM flash of 30 July 2025': (-72.2121, 6.4605),
@@ -123,3 +126,94 @@ def test_committed_counts_agree_with_the_outline_and_the_events_listed():
         assert s <= o <= g
     flash = [e for e in out['events'] if e['utc'] == '2025-07-31T03:50:24Z']
     assert len(flash) == 1 and flash[0]['inside'] and flash[0]['humanClassification'] == 'Bolide'
+
+
+def test_sun_position_matches_meeus_example_25a():
+    # Meeus, Astronomical Algorithms, 2nd edition (Willmann-Bell, 1998), example 25.a. By the low-accuracy method, on
+    # 1992 October 13.0 TD (JDE 2448908.5) the Sun's apparent right ascension is 198.38083 degrees (13h 13m 31.4s)
+    # and its apparent declination is -7.78507 degrees (-7° 47' 06").
+    ra, dec = glm.sun_radec(2448908.5)
+    assert ra == pytest.approx(198.38083, abs=1e-5)
+    assert dec == pytest.approx(-7.78507, abs=1e-5)
+
+
+def test_sidereal_time_matches_meeus_example_12a():
+    # Meeus (1998), example 12.a: on 1987 April 10 at 0h UT, Greenwich apparent sidereal time is 13h 10m 46.1351s.
+    # The script keeps only the main term of the nutation, so allow 0.0005 degree (0.12 s).
+    assert glm.sidereal_deg(2446895.5) == pytest.approx((13 + 10 / 60 + 46.1351 / 3600) * 15, abs=5e-4)
+
+
+def test_subsolar_point_gives_meeus_equation_of_time():
+    # Meeus (1998), example 28.a: the equation of time on 1992 October 13.0 TD is +13m 42.6s. At 0h UT the Sun then
+    # stands overhead at 180 degrees east less the equation of time, counted at a quarter of a degree a minute.
+    # Meeus works that example with his full theory of the Sun, so allow the low-accuracy method's 0.01 degree.
+    lat, lon = glm.subsolar_point(dt.datetime(1992, 10, 13, tzinfo=dt.timezone.utc))
+    assert lon == pytest.approx(180 - (13 + 42.6 / 60) / 4, abs=0.01)
+    assert lat == pytest.approx(-7.78507, abs=1e-5)  # the declination of example 25.a, the same instant
+
+
+def test_glint_is_zero_with_the_sun_overhead_at_the_sub_satellite_point():
+    assert glm.glint_deg(0.0, -75.2, (0.0, -75.2), -75.2) == pytest.approx(0.0, abs=1e-9)
+
+
+@pytest.mark.parametrize('zenith', [10.0, 30.0, 60.0])
+def test_glint_under_the_satellite_equals_the_sun_zenith_angle(zenith):
+    # The satellite is overhead, and a level surface sends the sunlight up at the Sun's zenith angle on the other side.
+    assert glm.glint_deg(0.0, -75.2, (0.0, -75.2 + zenith), -75.2) == pytest.approx(zenith, abs=1e-9)
+    assert glm.glint_deg(0.0, -75.2, (zenith, -75.2), -75.2) == pytest.approx(zenith, abs=1e-9)
+
+
+@pytest.mark.parametrize('east', [5.0, 20.0, 40.0])
+def test_glint_is_zero_when_the_sun_mirrors_the_satellite(east):
+    # A point on the equator east of the satellite sees it to the west at zenith angle z, all in the equator's plane.
+    # With the Sun at z to the east, the satellite sees the Sun's mirror image. With the Sun at z to the west, the
+    # reflected light leaves 2z away from the satellite.
+    a, r, d = glm.WGS84_A_KM, glm.WGS84_A_KM + glm.GEO_HEIGHT_KM, math.radians(east)
+    z = math.degrees(math.atan2(r * math.sin(d), r * math.cos(d) - a))
+    lon = -75.2 + east
+    assert glm.glint_deg(0.0, lon, (0.0, lon + z), -75.2) == pytest.approx(0.0, abs=1e-9)
+    assert glm.glint_deg(0.0, lon, (0.0, lon - z), -75.2) == pytest.approx(2 * z, abs=1e-9)
+
+
+def test_glint_is_none_when_the_sun_is_below_the_horizon():
+    assert glm.glint_deg(0.0, -75.2, (0.0, -75.2 + 90.5), -75.2) is None
+    assert glm.glint_deg(4.7, -74.1, (0.0, 105.0), -75.2) is None
+
+
+def test_satellite_longitude_comes_from_the_record_and_else_from_goes_east():
+    sat = {'latitude': 0, 'longitude': -75.19999694824219, 'height': 35786.0234375}
+    seen = {'_id': 'a', 'detectedBy': 'GLM-16', 'attachments': [{'platformId': 'G16', 'satellite': sat}]}
+    assert glm.satellite_lons(seen) == [(-75.19999694824219, 'catalogue')]
+    assert glm.satellite_lons({'_id': 'b', 'detectedBy': 'GLM-19', 'attachments': []}) == [(-75.2, 'GOES-East')]
+    with pytest.raises(SystemExit):  # no position, and no fallback for GLM-18
+        glm.satellite_lons({'_id': 'c', 'detectedBy': 'GLM-18', 'attachments': []})
+    with pytest.raises(SystemExit):  # no GLM named
+        glm.satellite_lons({'_id': 'e', 'detectedBy': '', 'attachments': []})
+    with pytest.raises(SystemExit):  # glint_deg assumes a satellite at latitude 0 and GEO_HEIGHT_KM
+        glm.satellite_lons({'_id': 'd', 'detectedBy': 'GLM-16',
+                            'attachments': [{'platformId': 'G16', 'satellite': dict(sat, latitude=0.5)}]})
+
+
+def test_committed_glint_values_match_the_script():
+    out = json.loads(COMMITTED.read_text())
+    for e in out['events']:
+        t = dt.datetime.strptime(e['utc'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=dt.timezone.utc)
+        g = glm.glint_deg(e['lat'], e['lon'], glm.subsolar_point(t), e['sat_lon'])
+        if g is None:
+            assert e['glint_deg'] is None, e['id']
+        else:  # rounded to 0.1, and utc drops the milliseconds the script used; the Earth turns 0.0042 degree a second
+            assert e['glint_deg'] == pytest.approx(g, abs=0.06), e['id']
+    nights = sum(e['glint_deg'] is None for e in out['events'])
+    assert f'for {nights} of the {len(out["events"])} listed events' in out['glint_note']
+    assert out['near_glint_deg'] == glm.NEAR_GLINT_DEG
+    near = [e for e in out['events'] if e['glint_deg'] is not None and e['glint_deg'] <= glm.NEAR_GLINT_DEG]
+    assert set(re.findall(r'\b[0-9a-f]{24}\b', out['near_glint_note'])) == {e['id'] for e in near}
+    reviewed = {'685c240fc37fbbdc3dc012c6', '68702784676cc8e13b244915', '68c59c0d02ba848d609b86e1'}
+    assert reviewed <= {e['id'] for e in near}  # the three that a reviewer found at the glint point of GOES-East
+    first, last = out['first_full_year'], out['last_full_year']
+    for b in glm.BANDS:
+        rows = [e for e in near if glm.where(e['lon'], e['lat'])[b]]
+        c = out['counts'][b]
+        assert {y: n for y, n in c['near_glint_per_year'].items() if n} == \
+            dict(collections.Counter(e['utc'][:4] for e in rows))
+        assert c['full_years']['near_glint'] == sum(first <= int(e['utc'][:4]) <= last for e in rows)
