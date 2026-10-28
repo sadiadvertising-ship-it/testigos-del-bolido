@@ -93,6 +93,10 @@ def test_the_near_parallel_pair_on_the_real_case():
     final = case.call('finalize', {'clips': ['2', '10'], 'why': 'x'})
     assert final['accepted'] and final['final']['verdict'] == 'natural'
     assert 'cbet' not in json.dumps(final).lower()
+    cameras = case.report_facts()[0]['cameras']  # the report is told three were oriented and one set aside
+    assert sorted(cameras['oriented']) == ['Kamensk-Uralskiy', 'Korkino', 'Tyumen']
+    assert sorted(cameras['in_the_solution']) == ['Kamensk-Uralskiy', 'Korkino']
+    assert cameras['set_aside'] == [{'site': 'Tyumen', 'criterion': 'near_parallel_pair'}]
 
 
 def test_three_refusals_escalate_to_a_person(case_with):
@@ -215,6 +219,12 @@ def test_the_tool_calling_loop_runs_until_review_and_replays(case_with, monkeypa
     assert agent.rejection_notes('synthetic', case.run_id) is None
     approved = agent.review('synthetic', case.run_id, approve=True, by='Diego')
     assert approved['status'] == 'approved' and approved['history'][-1]['by'] == 'Diego'
+    with pytest.raises(ValueError):  # a signed run cannot be signed again
+        agent.review('synthetic', case.run_id, approve=True, by='Diego')
+    withdrawn = agent.review('synthetic', case.run_id, approve=False, notes='Three cameras were oriented, not two.', by='Diego')
+    assert withdrawn['status'] == 'rejected' and withdrawn['history'][-1]['withdraws'] == 'approval'
+    assert [h['review'] for h in withdrawn['history']] == ['approved', 'rejected']
+    assert agent.rejection_notes('synthetic', case.run_id) == 'Three cameras were oriented, not two.'
 
 
 def test_a_rejected_report_resumes_with_the_reviewers_notes(case_with, monkeypatch):

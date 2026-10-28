@@ -3,6 +3,7 @@
   python -m testigos run <event>                   the agent works the case (Muse Spark 1.3 tool calling); one line per step
   python -m testigos resume <event> <run_id>       continue a blocked run once its inputs changed, or with --notes
   python -m testigos review <event> <run_id> --approve | --reject [--notes ...] [--by NAME]
+                                                  --reject on a signed run withdraws the signature
   python -m testigos replay <event> <run_id> [--echo]   re-run the recorded tool calls with today's code, offline;
                                                   --echo prints every step as `run` does
 """
@@ -105,7 +106,8 @@ def main(argv=None):
         _ended(case)
     elif a.cmd == 'review':
         rec = agent.review(a.event, a.run_id, approve=a.approve, notes=a.notes, by=a.by)
-        print(f"run {a.run_id}: {rec['status']}")
+        withdrawn = rec['history'][-1].get('withdraws') == 'approval'
+        print(f"run {a.run_id}: {rec['status']}" + (' (signature withdrawn)' if withdrawn else ''))
     elif a.cmd == 'replay':
         out = agent.replay(a.event, a.run_id, echo=echo if a.echo else None)
         print(f"replayed {out['steps']} steps of {a.run_id}: "

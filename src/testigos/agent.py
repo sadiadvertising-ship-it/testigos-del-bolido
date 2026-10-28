@@ -457,8 +457,14 @@ class Case:
 
     def report_facts(self):
         """What the report may say: the case summary, then every step's result. The check reads the same list."""
+        clips = [self.inventory(c) for c in self.clip_ids()]
+        used = set((self.final or {}).get('clips') or [])
+        # spelled out because a report once said two cameras were oriented when three were and one was set aside
+        cameras = {'oriented': [c['site'] for c in clips if c['calibrated']],
+                   'in_the_solution': [c['site'] for c in clips if c['clip'] in used],
+                   'set_aside': [{'site': c['site'], 'criterion': c['dropped']} for c in clips if c['dropped']]}
         summary = {'event': self.event.get('id'), 'event_utc': self.event.get('utc'), 'event_local': self._local_time(),
-                   'clips': [self.inventory(c) for c in self.clip_ids()], 'final': self.final}
+                   'clips': clips, 'cameras': cameras, 'final': self.final}
         return [summary] + [{k: v for k, v in step.items() if k in ('action', 'clip', 'clips', 'result')} for step in self.log]
 
     def write_report(self, **_):
@@ -480,7 +486,9 @@ class Case:
                    f'"calibrated false"), and write units and directions in {name}. Use only numbers from the results, rounded '
                    'as they are, each with the unit the results give it and each coordinate with the hemisphere letter the '
                    'results give it; leave out raw instrument values. Give the date and time in local time as the results '
-                   'give it (event_local), and in UTC. Say which witness videos exist and which do not, as the clip list says. '
+                   'give it (event_local), and in UTC. Say which witness videos exist and which do not, as the clip list says, '
+                   'and which cameras could be oriented, which the solution uses and which were set aside, as the summary\'s '
+                   'cameras entry lists them. A clip note says what is known about that clip; do not add a cause it does not give. '
                    'For the speed, quote the 95% range the results give, not the fit\'s formal error. Do not say what the object '
                    'was (a natural meteoroid or a re-entering spacecraft): the code writes that sentence above your text. Say '
                    'what is solid, what is uncertain and what is missing.')
@@ -743,13 +751,19 @@ class Case:
 
 
 def review(event_id, run_id, approve, notes=None, by=None):
-    """A person signs the report off, or sends it back with notes (then `resume --notes`)."""
+    """A person signs the report off, or sends it back with notes (then `resume`).
+
+    A signature can be withdrawn the same way: rejecting an approved run keeps the approval in the history.
+    """
     path = ROOT / 'events' / event_id / 'runs' / f'{run_id}.json'
     rec = json.loads(path.read_text())
-    if rec['status'] != 'awaiting_review':
+    if rec['status'] != 'awaiting_review' and (approve or rec['status'] != 'approved'):
         raise ValueError(f"run {run_id} is {rec['status']}, not awaiting review")
-    rec['history'].append({'at': dt.datetime.now().isoformat(timespec='seconds'), 'review': 'approved' if approve else 'rejected',
-                           'by': by, 'notes': notes})
+    entry = {'at': dt.datetime.now().isoformat(timespec='seconds'), 'review': 'approved' if approve else 'rejected',
+             'by': by, 'notes': notes}
+    if rec['status'] == 'approved':
+        entry['withdraws'] = 'approval'
+    rec['history'].append(entry)
     rec['status'] = 'approved' if approve else 'rejected'
     path.write_text(json.dumps(rec, ensure_ascii=False, indent=1, default=str) + '\n')
     return rec
