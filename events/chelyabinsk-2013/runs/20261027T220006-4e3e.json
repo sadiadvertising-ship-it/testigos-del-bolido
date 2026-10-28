@@ -38,9 +38,16 @@
  },
  "resumed_from": "20261027T185758-cee8",
  "notes": "El reporte en inglés dice que solo dos cámaras se pudieron orientar. Fueron tres: Kamensk-Uralskiy, Korkino y Tiumén. Tiumén quedó fuera porque sus planos son casi paralelos a los de Kamensk-Uralskiy. Corrijan esa frase.",
- "history": [],
+ "history": [
+  {
+   "at": "2026-10-27T22:06:54",
+   "review": "approved",
+   "by": "Diego Burbano",
+   "notes": null
+  }
+ ],
  "finished": "2026-10-27T22:00:50",
- "status": "awaiting_review",
+ "status": "approved",
  "block": null,
  "final": {
   "clips": [
