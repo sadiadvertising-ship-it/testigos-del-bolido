@@ -17,6 +17,7 @@ import numpy as np
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
+import testigos.verdict  # noqa: E402
 from testigos.agent import REPORT_MODEL, Case  # noqa: E402
 from testigos.geo import to_ecef, to_geodetic  # noqa: E402
 from testigos.solve import _closest, _fit_speed, solve  # noqa: E402
@@ -37,6 +38,18 @@ TOWNS = {'Bucaramanga': (7.119, -73.123), 'Floridablanca': (7.064, -73.089), 'C�
          'Duitama': (5.826, -73.034), 'Tunja': (5.535, -73.367), 'Málaga': (6.698, -72.732), 'San Gil': (6.556, -73.134),
          'Barrancabermeja': (7.065, -73.854), 'Bogotá (Colina)': (4.73, -74.06), 'Villavicencio': (4.142, -73.627),
          'Medellín': (6.244, -75.581)}  # town centres, for placing the rows of city-geometry.json
+
+# The speeds the verdict tells apart, in plain terms, read from the verdict module's own docstring so that the viewer and
+# the rule cannot drift apart: what anything bound to the Sun exceeds, Earth's escape speed, and what a satellite or rocket
+# stage re-entering from a low orbit is near, orbital speed.
+SPEEDS = dict(zip(('escape_kms', 'orbital_kms'), map(float, re.search(
+    r'escape speed \(([\d.]+) km/s\);\s+re-entering satellites and rocket stages arrive below orbital speed \(about ([\d.]+) km/s\)',
+    testigos.verdict.__doc__).groups())))
+# Everyday comparisons for the validation case: two cities as Wikidata places them (P625 of Q2841 and Q48278, read on
+# 28 October 2026), and the height of an airliner cruising at 10 km (about 33,000 ft; airliners commonly cruise at
+# 30,000 to 40,000 ft).
+CITIES = (('Bogotá', 4.60971, -74.08175), ('Medellín', 6.25020, -75.56758))
+CRUISE_KM = 10
 
 
 def site(lat, lon):
@@ -121,6 +134,13 @@ def when(event, where):
     loc = t + dt.timedelta(hours=event['local_time']['offset_h'])
     clock = f"{loc.hour % 12 or 12}:{loc:%M} {'am' if loc.hour < 12 else 'pm'}"
     return (f"{loc.day} {loc:%B %Y}, {clock} {where} ({t:%H:%M} UTC" + ('' if t.date() == loc.date() else f" on {t.day} {t:%B}") + ')')
+
+
+def great_circle_km(a, b):
+    """Distance along the ground between two (lat, lon) points, on a sphere of the Earth's mean radius."""
+    (la1, lo1), (la2, lo2) = np.radians(a), np.radians(b)
+    h = np.sin((la2 - la1) / 2) ** 2 + np.cos(la1) * np.cos(la2) * np.sin((lo2 - lo1) / 2) ** 2
+    return float(2 * 6371.0088 * np.arcsin(np.sqrt(h)))
 
 
 def git(*args):
@@ -236,6 +256,10 @@ def chelyabinsk():
         'calibration_history': f'{history.relative_to(ROOT)}/' if history.is_dir() else None,
         'stations': stations,
         'tried': tried,
+        # the stretch the cameras saw beside the distance between two cities, the flare's height on our line beside a
+        # cruising airliner, and the speeds the verdict tells apart
+        'everyday': {'path_km': round(float(s1 - s0) / 1000, 1), 'cities': [c[0] for c in CITIES],
+                     'cities_km': round(great_circle_km(CITIES[0][1:], CITIES[1][1:]), 1), 'cruise_km': CRUISE_KM, **SPEEDS},
         'montecarlo': mc and {'draws': mc['draws'], 'stats': mc['stats'], 'widened': widened(),
                               'lines': [between_heights(r, top, bottom) for r in mc['lines']['rows']]},
         'published': {
@@ -346,6 +370,7 @@ def colombia():
         'not_analysed': NOT_ANALYSED.get(case.id),
         'agent_log': log,
         'reentries': reentries(log),
+        'everyday': SPEEDS,
         'report_es': (case.dir / 'agent_report_es.md').read_text(),
         **reports_and_run(case),
     }

@@ -62,9 +62,11 @@ The 3D viewer runs from this repository: `python3 -m http.server -d web 8000`, t
 4. **Planes of sight.** One camera's lines of sight to the fireball lie in a plane. Two cameras on different sides give
    two planes that cross in the trajectory, refined by least squares over every ray (`solve.py`; Ceplecha 1987,
    Borovička 1990). The speed comes from each video's own frame times.
-5. **Verdict.** Natural if the speed's 95% range lies above 11 km/s (Earth's escape speed is 11.2 km/s); re-entry if it
-   lies below 8.5 km/s and the passage is long; inconclusive otherwise (`verdict.py`). The range is the Monte Carlo's when there is one, else the speed ± 2σ with σ at
-   least 10% of the speed.
+5. **Verdict.** Nothing that orbits the Earth can enter the atmosphere faster than Earth's escape speed, 11.2 km/s (from
+   a low orbit, satellites and rocket stages enter at about 7.8 km/s), and anything that orbits the Sun enters faster. So
+   the verdict is natural if the speed's 95% range lies above 11 km/s; re-entry if it lies below 8.5 km/s and the passage
+   is long; inconclusive otherwise (`verdict.py`). The range is the Monte Carlo's when there is one, else the speed ± 2σ
+   with σ at least 10% of the speed.
 
 ## The agent
 
@@ -154,6 +156,13 @@ Korkino (a standing car) and Tyumen (a car at a traffic light). The agent kept K
 apart, whose planes cross at 66°, and left Tyumen out as the weaker of a near-parallel pair: its planes cross
 Kamensk-Uralskiy's at 7.5°.
 
+In everyday terms: the stretch the two cameras saw, from 89 km down to 11 km, is 246 km long, about as far as Bogotá is
+from Medellín in a straight line (246 km between the points Wikidata gives for the two cities). At the fit's 19.65 km/s
+it takes 12.5 s, the length of the replay above; at the Monte Carlo's median, 17.6 km/s, 14.0 s. CBET's major flare sits
+29 km up on our line, about three times as high as an airliner cruising at 10 km. And even the low end of the speed's
+95% range, 12.1 km/s, is faster than anything that orbits the Earth can enter the atmosphere: it was a rock from space,
+not space junk (`scripts/export_web.py` computes these comparisons for the viewer).
+
 | | This agent | CBET 3423 | Refereed, 2013 | Zuluaga, Ferrín & Geens |
 |---|---|---|---|---|
 | Heading (azimuth of motion) | 282.1° by the fit; Monte Carlo median 279.3° (1σ 275.8–282.6°) | 279.5° | | 285° |
@@ -233,7 +242,8 @@ Was it space junk? No satellite or rocket re-entry in the Aerospace Corporation'
 that includes the flash. The nearest window, OBJECT C's (07:54 UTC on 31 July, ± 2 hours), opens 2.1 hours after the
 flash, and STARLINK-2038's (18:42 UTC on 30 July, ± 1 hour) closed 8.1 hours before it
 (`events/colombia-2025-07-30/reentries.json`). The database lists tracked objects only, so the speed still has to
-decide, and the speed needs a trajectory.
+decide (a rock from space enters the atmosphere faster than 11.2 km/s; a satellite or rocket stage falling from a low orbit,
+at about 7.8 km/s), and the speed needs a trajectory.
 
 With fewer than two oriented cameras the agent reports insufficient geometry and asks for what would close it: videos
 from Málaga, Saravena and San Gil, where the flash would have stood about 21° to 51° above the horizon. Run

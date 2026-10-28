@@ -573,7 +573,32 @@ function leadSolved(d) {
     <p class="big">Heading <span class="num">${fmt(s.azimuth_deg, 1)}°</span> (${dir(s.azimuth_deg)}), descending at
     <span class="num">${fmt(s.slope_deg, 1)}°</span>, from <span class="num">${fmt(top, 0)}</span> km down to
     <span class="num">${fmt(low, 0)}</span> km${s.seen_for_s ? `; one camera tracked it for <span class="num">${fmt(s.seen_for_s, 1)}</span> s` : ''}.</p>
-    <p>${verdictText(d)}</p>`;
+    <p>${verdictText(d)}</p>
+    ${everyday(d, top, low)}`;
+}
+
+// Escape speed in plain terms: what nothing that orbits the Earth can exceed when it enters the atmosphere.
+const escapeText = e => `nothing that orbits the Earth can enter the atmosphere faster than ${e.escape_kms} km/s, Earth's escape speed
+  (from a low orbit, satellites and rocket stages enter at about ${e.orbital_kms} km/s), and anything that orbits the Sun enters faster`;
+
+// The solved case's figures in everyday terms: the stretch the cameras saw beside the distance between two cities, the
+// flare's height on our line beside a cruising airliner, and the speeds the verdict tells apart.
+function everyday(d, top, low) {
+  const e = d.everyday, s = d.solution, mc = d.montecarlo && d.montecarlo.stats, g = d.grade, band = s.speed_band_95_kms;
+  if (!e) return '';
+  const out = [`The stretch the ${count(s.clips.length)} cameras saw, from ${fmt(top, 0)} km down to ${fmt(low, 0)} km, is
+    ${fmt(e.path_km, 0)} km long, about as far as ${esc(e.cities[0])} is from ${esc(e.cities[1])} in a straight line
+    (${fmt(e.cities_km, 0)} km). At the fit's ${fmt(s.speed_kms, 2)} km/s it takes ${fmt(e.path_km / s.speed_kms, 1)} s${mc ? `;
+    at the Monte Carlo's ${fmt(mc.speed.median, 1)} km/s, ${fmt(e.path_km / mc.speed.median, 1)} s` : ''}.`];
+  if (g && g.our_height_near_flare_km) {
+    const h = g.our_height_near_flare_km[0];
+    out.push(`Its major flare, ${fmt(h, 0)} km up on our line, was about ${count(Math.round(h / e.cruise_km))} times as high as
+      an airliner cruising at ${e.cruise_km} km.`);
+  }
+  const fast = band && band[0] > e.escape_kms;
+  out.push(`${escapeText(e).replace(/^n/, 'N')}${fast ? `: even the low end of this fireball's 95% range, ${fmt(band[0], 1)} km/s,
+    is too fast for space junk` : ''}.`);
+  return `<p><b>In everyday terms.</b> ${out.join(' ')}</p>`;
 }
 
 // The speed, then the verdict as the code's rule gave it (the rule and the 95% range are recorded with the run).
@@ -715,7 +740,7 @@ function leadOpen(d) {
     ${esc(list(re.containing_the_flash))} includes the flash.` : `No satellite or rocket re-entry in ${esc(re.database)} has a
     predicted window that includes the flash.`}${re.nearest.length ? ` The ${count(re.nearest.length)} windows nearest the flash:
     ${list(re.nearest.map(r => reentryWindow(d, r, 'it')))}.` : ''} Only tracked objects are listed, so the speed still has to
-    decide.</p>` : ''}
+    decide${d.everyday ? `: ${escapeText(d.everyday)}` : ''}.</p>` : ''}
     <p class="big">Phones in the towns marked in blue would have seen the flash ${lo}° to ${hi}° above the horizon. Two of those
     videos, from still cameras on different sides, could give its path and its speed.</p>`;
 }
