@@ -154,7 +154,8 @@ body.video #play { font-size: 20px; padding: 10px 24px; }
 @media (max-width: 760px) {
   :root { --panel-w: 100vw; }
   #panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 50vh; border-radius: 14px 14px 0 0; padding: 14px 16px 20px; }
-  #hud { left: 50%; bottom: calc(50vh + 10px); }
+  #hud { left: 50%; bottom: calc(50vh + 10px); white-space: normal; width: max-content; max-width: calc(100vw - 32px); }
+  #readout { min-width: 0; }
   body.bare #hud { bottom: 26px; }
   #legend { top: 10px; left: 10px; right: auto; bottom: auto; width: auto; max-width: 230px; padding: 7px 10px; font-size: 12px; }
 }

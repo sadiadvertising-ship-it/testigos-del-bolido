@@ -18,11 +18,22 @@ const COMPASS = ['north', 'north-north-east', 'north-east', 'east-north-east', '
   'south-south-east', 'south', 'south-south-west', 'south-west', 'west-south-west', 'west', 'west-north-west', 'north-west',
   'north-north-west'];
 
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November',
+  'December'];
+
 const $ = s => document.querySelector(s);
 const rgb = c => `rgb(${c.join(',')})`;
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const fmt = (x, d = 1) => Number(x).toFixed(d);
 const span = (a, b, d = 1) => `${fmt(a, d)}–${fmt(b, d)}`;
+const between = (a, b, d = 1) => `${fmt(a, d)} to ${fmt(b, d)}`;  // a range inside a sentence
+const list = xs => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : xs.join(''));  // 'A, B and C'
+const two = n => String(n).padStart(2, '0');
+// A time as git or a run records it, in its own offset: {day: '26 October', time: '20:33'}.
+const localTime = iso => { const m = /^\d{4}-(\d\d)-(\d\d)T(\d\d):(\d\d)/.exec(iso || ''); return m && {day: `${+m[2]} ${MONTHS[m[1] - 1]}`, time: `${m[3]}:${m[4]}`}; };
+const utcTime = iso => { const t = new Date(iso); return `${two(t.getUTCHours())}:${two(t.getUTCMinutes())} UTC on ${t.getUTCDate()} ${MONTHS[t.getUTCMonth()]}`; };
+const isoDay = iso => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };  // '2025-08-01': '1 August 2025'
+const modelName = id => String(id || 'muse-spark').split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');  // 'Muse Spark 1.3'
 const dir = az => COMPASS[Math.round((((az % 360) + 360) % 360) / 22.5) % 16];
 const abbr = az => dir(az).split('-').map(w => w[0].toUpperCase()).join('');
 const latlon = ([lon, lat]) => `${fmt(Math.abs(lat), 2)}° ${lat >= 0 ? 'N' : 'S'}, ${fmt(Math.abs(lon), 2)}° ${lon >= 0 ? 'E' : 'W'}`;
@@ -69,6 +80,9 @@ const overlay = new deck.MapboxOverlay({interleaved: false, layers: [], getToolt
 map.addControl(overlay);
 
 const placeFilters = {};  // the basemap's own filters on its place names
+// Each place layer has an invisible copy that draws every name, overlaps included, so the map can say which names would
+// show under the case's labels (namesUnderLabels).
+const PROBE = '-probe';
 
 map.on('style.load', () => {
   const night = {background: ['background-color', '#08111f'], water: ['fill-color', '#0b1b30']};
@@ -83,6 +97,10 @@ map.on('style.load', () => {
     map.setPaintProperty(l.id, 'text-halo-color', '#08111f');
     placeFilters[l.id] = l.filter || true;
   }
+  for (const l of map.getStyle().layers.filter(x => x.id in placeFilters)) {
+    map.addLayer({...l, id: l.id + PROBE, paint: {'text-opacity': 0, 'icon-opacity': 0}, layout: {...l.layout,
+      'text-allow-overlap': true, 'text-ignore-placement': true, 'icon-allow-overlap': true, 'icon-ignore-placement': true}});
+  }
   quietNames();
   try {
     map.setSky({'sky-color': '#02060d', 'horizon-color': '#132944', 'fog-color': '#08111f', 'sky-horizon-blend': 0.6,
@@ -90,30 +108,67 @@ map.on('style.load', () => {
   } catch (e) { /* the map works without a sky */ }
 });
 
-// The basemap leaves out the places the case labels itself, so no name shows twice.
-let quieted = '';
+// The basemap leaves out the places the case labels itself, so no name shows twice, and the names that would show under
+// one of the case's labels or dots, where only a piece of them would show.
+let quieted = '', under = [];
+const placeName = ['coalesce', ['get', 'name:latin'], ['get', 'name']];
 function quietNames() {
   const d = state.data;
-  const names = !d ? [] : d.solution ? d.stations.map(s => s.site)
+  const own = !d ? [] : d.solution ? d.stations.map(s => s.site)
     : d.towns.filter(t => state.spots.has(t.city) && townShows(d, t)).map(t => t.city);
-  const name = ['coalesce', ['get', 'name:latin'], ['get', 'name']], applied = JSON.stringify([names, Object.keys(placeFilters)]);
+  const names = [...new Set([...own, ...under])].sort(), applied = JSON.stringify([names, Object.keys(placeFilters)]);
   if (applied === quieted) return;
   quieted = applied;
   for (const [id, filter] of Object.entries(placeFilters)) {
-    map.setFilter(id, names.length ? ['all', filter, ['!', ['in', name, ['literal', names]]]] : filter);
+    map.setFilter(id, names.length ? ['all', filter, ['!', ['in', placeName, ['literal', names]]]] : filter);
   }
 }
 
+// Once the map has drawn: the basemap names whose box, on the invisible copies, meets a label or a dot of the case.
+function namesUnderLabels() {
+  const d = state.data, layers = Object.keys(placeFilters).map(id => id + PROBE).filter(id => map.getLayer(id));
+  if (!d || !layers.length) return;
+  const found = new Set();
+  for (const [b, own] of caseBoxes(d, viewport(currentView()))) {
+    for (const f of map.queryRenderedFeatures([[b[0], b[1]], [b[2], b[3]]], {layers})) {
+      const n = f.properties['name:latin'] || f.properties.name;
+      if (n !== own) found.add(n);
+    }
+  }
+  under = [...found];
+  quietNames();
+}
+map.on('idle', namesUnderLabels);
+
 const ON_TOP = {parameters: {depthCompare: 'always', depthWriteEnabled: false}};  // labels and markers stay readable over the 3D lines
-// Translucent planes hide nothing behind them: the lines of sight lie inside their camera's plane and would flicker out.
+// Translucent planes and the Monte Carlo lines hide nothing behind them: the lines of sight lie inside their camera's
+// plane and would flicker out, and the band of Monte Carlo lines would cover the paths drawn along it. (deck.gl 9 takes
+// luma.gl's WebGPU-style parameter names: depthWriteEnabled.)
 const SHEER = {parameters: {depthWriteEnabled: false}};
 
-function text(id, data, getPosition, getText, extra = {}) {
+// How each kind of label is drawn: text size and weight, line height, where it sits from its point, background padding.
+// The same numbers give the labels' boxes on screen (labelBox).
+const TAG = () => ({size: LOOK.text, weight: 500, lineHeight: 1, anchor: 'start', offset: [LOOK.gap, 0], pad: LOOK.pad});
+const TOWN_TAG = () => ({...TAG(), lineHeight: LINE});
+const HEIGHT_TAG = () => ({...TAG(), size: LOOK.heights, weight: video ? 600 : 500, anchor: 'middle', offset: [0, -Math.round(LOOK.heights * 1.35)]});
+// CBET's label sits at its path's east end, clear of the crossing of the lines of sight: below and to the right, under
+// the height label. Where that would run off the map (always on a phone), it sits higher up and left of the height
+// label, above both paths and the camera names beside them.
+function publishedTag(d) {
+  const tag = {...TAG(), size: LOOK.text - 0.5, pad: LOOK.pad.map(v => v + 1)}, p = publishedEnd(d);
+  const right = {...tag, anchor: 'start', offset: [LOOK.gap, LOOK.heights + LOOK.gap]};
+  const left = {...tag, anchor: 'end', offset: [-(LOOK.gap + 2.5 * LOOK.heights), -2 * LOOK.heights]};
+  if (narrow.matches) return left;
+  const vp = viewport(currentView()), {xy, scale} = projector(vp);
+  return labelBox(xy(p, p[2]), scale(p, p[2]), publishedText(d), right)[2] < vp.width - 6 ? right : left;
+}
+
+function text(id, data, getPosition, getText, tag = TAG(), extra = {}) {
   return new deck.TextLayer({
-    id, data, getPosition, getText, getSize: LOOK.text, sizeUnits: 'pixels', sizeMinPixels: LOOK.text - 1, sizeMaxPixels: LOOK.text + 1,
-    fontFamily: FONT, fontWeight: 500, characterSet: 'auto',
-    background: true, getBackgroundColor: [...NIGHT, 215], backgroundPadding: LOOK.pad, getColor: [...INK, 255],
-    getTextAnchor: 'start', getAlignmentBaseline: 'center', getPixelOffset: [LOOK.gap, 0], billboard: true, ...ON_TOP, ...extra,
+    id, data, getPosition, getText, getSize: tag.size, sizeUnits: 'pixels', sizeMinPixels: tag.size - 1, sizeMaxPixels: tag.size + 1,
+    fontFamily: FONT, fontWeight: tag.weight, lineHeight: tag.lineHeight, characterSet: 'auto',
+    background: true, getBackgroundColor: [...NIGHT, 215], backgroundPadding: tag.pad, getColor: [...INK, 255],
+    getTextAnchor: tag.anchor, getAlignmentBaseline: 'center', getPixelOffset: tag.offset, billboard: true, ...ON_TOP, ...extra,
   });
 }
 
@@ -148,7 +203,7 @@ function solvedLayers(d) {
   const layers = [];
   if (state.show.mc && d.montecarlo && !live) {
     layers.push(new deck.PathLayer({id: 'mc', data: d.montecarlo.lines, getPath: l => l, getColor: [...GLOW, 26], getWidth: 1,
-      widthUnits: 'pixels', billboard: true}));
+      widthUnits: 'pixels', billboard: true, ...SHEER}));
   }
   if (state.show.sight) {
     layers.push(new deck.SolidPolygonLayer({id: 'planes', data: planes, getPolygon: p => p.polygon, _full3d: true,
@@ -184,23 +239,22 @@ function solvedLayers(d) {
     getFillColor: s => (s.rays ? [...camColor(d, s), 255] : [...NIGHT, 255]),
     stroked: true, getLineColor: s => (s.rays ? [...NIGHT, 255] : [...GRAY, 255]), getLineWidth: 1.5, lineWidthUnits: 'pixels',
     billboard: true, ...ON_TOP}));
-  layers.push(text('cam-labels', d.stations, s => [...s.lonlat, 0], s => s.site,
-    {getColor: s => (s.rays ? [...INK, 255] : [...MUTED, 255]), updateTriggers: {getColor: d.id}}));
-  layers.push(text('heights', [first, last], p => p, p => `${fmt(p[2] / 1000, 0)} km`, {getTextAnchor: 'middle',
-    getPixelOffset: [0, -Math.round(LOOK.heights * 1.35)], getSize: LOOK.heights, sizeMinPixels: LOOK.heights - 1,
-    sizeMaxPixels: LOOK.heights + 1, fontWeight: video ? 600 : 500}));
-  if (state.show.published && d.published && !live) {
-    // The label sits at the path's east end, clear of the crossing of the lines of sight: below and to the right, under
-    // the height label, or on a phone, which has no room on the right, higher up and left of the height label, above the
-    // path and the camera names beside it. Its border carries the path's colour.
-    const east = d.published.path.reduce((a, b) => (b[0] > a[0] ? b : a));
-    layers.push(text('published-label', [east], p => p, () => 'CBET 3423, published', {getSize: LOOK.text - 0.5,
-      getBorderColor: [...PUBLISHED, 255], getBorderWidth: 1, backgroundPadding: LOOK.pad.map(v => v + 1),
-      getTextAnchor: narrow.matches ? 'end' : 'start',
-      getPixelOffset: narrow.matches ? [-(LOOK.gap + 2.5 * LOOK.heights), -2 * LOOK.heights] : [LOOK.gap, LOOK.heights + LOOK.gap]}));
+  const side = camSides(d), sides = JSON.stringify([...side.values()].map(t => t.anchor));
+  layers.push(text('cam-labels', d.stations, s => [...s.lonlat, 0], s => s.site, TAG(),
+    {getColor: s => (s.rays ? [...INK, 255] : [...MUTED, 255]), getTextAnchor: s => side.get(s.id).anchor,
+      getPixelOffset: s => side.get(s.id).offset, updateTriggers: {getColor: d.id, getTextAnchor: sides, getPixelOffset: sides}}));
+  layers.push(text('heights', [first, last], p => p, heightText, HEIGHT_TAG()));
+  if (state.show.published && d.published && !live) {  // its border carries the path's colour
+    layers.push(text('published-label', [publishedEnd(d)], p => p, () => publishedText(d), publishedTag(d),
+      {getBorderColor: [...PUBLISHED, 255], getBorderWidth: 1}));
   }
   return layers;
 }
+
+const heightText = p => `${fmt(p[2] / 1000, 0)} km`;
+const cbet = d => d.published.values[0].who.split(':')[0];  // 'CBET 3423', as the published values name it
+const publishedText = d => `${cbet(d)}, published`;
+const publishedEnd = d => d.published.path.reduce((a, b) => (b[0] > a[0] ? b : a));  // the published path's east end
 
 // Video mode, Colombia: keys 1 to 3 build the map up for a recording (1 the GOES-19 flash, 2 the Medellín line, 3 the town
 // wedges); 0 or Escape shows everything. A layer marked n shows from stage n on; n = 4 marks what only "everything" shows.
@@ -211,14 +265,17 @@ const filmedSites = d => d.witness.filter(w => /calibrat|orient/.test(w.status))
 const townShows = (d, t) => (filmedSites(d).some(w => w.site === t.city) ? shows(2) : t.sees_it_high ? shows(3) : shows(4));
 const townRadius = (d, t) => (asked(d).has(t.city) ? 6 : 4.5) * LOOK.dot;
 // On a phone the dots stand too close for more than a name: the table under the map gives the nearest towns' height in
-// the sky, a tap on a dot gives any town's, and the map key says which bright dots the agent asked for.
-const townLabel = (d, t) => (narrow.matches ? t.city
-  : (t.sees_it_high ? `${t.city}  ${span(t.el_at_40km_deg, t.el_at_80km_deg, 0)}° up` : t.city)
-    + (asked(d).has(t.city) ? '\nrequested by the agent' : ''));
+// the sky and a tap on a dot gives any town's. The towns the agent asked for still say why they are bright.
+const townLabel = (d, t) => (narrow.matches || !t.sees_it_high ? t.city : `${t.city}  ${span(t.el_at_40km_deg, t.el_at_80km_deg, 0)}° up`)
+  + (!asked(d).has(t.city) ? '' : narrow.matches ? '\nrequested' : '\nrequested by the agent');
 const LINE = 1.15;  // line height of the town labels; a requested town's runs to two lines
+const satellite = d => (/GOES-\d+/.exec(d.satellite.source) || ['the satellite'])[0];  // 'GOES-19'
+const glmText = d => `${satellite(d)} flash`;
+const COLUMN_TOP = 100000;  // the flash's column on the map rises to 100 km
+const skyKm = d => d.sky.heights_km;  // the heights the town geometry assumes for the flash
 
 function openLayers(d) {
-  const g = d.satellite, [lon, lat] = g.lonlat, [dlon, dlat] = g.extent_deg;
+  const g = d.satellite, [lon, lat] = g.lonlat, [dlon, dlat] = g.extent_deg, [h0, h1] = skyKm(d).map(h => h * 1000);
   const box = [[lon - dlon / 2, lat - dlat / 2], [lon + dlon / 2, lat - dlat / 2], [lon + dlon / 2, lat + dlat / 2], [lon - dlon / 2, lat + dlat / 2]];
   const wanted = asked(d), witness = shows(2) ? filmedSites(d) : [];
   const towns = d.towns.filter(t => townShows(d, t));
@@ -231,15 +288,15 @@ function openLayers(d) {
     new deck.PolygonLayer({id: 'glm-box', data: [box], getPolygon: b => b, getFillColor: [...SERIES[1], 45], getLineColor: [...SERIES[1], 210],
       getLineWidth: 1, lineWidthUnits: 'pixels'}),
     new deck.SolidPolygonLayer({id: 'sight', data: high, _full3d: true, getFillColor: t => [...SERIES[0], wanted.has(t.city) ? 34 : 14],
-      getPolygon: t => [[...t.lonlat, 0], [lon, lat, 40000], [lon, lat, 80000]], ...SHEER}),
-    new deck.PathLayer({id: 'sight-edges', data: high, getPath: t => [[lon, lat, 40000], [...t.lonlat, 0], [lon, lat, 80000]],
+      getPolygon: t => [[...t.lonlat, 0], [lon, lat, h0], [lon, lat, h1]], ...SHEER}),
+    new deck.PathLayer({id: 'sight-edges', data: high, getPath: t => [[lon, lat, h0], [...t.lonlat, 0], [lon, lat, h1]],
       getColor: t => (wanted.has(t.city) ? [...ACCENT, 170] : [...SERIES[0], 85]), getWidth: t => (wanted.has(t.city) ? 1.5 : 1),
       widthUnits: 'pixels', billboard: true}),
-    new deck.PathLayer({id: 'witness', data: witness, getPath: w => [[...w.lonlat, 0], [lon, lat, 60000]], getColor: [...GRAY, 200],
+    new deck.PathLayer({id: 'witness', data: witness, getPath: w => [[...w.lonlat, 0], [lon, lat, (h0 + h1) / 2]], getColor: [...GRAY, 200],
       getWidth: 1.5 * LOOK.dot, widthUnits: 'pixels', billboard: true, getDashArray: [4, 3], extensions: [dash]}),
-    new deck.LineLayer({id: 'column', data: [[lon, lat]], getSourcePosition: p => [...p, 0], getTargetPosition: p => [...p, 100000],
+    new deck.LineLayer({id: 'column', data: [[lon, lat]], getSourcePosition: p => [...p, 0], getTargetPosition: p => [...p, COLUMN_TOP],
       getColor: [...SERIES[1], 120], getWidth: 1.5 * LOOK.dot, ...ON_TOP}),
-    new deck.LineLayer({id: 'column-band', data: [[lon, lat]], getSourcePosition: p => [...p, 40000], getTargetPosition: p => [...p, 80000],
+    new deck.LineLayer({id: 'column-band', data: [[lon, lat]], getSourcePosition: p => [...p, h0], getTargetPosition: p => [...p, h1],
       getColor: [...SERIES[1], 255], getWidth: 4 * LOOK.dot, ...ON_TOP}),
     new deck.ScatterplotLayer({id: 'glm', data: [g], pickable: true, getPosition: () => [lon, lat, 0], getRadius: 6 * LOOK.dot,
       radiusUnits: 'pixels', getFillColor: [255, 255, 255], stroked: true, getLineColor: [...SERIES[1], 230], getLineWidth: 4 * LOOK.dot,
@@ -247,19 +304,15 @@ function openLayers(d) {
     new deck.ScatterplotLayer({id: 'towns', data: towns, pickable: true, getPosition: t => [...t.lonlat, 0], getRadius: t => townRadius(d, t),
       radiusUnits: 'pixels', getFillColor: t => fill[tone(t)], stroked: true, getLineColor: t => (wanted.has(t.city) ? [...INK, 255] : [...NIGHT, 255]),
       getLineWidth: 1.5, lineWidthUnits: 'pixels', billboard: true, ...ON_TOP}),
-    text('town-labels', named, t => [...t.lonlat, 0], t => townLabel(d, t), {getColor: t => ink[tone(t)], lineHeight: LINE,
+    text('town-labels', named, t => [...t.lonlat, 0], t => townLabel(d, t), TOWN_TAG(), {getColor: t => ink[tone(t)],
       getTextAnchor: t => state.spots.get(t.city).anchor, getPixelOffset: t => state.spots.get(t.city).offset}),
-    text('glm-label', [g], () => [lon, lat, 100000], () => 'GOES-19 flash', {getColor: [...INK, 255]}),
+    text('glm-label', [g], () => [lon, lat, COLUMN_TOP], () => glmText(d), TAG()),
   ];
 }
 
-// ---- town labels, open case ------------------------------------------------------------------------------------------
+// ---- labels on the map -----------------------------------------------------------------------------------------------
 
 const ruler = document.createElement('canvas').getContext('2d');
-// Around its dot a label tries the right first, then the left, then a half or a whole height higher or lower on either
-// side, then above or below.
-const SPOTS = [['start', 0], ['end', 0], ['start', -1], ['start', 1], ['end', -1], ['end', 1], ['middle', -1], ['middle', 1],
-  ['start', -2], ['start', 2], ['end', -2], ['end', 2]];
 
 function viewport(view) {  // the map's projection for a camera, reached or not
   const c = map.getCanvas();
@@ -270,27 +323,90 @@ function viewport(view) {  // the map's projection for a camera, reached or not
 const currentView = () => ({center: map.getCenter().toArray(), zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(),
   padding: map.getPadding()});
 
-// Where the open case's town labels go in one view. The labels that must show (the towns the agent asked for and the
-// filmed one) are placed together: of every combination of their spots, the one that covers least. Then every other
-// blue dot, from the nearest out, takes the first spot that covers nothing: no other dot, the flash, its column, the
-// witness line, a label, the map key, the zoom buttons or the edge of the map. A blue dot with no free spot keeps no label.
-function placeTowns(d, view) {
-  const vp = viewport(view), g = d.satellite.lonlat, xy = (ll, z = 0) => vp.project([ll[0], ll[1], z]);
-  // the overlay draws labels and dots smaller with distance, in step with the map's scale there
-  const scale = ll => { const a = xy(ll), b = xy([ll[0] + 0.01, ll[1]]); return Math.hypot(b[0] - a[0], b[1] - a[1]); };
-  const s0 = scale([vp.longitude, vp.latitude]);
-  const [pl, pt, pr, pb] = LOOK.pad;
-  const rect = (at, s, label, [anchor, dy]) => {
-    ruler.font = `500 ${LOOK.text}px ${FONT}`;
-    const rows = label.split('\n'), w = Math.max(...rows.map(r => ruler.measureText(r).width)), h = rows.length * LOOK.text * LINE;
-    const ox = {start: LOOK.gap, end: -LOOK.gap, middle: 0}[anchor];
-    const oy = anchor === 'middle' ? dy * (LOOK.gap + h / 2 + pt) : dy * (h / 2 + pt);
-    const x0 = {start: ox, end: ox - w, middle: ox - w / 2}[anchor] - pl;
-    return {anchor, offset: [ox, oy],
-      box: [at[0] + s * x0, at[1] + s * (oy - h / 2 - pt), at[0] + s * (x0 + w + pl + pr), at[1] + s * (oy + h / 2 + pb)]};
+// Where a point falls on screen, and how large deck.gl draws a size given in pixels there: labels and dots face the
+// camera and shrink with distance, by the focal distance over the point's depth, as the map's own perspective does.
+function projector(vp) {
+  const m = vp.viewProjectionMatrix;
+  return {
+    xy: (ll, z = 0) => vp.project([ll[0], ll[1], z]),
+    scale: (ll, z = 0) => {
+      const p = vp.projectPosition([ll[0], ll[1], z]);
+      return vp.focalDistance / (m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15]);
+    },
   };
-  const overlaps = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
-  const covers = (b, [c, r]) => Math.hypot(Math.max(b[0], Math.min(c[0], b[2])) - c[0], Math.max(b[1], Math.min(c[1], b[3])) - c[1]) < r;
+}
+
+// The screen box a label's background covers, for a label at screen point `at`, drawn at scale `s` as `tag` says.
+function labelBox(at, s, label, tag) {
+  ruler.font = `${tag.weight} ${tag.size}px ${FONT}`;
+  const rows = String(label).split('\n'), w = Math.max(...rows.map(r => ruler.measureText(r).width)), h = rows.length * tag.size * tag.lineHeight;
+  const [pl, pt, pr, pb] = tag.pad, [ox, oy] = tag.offset, x = ox + {start: 0, end: -w, middle: -w / 2}[tag.anchor];
+  return [at[0] + s * (x - pl), at[1] + s * (oy - h / 2 - pt), at[0] + s * (x + w + pr), at[1] + s * (oy + h / 2 + pb)];
+}
+
+// How far a screen point lies outside a box (0 inside it).
+const boxGap = (b, c) => Math.hypot(Math.max(b[0] - c[0], 0, c[0] - b[2]), Math.max(b[1] - c[1], 0, c[1] - b[3]));
+
+// A camera's name sits right of its dot, or left of it where the right would cover another camera's dot.
+function camSides(d) {
+  const {xy, scale} = projector(viewport(currentView()));
+  const dots = d.stations.map(s => ({s, at: xy(s.lonlat), k: scale(s.lonlat)}));
+  return new Map(dots.map(me => {
+    const sides = [TAG(), {...TAG(), anchor: 'end', offset: [-LOOK.gap, 0]}];
+    const free = sides.find(tag => {
+      const b = labelBox(me.at, me.k, me.s.site, tag);
+      return dots.every(o => o === me || boxGap(b, o.at) > 6 * LOOK.dot * o.k);
+    });
+    return [me.s.id, free || sides[0]];
+  }));
+}
+
+// Every label and dot of the case now on the map, as screen boxes, each with the basemap name it may leave alone: a dot
+// leaves its own town's name, which the basemap writes beside it. A dot counts by its middle only, so that it hides the
+// names it cuts into and not those that only touch it.
+function caseBoxes(d, vp) {
+  const {xy, scale} = projector(vp), box = (p, label, tag) => [labelBox(xy(p, p[2]), scale(p, p[2]), label, tag), null];
+  const dot = (ll, r, own) => { const [x, y] = xy(ll), e = 0.6 * r * scale(ll); return [[x - e, y - e, x + e, y + e], own]; };
+  if (d.solution) {
+    const side = camSides(d), path = d.solution.path, boxes = d.stations.map(s => box([...s.lonlat, 0], s.site, side.get(s.id)));
+    boxes.push(...[path[0], path[path.length - 1]].map(p => box(p, heightText(p), HEIGHT_TAG())));
+    if (state.show.published && d.published && state.t === null) boxes.push(box(publishedEnd(d), publishedText(d), publishedTag(d)));
+    return boxes.concat(d.stations.map(s => dot(s.lonlat, 6 * LOOK.dot, s.site)));
+  }
+  const towns = d.towns.filter(t => townShows(d, t));
+  return [box([...d.satellite.lonlat, COLUMN_TOP], glmText(d), TAG()), dot(d.satellite.lonlat, 8 * LOOK.dot, null),
+    ...towns.filter(t => state.spots.has(t.city)).map(t => box([...t.lonlat, 0], townLabel(d, t), {...TOWN_TAG(), ...state.spots.get(t.city)})),
+    ...towns.map(t => dot(t.lonlat, townRadius(d, t) + 0.75, t.city.replace(/\s*\(.*\)$/, '')))];  // 'Bogotá (Colina)': Bogotá
+}
+
+// Around its dot a label tries the right first, then the left, then a half or a whole height higher or lower on either
+// side, then above or below: [anchor, shift up or down, gaps out from the dot].
+const SPOTS = [['start', 0], ['end', 0], ['start', -1], ['start', 1], ['end', -1], ['end', 1], ['middle', -1], ['middle', 1],
+  ['start', -2], ['start', 2], ['end', -2], ['end', 2]].map(([anchor, dy]) => [anchor, dy, 1]);
+// A label that must show also tries spots farther out, to step past a neighbour's dot or a line.
+const FAR = [...SPOTS, ...[2, 3.5, 5].flatMap(k => [0, -1, 1, -2, 2, -3, 3].flatMap(dy => [['start', dy, k], ['end', dy, k]])),
+  ...[-2, 2, -3, 3, -4, 4].map(dy => ['middle', dy, 1])];
+const NEAR = 6;  // pixels: another dot should stand twice as far from a label as its own dot, and this much farther still
+
+// Where the open case's town labels go in one view. A label must read as the name of its own dot: its own dot is the
+// nearest to it, by a clear margin, and it covers no other dot. The labels that must show (the towns the agent asked for
+// and the filmed one) are placed together, and may sit farther out: of every combination of their spots, the one that
+// breaks fewest rules. Then every other blue dot, from the nearest out, takes the first spot that breaks none and covers
+// no label, line, map key, zoom button or edge of the map. A blue dot with no such spot keeps no label.
+function placeTowns(d, view) {
+  const vp = viewport(view), {xy, scale} = projector(vp), g = d.satellite.lonlat, [h0, h1] = skyKm(d).map(h => h * 1000);
+  const pad = view.padding, edge = [pad.left + 6, pad.top + 6, vp.width - pad.right - 6, vp.height - pad.bottom - 6];
+  const wanted = asked(d), filmed = new Set(filmedSites(d).map(w => w.site));
+  // the dots on screen, the flash's too, out to where their stroke reaches
+  const dots = d.towns.map(t => ({t, at: xy(t.lonlat), s: scale(t.lonlat), r: (townRadius(d, t) + 0.75) * scale(t.lonlat)}));
+  dots.push({at: xy(g), r: 8 * LOOK.dot * scale(g)});
+  const lines = [[xy(g), xy(g, COLUMN_TOP), 3], ...filmedSites(d).map(w => [xy(w.lonlat), xy(g, (h0 + h1) / 2), 2.5])];
+  const placed = [labelBox(xy(g, COLUMN_TOP), scale(g, COLUMN_TOP), glmText(d), TAG())];
+  for (const el of [document.body.classList.contains('bare') ? null : $('#legend'), $('.maplibregl-ctrl-top-right')]) {
+    const r = el && el.getBoundingClientRect();  // the map key and the zoom buttons
+    if (r && r.width) placed.push([r.left - 6, r.top - 6, r.right + 6, r.bottom + 6]);
+  }
+  const gapTo = boxGap, overlaps = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
   const crosses = (b, [p, q, hw]) => {
     const n = Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / 3);
     for (let i = 0; i <= n; i++) {
@@ -299,40 +415,41 @@ function placeTowns(d, view) {
     }
     return false;
   };
-  const pad = view.padding, edge = [pad.left + 6, pad.top + 6, vp.width - pad.right - 6, vp.height - pad.bottom - 6];
-  const flash = xy(g);
-  const lines = [[flash, xy(g, 100000), 3], ...filmedSites(d).map(w => [xy(w.lonlat), xy(g, 60000), 2.5])];
-  const dots = d.towns.map(t => ({t, at: xy(t.lonlat), s: scale(t.lonlat) / s0}));
-  const placed = [rect(xy(g, 100000), scale(g) / s0, 'GOES-19 flash', ['start', 0]).box];
-  for (const el of [document.body.classList.contains('bare') ? null : $('#legend'), $('.maplibregl-ctrl-top-right')]) {
-    const r = el && el.getBoundingClientRect();  // the map key and the zoom buttons
-    if (r && r.width) placed.push([r.left - 6, r.top - 6, r.right + 6, r.bottom + 6]);
-  }
-  const wanted = asked(d), filmed = new Set(filmedSites(d).map(w => w.site));
-  // text over text, the flash or the edge is worst; a requested town's dot next; then any dot; then a line
-  const clashes = (me, b) => placed.filter(p => overlaps(b, p)).length * 20
-    + (b[0] < edge[0] || b[1] < edge[1] || b[2] > edge[2] || b[3] > edge[3]) * 20 + covers(b, [flash, 14 * LOOK.dot * me.s]) * 20
-    + dots.filter(o => o !== me && covers(b, [o.at, (townRadius(d, o.t) + 3) * o.s])).map(o => (wanted.has(o.t.city) ? 6 : 2))
-      .reduce((a, b) => a + b, 0)
-    + lines.filter(l => crosses(b, l)).length;
-  const tries = t => {
-    const me = dots.find(o => o.t === t);
-    return SPOTS.map(spot => rect(me.at, me.s, townLabel(d, t), spot)).map(r => ({...r, t, cost: clashes(me, r.box)}));
+  // Each broken rule weighs as much as text over text: another label under this one, the edge of the map, the flash's
+  // column or the witness line under it, and every other dot that the label covers or that stands as near to it as its
+  // own dot. A dot only a little farther than its own (within the margin) weighs a quarter: it still lets the eye pair
+  // the label with the wrong dot.
+  const clashes = (me, b) => {
+    const own = Math.max(gapTo(b, me.at) - me.r, 0);
+    const near = dots.filter(o => o !== me).map(o => gapTo(b, o.at) - o.r);
+    return 20 * (placed.filter(p => overlaps(b, p)).length + (b[0] < edge[0] || b[1] < edge[1] || b[2] > edge[2] || b[3] > edge[3])
+      + lines.filter(l => crosses(b, l)).length + near.filter(x => x < Math.max(own, 1)).length)
+      + 5 * near.filter(x => x >= Math.max(own, 1) && x < 2 * own + NEAR * LOOK.dot).length;
+  };
+  const tries = (t, spots) => {
+    const me = dots.find(o => o.t === t), label = townLabel(d, t), [, pt] = LOOK.pad;
+    const h = label.split('\n').length * LOOK.text * LINE, gap = LOOK.gap + townRadius(d, t) - 4.5 * LOOK.dot;  // clear of a larger dot
+    const lift = townRadius(d, t) + 1.75;  // a label above or below starts just clear of the dot's stroke
+    return spots.map(([anchor, dy, k]) => {
+      const offset = [{start: k * gap, end: -k * gap, middle: 0}[anchor], dy * (anchor === 'middle' ? lift + h / 2 + pt : h / 2 + pt)];
+      const box = labelBox(me.at, me.s, label, {...TOWN_TAG(), anchor, offset});
+      return {t, anchor, offset, box, cost: clashes(me, box)};
+    });
   };
   const spots = new Map(), take = r => { spots.set(r.t.city, {anchor: r.anchor, offset: r.offset}); placed.push(r.box); };
-  const must = d.towns.filter(t => wanted.has(t.city) || filmed.has(t.city)).map(t => tries(t).sort((a, b) => a.cost - b.cost));
-  const crowding = (r, others) => others.filter(c => overlaps(c.box, r.box)).length * 20;
+  const inView = t => { const [x, y] = xy(t.lonlat); return x > edge[0] && x < edge[2] && y > edge[1] && y < edge[3]; };
+  const must = d.towns.filter(t => (wanted.has(t.city) || filmed.has(t.city)) && inView(t))
+    .map(t => tries(t, FAR).sort((a, b) => a.cost - b.cost).slice(0, 24));
   let best = [], least = Infinity;
   const search = (i, chosen, cost) => {  // branch and bound over the spots of the labels that must show
     if (cost >= least) return;
     if (i === must.length) { best = chosen; least = cost; return; }
-    for (const r of must[i]) search(i + 1, [...chosen, r], cost + r.cost + crowding(r, chosen));
+    for (const r of must[i]) search(i + 1, [...chosen, r], cost + r.cost + 20 * chosen.filter(c => overlaps(c.box, r.box)).length);
   };
-  if (must.length <= 5) search(0, [], 0);
-  else must.forEach(rs => best.push(rs.reduce((a, b) => (b.cost + crowding(b, best) < a.cost + crowding(a, best) ? b : a))));
+  search(0, [], 0);
   best.forEach(take);
   for (const t of d.towns.filter(o => o.sees_it_high && !spots.has(o.city)).sort((a, b) => a.km - b.km)) {
-    const free = tries(t).find(r => r.cost === 0);
+    const free = tries(t, SPOTS).find(r => r.cost === 0);
     if (free) take(free);
   }
   return spots;
@@ -357,10 +474,11 @@ function tooltip({object, layer}) {
     html = `<b>${esc(object.site)}</b><br>${esc(object.camera)}<br>${esc(status(object))}`
       + (object.speed_kms ? `<br>${fmt(object.speed_kms, 2)} km/s on its own clock, ${fmt(object.miss_deg, 2)}° RMS miss` : '');
   } else if (layer.id === 'towns') {
+    const [h0, h1] = skyKm(state.data);
     html = `<b>${esc(object.city)}</b><br>${object.km} km from the flash; look ${dir(object.look_az_deg)} (${Math.round(object.look_az_deg)}°)`
-      + `<br>${fmt(object.el_at_40km_deg, 0)}° up if it was 40 km high, ${fmt(object.el_at_80km_deg, 0)}° at 80 km`;
+      + `<br>${fmt(object.el_at_40km_deg, 0)}° up if it was ${h0} km high, ${fmt(object.el_at_80km_deg, 0)}° at ${h1} km`;
   } else if (layer.id === 'glm') {
-    html = `<b>GOES-19 GLM bolide</b><br>${esc(object.start_utc.replace('T', ' ').replace('Z', ' UTC'))}, ${fmt(object.duration_s, 2)} s`
+    html = `<b>${esc(satellite(state.data))} GLM bolide</b><br>${esc(object.start_utc.replace('T', ' ').replace('Z', ' UTC'))}, ${fmt(object.duration_s, 2)} s`
       + `<br>${esc(object.source)}; classified ${esc(object.classification)}`;
   }
   return html ? {html, style: TIP} : null;
@@ -375,52 +493,105 @@ function name(d, id) {
   return w ? w.site : id;
 }
 
+const COUNT = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+const count = n => COUNT[n] ?? String(n);
+
 function leadSolved(d) {
-  const s = d.solution, mc = d.montecarlo && d.montecarlo.stats;
+  const s = d.solution, cat = d.catalogue;
   const [a, b] = s.clips.map(id => d.stations.find(x => x.id === id));
   const oriented = d.stations.filter(x => x.rays).length, dropped = d.stations.filter(x => x.status === 'dropped');
-  const top = s.path[0][2] / 1000, low = s.path[s.path.length - 1][2] / 1000, dur = s.times[s.times.length - 1];
-  const speed = mc ? `Speed ${fmt(s.speed_kms, 1)} km/s by the fit; the Monte Carlo puts it at ${fmt(mc.speed.median, 1)} km/s `
-    + `(1σ ${span(...mc.speed['1sigma'])}). Satellites and rocket stages re-enter at under 8 km/s, and even the low end of our 2σ range, `
-    + `${fmt(mc.speed['2sigma'][0], 1)} km/s, is above Earth's 11.2 km/s escape speed: <b>a natural meteor</b>.`
-    : `Speed ${fmt(s.speed_kms, 1)} km/s: ${esc(s.verdict_reason)}.`;
-  return `<p class="when">${esc(d.when)} · validation case</p>
-    <p>${d.stations.length} witness videos, as anyone finds them online. In ${oriented} of them, AI annotators measured street lines
+  const top = s.path[0][2] / 1000, low = s.path[s.path.length - 1][2] / 1000;
+  return `<p class="when">Validation case: ${esc(d.when)}</p>
+    <p>${d.stations.length} witness videos${cat ? `, chosen from the ${esc(cat.name)} of ${esc(d.title.split(' ')[0])} videos
+    (${esc(cat.cite)}), which also gives each camera's position` : ''}. In ${oriented} of them, AI annotators measured street lines
     and poles and matched landmarks to OpenStreetMap during development, so those cameras could be oriented; SAM 3.1 tracked the
-    fireball in each. The agent took it from there: it compared the cameras' planes of sight, tried ${d.tried.length}
-    combinations${dropped.length ? `, left out ${dropped.map(x => esc(x.site)).join(', ')} on a criterion the code measured` : ''},
+    fireball in each. The agent took it from there: it compared the cameras' planes of sight, ${d.tried.length === 1
+      ? 'solved one combination' : `tried ${count(d.tried.length)} combinations`}${dropped.length ? `, left out
+    ${esc(list(dropped.map(x => x.site)))} on a criterion the code measured` : ''},
     and chose <b>${esc(a.site)}</b> and <b>${esc(b.site)}</b>, ${Math.round(km(a.lonlat, b.lonlat))} km apart, whose planes cross at
     ${fmt(s.q_deg, 0)}°. The code re-solved that choice before accepting it.</p>
     <p class="big">Heading <span class="num">${fmt(s.azimuth_deg, 1)}°</span> (${dir(s.azimuth_deg)}), descending at
     <span class="num">${fmt(s.slope_deg, 1)}°</span>, from <span class="num">${fmt(top, 0)}</span> km down to
-    <span class="num">${fmt(low, 0)}</span> km in <span class="num">${fmt(dur, 1)}</span> s.</p>
-    <p>${speed}</p>`;
+    <span class="num">${fmt(low, 0)}</span> km${s.seen_for_s ? `; one camera tracked it for <span class="num">${fmt(s.seen_for_s, 1)}</span> s` : ''}.</p>
+    <p>${verdictText(d)}</p>`;
+}
+
+// The speed, then the verdict as the code's rule gave it (the rule and the 95% range are recorded with the run).
+function verdictText(d) {
+  const s = d.solution, mc = d.montecarlo && d.montecarlo.stats, r = s.rule, band = s.speed_band_95_kms;
+  const fit = `Speed ${fmt(s.speed_kms, 1)} km/s by the fit${mc ? `; the Monte Carlo puts it at ${fmt(mc.speed.median, 1)} km/s
+    (1 sigma ${between(...mc.speed['1sigma'])})` : ''}.`;
+  if (!r || !band) return `${fit} The code's verdict: ${esc(s.verdict)}, ${esc(s.verdict_reason)}.`;
+  const rule = `The code's rule: natural if the whole 95% speed range lies above ${r.natural_above_kms} km/s (Earth's escape speed
+    is ${r.escape_kms} km/s); a re-entering satellite or rocket stage if it lies below ${r.reentry_below_kms} km/s and the passage is
+    long (over ${r.long_s} s, or a slope under ${r.shallow_deg}°).`;
+  const here = `Here the range runs from ${between(...band)} km/s (${esc(s.speed_band_source)})`;
+  const verdict = {natural: `, all above ${r.natural_above_kms} km/s: <b>a natural meteor</b>.`,
+    reentry: `, all below ${r.reentry_below_kms} km/s, and the passage is long: <b>a re-entering satellite or rocket stage</b>.`}[s.verdict]
+    || `, which settles neither: <b>the verdict is inconclusive</b>.`;
+  return `${fit} ${rule} ${here}${verdict}`;
+}
+
+// When the grade's criteria were fixed (from the repository's history) and how the run fared on each.
+function gradeNote(d) {
+  const g = d.grade, c = g.criteria || {}, geo = c.geometric, fit = c.first_camera_fit, speed = c.speed;
+  const words = {azimuth: 'heading', slope: 'slope', flare_height: 'flare height', end_point: 'end point', speed: 'speed'};
+  const say = keys => {
+    const pass = keys.filter(k => g.gate[k]), fail = keys.filter(k => !g.gate[k]);
+    if (keys.length === 1) return pass.length ? 'passes' : 'fails';
+    if (!fail.length || !pass.length) return `all ${count(keys.length)} ${pass.length ? 'pass' : 'fail'}`;
+    return `${list(pass.map(k => words[k]))} ${pass.length > 1 ? 'pass' : 'passes'}, ${list(fail.map(k => words[k]))}
+      ${fail.length > 1 ? 'fail' : 'fails'}`;
+  };
+  const when = (x, after) => {  // 'on 26 October at 20:33', or only the time on the day just named
+    const t = localTime(x.at);
+    return after && localTime(after.at).day === t.day ? `at ${t.time}` : `on ${t.day} at ${t.time}`;
+  };
+  const out = [`The agent never saw these published values: a separate script graded the run afterwards, and it meets
+    ${esc(g.passed)} criteria.`];
+  if (d.calibration_history) {
+    out.push(`The camera fits were made while comparing them with ${esc(cbet(d))} (${esc(d.calibration_history)} in the
+      repository), so this check is blind for the agent but not for the calibration.`);
+  }
+  if (geo && geo.at) {
+    out.push(`The ${count(geo.gates.length)} geometric criteria (${list(geo.gates.map(k => words[k]))}) were committed
+      ${when(geo)}${fit ? `, before the first camera was calibrated ${when(fit, geo)}` : ''}, and ${say(geo.gates)}.`);
+  }
+  if (speed && speed.at) out.push(`The speed criterion was added on ${localTime(speed.at).day} and ${say(speed.gates)}.`);
+  return out.join(' ');
 }
 
 function compareSolved(d) {
-  const s = d.solution, mc = d.montecarlo && d.montecarlo.stats, [cbet, zul] = d.published.values;
-  const cell = (v, unit = '') => (v === null || v === undefined ? '—' : `${fmt(v, 1)}${unit}`);
+  const s = d.solution, mc = d.montecarlo && d.montecarlo.stats, [first, zul] = d.published.values, name = esc(cbet(d));
+  const cell = (v, unit = '') => (v === null || v === undefined ? 'not given' : `${fmt(v, 1)}${unit}`);
   const range = k => (mc ? `<span class="range">1σ ${span(...mc[k]['1sigma'])}</span>` : '');
   const row = (label, k, ours, key, unit) => `<tr><th scope="row">${label}</th>
     <td class="r ours"><span class="num">${fmt(ours, 1)}${unit}</span>${range(k)}</td>
-    <td class="r"><span class="num">${cell(cbet[key], unit)}</span></td><td class="r"><span class="num">${cell(zul[key], unit)}</span></td></tr>`;
+    <td class="r"><span class="num">${cell(first[key], unit)}</span></td><td class="r"><span class="num">${cell(zul[key], unit)}</span></td></tr>`;
   const notes = [];
   if (mc) {
     const az = mc.azimuth, sl = mc.slope;
-    notes.push(az.cbet_within_1sigma ? "CBET 3423's heading is inside our 1σ range."
-      : az.cbet_within_2sigma ? "CBET 3423's heading is inside our 2σ range, not our 1σ."
-        : "CBET 3423's heading is outside our 2σ range.");
+    notes.push(az.cbet_within_1sigma ? `${name}'s heading is inside our 1 sigma range.`
+      : az.cbet_within_2sigma ? `${name}'s heading is inside our 2 sigma range, not our 1 sigma.`
+        : `${name}'s heading is outside our 2 sigma range.`);
     if (!sl.cbet_within_2sigma) {
-      notes.push(`Our slope is ${fmt(Math.abs(s.slope_deg - cbet.slope_deg), 1)}° ${s.slope_deg > cbet.slope_deg ? 'steeper' : 'shallower'}
-        than theirs and outside our 2σ range: an error the Monte Carlo does not model.`);
+      notes.push(`Our slope is ${fmt(Math.abs(s.slope_deg - first.slope_deg), 1)}° ${s.slope_deg > first.slope_deg ? 'steeper' : 'shallower'}
+        than theirs and outside our 2 sigma range: an error the Monte Carlo does not model.`);
     }
-    notes.push(`Their main flare, at ${fmt(mc.flare_h_km.cbet, 1)} km, sits at ${fmt(mc.flare_h_km.median, 1)} km on our line
-      (1σ ${span(...mc.flare_h_km['1sigma'])}), and their end point lies ${fmt(mc.end_off_km.median, 1)} km from it.`);
+    const flare = d.published.points.find(p => /flare/.test(p.note)), g = d.grade;
+    if (flare && g) {  // the fit's values (from the grade) beside the Monte Carlo's medians and ranges
+      notes.push(`${name} puts its ${esc(flare.note)} at ${fmt(flare.h_km, 1)} km; on our fitted line that point sits at
+        ${fmt(g.our_height_near_flare_km[0], 1)} km (Monte Carlo median ${fmt(mc.flare_h_km.median, 1)} km, 1 sigma
+        ${between(...mc.flare_h_km['1sigma'])}). ${name}'s end point lies ${fmt(g.cbet_end_point_off_our_line_km, 1)} km from
+        the fitted line (Monte Carlo median ${fmt(mc.end_off_km.median, 1)} km, 1 sigma ${between(...mc.end_off_km['1sigma'])}).`);
+    }
     notes.push(`Our speed range is the Monte Carlo's (median ${fmt(mc.speed.median, 1)} km/s): it is the least certain number.`);
   }
   if (d.refereed) {
-    notes.push(`CBET 3423 was a preliminary telegram; refereed solutions published later in 2013 give ${d.refereed.map(r =>
-      `${fmt(r.v_kms, 2)} km/s (${esc(r.who)})`).join(' and ')}. That comparison was added after the run and does not change its grade.`);
+    const graded = d.grade && d.grade.first_graded_run;
+    notes.push(`${name} was a preliminary telegram; refereed solutions published later give ${esc(list(d.refereed.map(r =>
+      `${fmt(r.v_kms, 2)} km/s (${r.who})`)))}. That comparison was added after the first graded run${graded ? `
+      (${esc(graded.split('-').pop())})` : ''} and does not change the grade.`);
   }
   const held = d.stations.find(x => x.status === 'dropped' && x.rays);
   if (held) {
@@ -433,34 +604,48 @@ function compareSolved(d) {
       and a speed of ${fmt(sam.threshold.speed_kms, 2)} km/s: it locks onto glare.`);
   }
   return `<h2>Against the published solutions</h2>
-    <table class="compare"><thead><tr><th></th><th class="r">This agent</th><th class="r">CBET 3423</th><th class="r">Zuluaga et al.</th></tr></thead>
+    <table class="compare"><thead><tr><th></th><th class="r">This agent</th><th class="r">${name}</th>
+    <th class="r">${esc(zul.who.split(',')[0])} et al.</th></tr></thead>
     <tbody>${row('Heading', 'azimuth', s.azimuth_deg, 'azimuth_deg', '°')}${row('Slope', 'slope', s.slope_deg, 'slope_deg', '°')}
     ${row('Speed, km/s', 'speed', s.speed_kms, 'speed_kms', '')}
-    <tr class="src"><th scope="row">From</th><td class="r">2 cameras${mc ? `, ${d.montecarlo.draws} Monte Carlo draws` : ''}</td>
-    <td class="r">${esc(cbet.how)}</td><td class="r">${esc(zul.how)}</td></tr></tbody></table>
-    <p class="note" style="margin-top:8px">${notes.join(' ')} The agent never saw these published values${d.grade ? `: a separate
-    script graded the run afterwards, ${esc(d.grade.passed)} criteria (${Object.entries(d.grade.gate).map(([k, v]) => `${k.replace(/_/g, ' ')} ${v ? 'passes' : 'fails'}`).join(', ')})` : ''}.</p>
+    <tr class="src"><th scope="row">From</th><td class="r">${s.clips.length} cameras${mc ? `, ${d.montecarlo.draws} Monte Carlo draws` : ''}</td>
+    <td class="r">${esc(first.how)}</td><td class="r">${esc(zul.how)}</td></tr></tbody></table>
+    <p class="note" style="margin-top:8px">${notes.join(' ')}</p>
+    <p class="note">${d.grade ? gradeNote(d) : 'The agent never saw these published values.'}</p>
     <p class="note">${d.published.values.map(v => esc(v.who)).join('. ')}.</p>`;
 }
 
+// A re-entry's predicted window against the flash: 'OBJECT C's (07:54 UTC on 31 July, plus or minus 2 h) opens 2.1 h after
+// the flash'. hours_between_window_and_flash counts from the window's edge.
+function reentryWindow(d, r, flash = 'the flash') {
+  const after = new Date(r.predicted_utc) > new Date(d.when_utc);
+  return `${esc(r.object)}'s (${utcTime(r.predicted_utc)}, plus or minus ${r.window_h} h) ${after ? 'opens' : 'closed'}
+    ${fmt(r.hours_between_window_and_flash, 1)} h ${after ? 'after' : 'before'} ${flash}`;
+}
+
 function leadOpen(d) {
-  const g = d.satellite, nearest = [...d.towns].sort((a, b) => a.km - b.km)[0];
-  const med = d.towns.find(t => t.city === 'Medellín');
-  return `<p class="when">${esc(d.when)} · open case</p>
-    <p>A green fireball crossed the night sky over north-eastern Colombia. The lightning mapper on the GOES-19 weather satellite
-    recorded a ${fmt(g.duration_s, 2)} s flash at <span class="num">${latlon(g.lonlat)}</span>, ${nearest.km} km from ${esc(nearest.city)}.</p>
-    <p>NASA's analysts classified it as a bolide, with medium confidence and lightning nearby. The one video analysed so far was
-    filmed in Medellín${med ? `, ${med.km} km away` : ''}: a handheld phone video that replays the moment in cuts. Muse judged it
-    usable, but nothing in view can be located on a map and the filming spot is unknown, so the code cannot orient it. Security
-    and dashcam clips from Bogotá and Medellín, reposted on 1 August 2025, have not been analysed yet. With fewer than two oriented
-    cameras there is no trajectory, and the agent says so instead of guessing${d.run && d.run.block && d.run.block.request ? `: it
-    asked for videos from ${esc((d.run.block.request.towns || []).join(', '))}, and the run stays blocked until they arrive` : ''}.</p>
-    ${d.reentries ? `<p>Was it space junk? No satellite or rocket re-entry in ${/^the /i.test(d.reentries.source) ? '' : 'the '}${esc(d.reentries.source)} has a predicted window
-    that includes the flash${d.reentries.nearest.length ? `; the nearest, ${esc(d.reentries.nearest[0].object)}, was due
-    ${fmt(d.reentries.nearest[0].hours_between_window_and_flash, 1)} h away` : ''}. Only tracked objects are listed, so the speed
-    still has to decide.</p>` : ''}
-    <p class="big">Phones in the towns marked in blue would have seen the flash 10° to 60° above the horizon. Two of those videos,
-    from different sides, would give its path, its speed, and whether it was a meteor or a re-entering satellite.</p>`;
+  const g = d.satellite, nearest = [...d.towns].sort((a, b) => a.km - b.km)[0], req = d.run?.block?.request;
+  const filmed = d.witness.find(w => w.video), town = filmed && d.towns.find(t => t.city === filmed.site);
+  const [lo, hi] = d.sky.high_deg, later = d.not_analysed, re = d.reentries;
+  const lightning = {isolated: 'no lightning nearby', 'not isolated': 'lightning nearby'}[g.lightning_nearby];
+  return `<p class="when">Open case: ${esc(d.when)}</p>
+    <p>A green fireball crossed the night sky over north-eastern Colombia. The lightning mapper on the ${esc(satellite(d))} weather
+    satellite recorded a ${fmt(g.duration_s, 2)} s flash at <span class="num">${latlon(g.lonlat)}</span>, ${nearest.km} km from
+    ${esc(nearest.city)}.</p>
+    <p>NASA's analysts classified it as a ${esc(g.classification.toLowerCase())}${g.confidence ? `, with ${esc(g.confidence)} confidence` : ''}${lightning ? `
+    and ${lightning}` : ''}.${filmed ? ` The one video analysed so far was filmed in ${esc(filmed.site)}${town ? `, ${town.km} km away` : ''}: a
+    handheld phone video that replays the moment in cuts. Muse judged it usable, but nothing in view can be located on a map and
+    the filming spot is unknown, so the code cannot orient it.` : ''}${later ? ` ${esc(later.what)}, posted on ${esc(later.where)}
+    by ${esc(later.by)} on ${isoDay(later.on)}, have not been analysed yet.` : ''} With fewer than two oriented cameras there is no
+    trajectory, and the agent says so instead of guessing${req ? `: it asked for videos from ${esc(list(req.towns || []))}, and
+    the run stays blocked until they arrive` : ''}.</p>
+    ${re ? `<p>Was it space junk? ${re.containing_the_flash.length ? `In ${esc(re.database)}, the predicted window of
+    ${esc(list(re.containing_the_flash))} includes the flash.` : `No satellite or rocket re-entry in ${esc(re.database)} has a
+    predicted window that includes the flash.`}${re.nearest.length ? ` The ${count(re.nearest.length)} windows nearest the flash:
+    ${list(re.nearest.map(r => reentryWindow(d, r, 'it')))}.` : ''} Only tracked objects are listed, so the speed still has to
+    decide.</p>` : ''}
+    <p class="big">Phones in the towns marked in blue would have seen the flash ${lo}° to ${hi}° above the horizon. Two of those
+    videos, from still cameras on different sides, could give its path and its speed.</p>`;
 }
 
 function compareOpen(d) {
@@ -470,7 +655,8 @@ function compareOpen(d) {
   const seen = d.witness.map(w => `<li><b>${esc(w.site)}</b>: ${esc(w.status)}</li>`).join('');
   return `<h2>Where a video would close the case</h2>
     <table><thead><tr><th>Town</th><th class="r">km away</th><th class="r">Look toward</th><th class="r">Up in the sky</th></tr></thead><tbody>${rows}</tbody></table>
-    <p class="note" style="margin-top:8px">Height above the horizon if the flash was 40–80 km up; the satellite gives the place, not the height.</p>
+    <p class="note" style="margin-top:8px">Height above the horizon if the flash was ${between(...skyKm(d), 0)} km up; the satellite
+    gives the place, not the height.</p>
     <h2 style="margin-top:16px">What the witnesses left</h2><ul class="method">${seen}</ul>`;
 }
 
@@ -540,8 +726,9 @@ function cameraTable(d) {
   }).join('');
   return `<table class="cams" style="margin-top:10px"><thead><tr><th>Oriented camera</th><th class="r">Saw it</th><th class="r">km/s</th>
     <th class="r">Miss</th></tr></thead><tbody>${rows}</tbody></table>
-    <p class="note" style="margin-top:8px">Each camera keeps its own clock; speeds use the first 60% of its track, before the fireball
-    slows. Miss is the RMS angle between its lines of sight and the plane through the camera and the final path.</p>`;
+    <p class="note" style="margin-top:8px">Each camera keeps its own clock; speeds use the first ${Math.round(d.solution.speed_window * 100)}%
+    of its track, before the fireball slows. Miss is the RMS angle between its lines of sight and the plane through the camera and
+    the final path.</p>`;
 }
 
 function measuredText(d, m) {
@@ -578,18 +765,18 @@ function result(d, s) {
       ? `<b>Accepted by the code</b>${r.insufficient_geometry ? ': fewer than two oriented cameras, so insufficient geometry is recorded' : '.'}`
       : `<b>Refused by the code</b>: ${esc((r.problems || []).join('; '))}`;
     case 'request_evidence': return r.accepted
-      ? `<b>Request recorded</b>; the run stops until a person supplies it (${esc((r.request.towns || []).join(', ') || r.request.kind)}).`
+      ? `<b>Request recorded</b>; the run stops until a person supplies it (${esc(list(r.request.towns || []) || r.request.kind)}).`
       : `<b>Refused by the code</b>: ${esc((r.problems || []).join('; '))}`;
     case 'check_satellite': return (r.detections && r.detections.length
       ? r.detections.map(g => `${esc(g.class || 'Detection')} at ${esc(g.utc)}, ${esc(g.where || `${g.lat}, ${g.lon}`)}, ${fmt(g.duration_s, 2)} s`
         + (g.confidence ? `, ${esc(g.confidence)} confidence` : '')).join('; ')
       : `No detection. ${esc(r.note || '')}`)
-      + (r.reentries ? `. Re-entries: ${r.reentries.containing_the_flash.length ? esc(r.reentries.containing_the_flash.join(', ')) + ' could match'
-        : `none whose window includes the flash (nearest ${esc(r.reentries.nearest[0].object)}, ${fmt(r.reentries.nearest[0].hours_between_window_and_flash, 1)} h)`}` : '');
+      + (r.reentries ? `. Re-entries: ${r.reentries.containing_the_flash.length ? esc(list(r.reentries.containing_the_flash)) + ' could match'
+        : `none whose window includes the flash; the nearest, ${reentryWindow(d, r.reentries.nearest[0])}`}` : '');
     case 'read_witness': return `${esc(String(r.clip_kind).replace(/_/g, ' '))}${r.camera_moves ? ', camera moving' : ''}${r.multiple_cuts ? ', several cuts' : ''};
       fireball from ${fmt(r.fireball_s[0], 1)} to ${fmt(r.fireball_s[1], 1)} s; ${r.landmarks.length} landmark guesses`;
     case 'calibration': return r.calibrated ? `Oriented (${esc(r.lens)}, ${fmt(r.hfov, 1)}° wide)` : `Not oriented: ${esc(r.why)}`;
-    case 'missing_views': return `Best towns: ${r.best_towns.slice(0, 5).map(t => esc(t.split(' (')[0])).join(', ')}`;
+    case 'missing_views': return `Best towns: ${esc(list(r.best_towns.slice(0, 5).map(t => t.split(' (')[0])))}`;
     case 'write_report': return r.accepted === false ? `<b>Refused by the code</b>: ${esc((r.problems || []).join('; '))}`
       : r.reports ? `Report written; every figure checked against the tool results: `
       + Object.entries(r.reports).filter(([, v]) => v && v.figures !== undefined).map(([lang, v]) => `${lang} ${v.traced} of ${v.figures}${v.passed ? '' : ' (refused)'}`
@@ -599,15 +786,32 @@ function result(d, s) {
   }
 }
 
+// Where a run stands, from its status and the last entry of its review history.
+function runState(run) {
+  const last = (run.history || []).slice(-1)[0], by = last && last.by ? ` by ${last.by}` : '';
+  if (run.status === 'approved') return `report signed off${by}`;
+  if (run.status === 'rejected') return last && last.withdraws === 'approval' ? `signature withdrawn${by}` : `report sent back with notes${by}`;
+  if (run.status === 'blocked') return run.block && run.block.reason === 'missing_evidence' ? 'blocked, waiting for the evidence it asked for' : 'blocked for a person';
+  return {awaiting_review: 'waiting for a person to sign the report off', failed: 'failed'}[run.status] || run.status;
+}
+
+// The run this one resumed, and the notes it was given (who wrote them is in the notes, or in the review they come from).
+function resumedText(run) {
+  if (!run.resumed_from) return '';
+  const before = run.resumed && run.resumed.last_review, same = before && run.notes && before.notes === run.notes;
+  const how = !before ? '' : before.withdraws === 'approval' ? `, whose signature ${before.by} withdrew`
+    : before.review === 'rejected' ? `, which ${before.by} sent back` : '';
+  return ` It resumed run <span class="num">${esc(run.resumed_from)}</span>${esc(how)}${run.notes ? `${same ? ' with these notes' : '. Its notes'}:
+    “${esc(run.notes)}”` : '.'}`;
+}
+
 function drawLog(el, d) {
   const target = s => (s.clips && s.clips.length ? s.clips : s.clip ? [s.clip] : []).map(id => esc(name(d, id))).join(' + ');
-  const run = d.run || {}, label = {awaiting_review: 'waiting for a person to sign the report off', approved: 'report signed off',
-    blocked: run.block && run.block.reason === 'missing_evidence' ? 'blocked, waiting for the evidence it asked for' : 'blocked for a person',
-    failed: 'failed'}[run.status] || run.status;
+  const run = d.run || {};
   el.innerHTML = `<h2>What the agent did</h2>
-    <p class="note">Muse Spark 1.3 chose each of these ${d.agent_log.length} steps by calling a tool and said why; the code ran the tool,
-    checked what had to be checked and kept the record. ${d.tried ? 'Hover a solve step to see that solution on the map.' : ''}</p>
-    ${run.run_id ? `<p class="note">Run <span class="num">${esc(run.run_id)}</span>: ${esc(label)}${run.history && run.history.length ? ` (${esc(run.history[run.history.length - 1].by || '')})` : ''}.
+    <p class="note">${esc(modelName(run.planner_model))} chose each of these ${d.agent_log.length} steps by calling a tool and said why;
+    the code ran the tool, checked what had to be checked and kept the record. ${d.tried ? 'Hover a solve step to see that solution on the map.' : ''}</p>
+    ${run.run_id ? `<p class="note">Run <span class="num">${esc(run.run_id)}</span>: ${esc(runState(run))}.${resumedText(run)}
     Code ${esc((run.git || {}).commit || '')}${(run.git || {}).dirty ? ' with local changes' : ''}, API cost US$ <span class="num">${fmt(run.cost_usd || 0, 2)}</span>.</p>` : ''}
     <ol class="steps">${d.agent_log.map(s => `<li data-step="${s.step}" class="${s.action === 'solve' ? 'solve' : ''}" ${s.action === 'solve' ? 'tabindex="0"' : ''}>
       <span class="action">${esc(s.action)}</span><span class="clips">${target(s)}</span>
@@ -641,17 +845,21 @@ function drawLegend(d) {
       <div class="key"><span class="sw glow"></span>Trajectory found by the agent</div>
       ${toggle('sight', '" style="border-top-color:' + rgb(SERIES[0]), `Lines of sight from ${used.map((s, k) => `<span class="dot" style="background:${rgb(SERIES[k])};margin:0 3px 0 0"></span>${esc(s.site)}`).join(' and ')}${dropped.length ? `; ${dropped.join(', ')} dropped, dashed` : ''}`)}
       ${d.montecarlo ? toggle('mc', 'faint', `Monte Carlo, ${d.montecarlo.draws} draws`) : ''}
-      ${toggle('published', 'dash" style="border-top-color:' + rgb(PUBLISHED), 'Published path, CBET 3423')}</details>`;
+      ${toggle('published', 'dash" style="border-top-color:' + rgb(PUBLISHED), `Published path, ${esc(cbet(d))}`)}</details>`;
   } else {
     $('#legend').innerHTML = `<details ${narrow.matches ? '' : 'open'}><summary>Map key</summary>
-      <div class="key"><span class="sw box"></span>GOES-19 flash and its extent</div>
+      <div class="key"><span class="sw box"></span>${esc(glmText(d))} and its extent</div>
       <div class="key" data-stage="2"><span class="sw dash" style="border-top-color:${rgb(GRAY)}"></span>Witness video, camera not oriented</div>
       ${asked(d).size ? '<div class="key" data-stage="3"><span class="sw dot asked"></span>Towns requested by the agent</div>' : ''}
-      <div class="key" data-stage="3"><span class="sw dot" style="background:${rgb(SERIES[0])}"></span>Towns that would see it 10–60° up</div>
+      <div class="key" data-stage="3"><span class="sw dot" style="background:${rgb(SERIES[0])}"></span>Towns that would see it ${span(...d.sky.high_deg, 0)}° up</div>
       <div class="key" data-stage="4"><span class="sw dot" style="background:${rgb(GRAY)}"></span>Other towns: too low in their sky</div></details>`;
     stageKey();
   }
-  $('#legend').querySelectorAll('input').forEach(i => i.addEventListener('change', () => { state.show[i.dataset.key] = i.checked; redraw(); }));
+  $('#legend').querySelectorAll('input').forEach(i => i.addEventListener('change', () => {
+    state.show[i.dataset.key] = i.checked;
+    redraw();
+    namesUnderLabels();
+  }));
 }
 
 function stageKey() {  // the key lists only what the current stage shows
@@ -666,8 +874,9 @@ function readout() {
   const d = state.data;
   if (!d || !d.solution) return;
   const dur = d.solution.times[d.solution.times.length - 1];
-  $('#readout').textContent = state.t === null ? `${fmt(dur, 1)} s of flight, in real time`
-    : `t ${fmt(state.t, 1)} s · ${fmt(headAt(d, state.t)[2] / 1000, 0)} km up`;
+  // the replay flies the fitted line at the fitted speed: its seconds are not how long any camera saw the fireball
+  $('#readout').textContent = state.t === null ? `${fmt(dur, 1)} s: the fitted line at the fitted speed, in real time`
+    : `t ${fmt(state.t, 1)} s, ${fmt(headAt(d, state.t)[2] / 1000, 0)} km up`;
 }
 
 function play() {
@@ -717,18 +926,24 @@ async function show(id) {
   $('#compare').innerHTML = d.solution ? compareSolved(d) : compareOpen(d);
   if (d.solution) drawChart($('#chart'), d); else $('#chart').innerHTML = '';
   drawLog($('#log'), d);
-  $('#report').innerHTML = (d.report_en ? `<details><summary>The agent's report, as Muse Spark wrote it</summary>
-    <div class="report">${md(d.report_en)}</div></details>` : '') + `<details><summary>${d.report_en ? 'El mismo reporte en español' : "The agent's report, as Muse Spark wrote it (Spanish)"}</summary>
+  const wrote = `the verdict line is written by the code, the rest by ${esc(modelName(d.report_model))}`;
+  $('#report').innerHTML = (d.report_en ? `<details><summary>The agent's report: ${wrote}</summary>
+    <div class="report">${md(d.report_en)}</div></details>` : '') + `<details><summary>${d.report_en ? 'El mismo reporte en español'
+    : `The agent's report, in Spanish: ${wrote}`}</summary>
     <div class="report">${md(d.report_es)}</div></details>`;
   $('#hud').hidden = !d.solution;
   $('#play').textContent = 'Replay';
   drawLegend(d);
   readout();
-  // A phone sees more of the case. In video mode the open case comes closer to the flash, so its larger labels have room,
-  // and the solved case steps back beside the wider panel, so every witness site stays in view.
+  // A phone sees more of the solved case; the open case has a view of its own for a phone (view_narrow), closer to the flash
+  // and less tilted, where the requested towns' labels have room beside their dots. In video mode the open case comes
+  // closer to the flash, so its larger labels have room, and the solved case steps back beside the wider panel, so every
+  // witness site stays in view.
   const closer = !video ? 0 : !d.solution ? 0.5 : document.body.classList.contains('bare') ? 0 : -0.2;
-  const view = {...d.view, zoom: d.view.zoom - (narrow.matches ? 1.3 : 0) + closer, padding: padding()};
+  const base = narrow.matches && d.view_narrow ? d.view_narrow : {...d.view, zoom: d.view.zoom - (narrow.matches ? 1.3 : 0)};
+  const view = {...base, zoom: base.zoom + closer, padding: padding()};
   state.spots = d.solution ? new Map() : placeTowns(d, view);  // placed for where the camera is going
+  under = [];  // the basemap names under the last case's labels; found again once the map has drawn this one
   quietNames();
   if (firstView) {
     map.jumpTo(view);
@@ -739,9 +954,10 @@ async function show(id) {
   redraw();
 }
 
-map.on('moveend', () => {  // after a pan, zoom, turn or resize the open case's labels find their spots again
+map.on('moveend', () => {  // after a pan, zoom, turn or resize the labels find their spots again
   const d = state.data;
-  if (!d || d.solution) return;
+  if (!d) return;
+  if (d.solution) { if (!state.playing) redraw(); return; }  // CBET's label picks its side for the new view
   state.spots = placeTowns(d, currentView());
   quietNames();
   redraw();
@@ -752,8 +968,8 @@ addEventListener('keydown', e => {
   if (video && (/^[0-3]$/.test(e.key) || e.key === 'Escape')) {
     state.stage = e.key === 'Escape' ? 0 : Number(e.key);
     stageKey();
-    quietNames();
     redraw();
+    namesUnderLabels();
     return;
   }
   if (e.target.closest('input, textarea, button')) return;
