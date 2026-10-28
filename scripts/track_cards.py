@@ -1,11 +1,17 @@
 """Track cards for the demo video, drawn from the project's own numbers: no pixel of any video is used.
 
-For each oriented Chelyabinsk camera a 1920x1080 card shows the SAM 3.1 points (out/sam/<clip>.json) in the camera's own
-image coordinates, the frame outline, the horizon (elevation 0 deg) and the landmarks the camera was oriented on, the
-last two placed through the calibrated camera in events/chelyabinsk-2013/picks.json, and for Kamensk-Uralskiy where
-Muse Spark put the chapel (events/chelyabinsk-2013/witness/2.json). The script reads only those JSON files. The cards go
-to out/demo/cards/, which git ignores.
-Usage: .venv/bin/python scripts/track_cards.py [--out DIR] [clip numbers, default 2 10 48]
+For each oriented Chelyabinsk camera a 1920x1080 card shows the SAM 3.1 points in the camera's own image coordinates,
+the frame outline, the horizon (elevation 0 deg) and the landmarks the camera was oriented on, the last two placed
+through the calibrated camera, and for Kamensk-Uralskiy where Muse Spark put the chapel. A landmark that the camera
+cannot show is left out, and the script prints which.
+The script reads these files and no others:
+  events/chelyabinsk-2013/picks.json             each camera's position, image size, calibration and landmarks
+  out/sam/chelyabinsk-2013-<clip>.json           the SAM 3.1 points
+  events/chelyabinsk-2013/witness/2.json         Muse Spark's reading of the Kamensk-Uralskiy video, for the chapel
+  events/chelyabinsk-2013/credits.json           each video's site and credit, for the caption
+  /System/Library/Fonts/Helvetica.ttc            the font, which macOS ships; --font and --bold name other files
+The cards go to out/demo/cards/, which git ignores.
+Usage: .venv/bin/python scripts/track_cards.py [--out DIR] [--font PATH] [--bold PATH] [clip numbers, default 2 10 48]
 """
 import argparse
 import json
@@ -20,11 +26,12 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 
 from testigos.camera import Camera  # noqa: E402
-from testigos.geo import angle_between, azel_between, azel_to_enu  # noqa: E402
+from testigos.geo import azel_between, azel_to_enu  # noqa: E402
 
 EVENT = 'chelyabinsk-2013'
 CLIPS = ('2', '10', '48')
-FONT = '/System/Library/Fonts/Helvetica.ttc'  # as scripts/demo_frames.py; face 1 is its bold
+HELVETICA = '/System/Library/Fonts/Helvetica.ttc'  # as scripts/demo_frames.py; face 1 of the collection is its bold
+FONT, BOLD = (HELVETICA, 0), (HELVETICA, 1)  # (file, face) for the regular and the bold text; see use_fonts()
 W, H, BAND = 1920, 1080, 120
 SS = 2  # drawn at twice the size and scaled down, so lines and dots come out smooth
 NIGHT, SKY, GROUND, LINE = (8, 17, 31), (15, 27, 46), (11, 20, 35), (28, 42, 65)
@@ -34,6 +41,10 @@ COMPASS = {0: 'N', 45: 'NE', 90: 'E', 135: 'SE', 180: 'S', 225: 'SW', 270: 'W', 
 # Muse Spark's reading of a landmark that the calibration also used: clip -> (index in the witness landmarks, a word
 # that names the same landmark in picks.json)
 GUESSES = {'2': (0, 'chapel')}
+# What the pixel marked for a surveyed point shows, keyed by a word of its name in picks.json. picks.json places the
+# chapel's point at its "footprint centre at ground", so its marked pixel is the chapel's base, not the dome Muse Spark
+# may have pointed at.
+MARKED = {'chapel': "marked at the chapel's base"}
 
 
 def plain(text):
@@ -42,8 +53,26 @@ def plain(text):
     return ' '.join(kept.split())
 
 
+def use_fonts(regular=None, bold=None):
+    """--font and --bold. A file given for the regular text also draws the bold text, unless --bold names another."""
+    global FONT, BOLD
+    if regular:
+        FONT = BOLD = (str(regular), 0)
+    if bold:
+        BOLD = (str(bold), 0)
+
+
 def font(size, bold=False):
-    return ImageFont.truetype(FONT, size * SS, index=1 if bold else 0)
+    """The font at `size` px (drawn at SS times that). Stops with one line naming the file if it cannot be opened."""
+    path, face = BOLD if bold else FONT
+    try:
+        if not pathlib.Path(path).is_file():  # else Pillow looks for a file of that name in the system's font folders
+            raise OSError('no such file')
+        return ImageFont.truetype(path, size * SS, index=face)
+    except OSError as e:
+        which = f'face {face} of the font {path}' if face else f'the font {path}'
+        sys.exit(f'{pathlib.Path(sys.argv[0]).name}: cannot open {which} ({e}); name a TrueType or OpenType file with '
+                 '--font PATH, and with --bold PATH for the bold text')
 
 
 def camera(entry):
@@ -53,13 +82,36 @@ def camera(entry):
                   fisheye=entry.get('lens') == 'fisheye')
 
 
-def seen(cam, v):
-    """The pixel of ENU direction v inside the frame, or None. Far outside the field of view the k1 polynomial folds
-    directions back into the frame, so a pixel counts only if it unprojects to the same direction."""
+def place(cam, v, tilt=0.01):
+    """(pixel, None) for ENU direction v when the camera shows it inside the frame, else (None, why not).
+
+    Far outside the field of view the k1 polynomial folds directions back into the frame: past the fold, a direction
+    further from the optical axis lands nearer the image centre (and further out still, on the other side of it), on
+    a pixel that unprojects to another direction. So a pixel counts only if tilting v `tilt` degrees further from the
+    axis still moves it outward on v's own side of the centre. This is the round trip through cam.unproject, made
+    exact: near the fold, the eight fixed-point steps of cam.unproject stop short even where the model has not
+    folded."""
     p = cam.project(v)
-    if p is None or angle_between(cam.unproject(p), v) > 0.01:
-        return None
-    return p if 0 <= p[0] <= cam.width and 0 <= p[1] <= cam.height else None
+    if p is None:
+        return None, 'it is behind the camera'
+    v = np.asarray(v, float) / np.linalg.norm(v)
+    right, down, fwd = cam.axes()
+    across = v - np.dot(v, fwd) * fwd  # v's part across the optical axis
+    if np.linalg.norm(across) > 1e-9:
+        theta = np.arctan2(np.linalg.norm(across), np.dot(v, fwd)) + np.radians(tilt)
+        q = cam.project(np.cos(theta) * fwd + np.sin(theta) * across / np.linalg.norm(across))
+        side = np.array([np.dot(across, right), np.dot(across, down)])  # v's side of the centre, in the image
+        centre = np.array([cam.width / 2, cam.height / 2])
+        if q is None or np.dot(q - centre, side) <= np.dot(p - centre, side):
+            return None, 'it lies past the fold of the lens model, so its pixel stands for another direction'
+    if not (0 <= p[0] <= cam.width and 0 <= p[1] <= cam.height):
+        return None, 'it falls outside the frame'
+    return p, None
+
+
+def seen(cam, v):
+    """The pixel of ENU direction v inside the frame, or None (see place)."""
+    return place(cam, v)[0]
 
 
 def horizon(cam, step=0.05):
@@ -81,16 +133,23 @@ def compass(cam):
 
 
 def landmarks(entry, cam):
-    """Each landmark of picks.json placed through the camera: directions (vanishing points) and surveyed points."""
+    """Each landmark of picks.json placed through the camera: directions (vanishing points) and surveyed points. Each
+    goes through place(), as the horizon does; one the camera cannot show gets px None and the reason in 'why'."""
     out = []
     for lm in entry.get('landmarks', []):
         if 'azel' in lm:
-            out.append({'kind': 'vanishing', 'what': lm['what'], 'px': cam.project_azel(*lm['azel'])})
+            px, why = place(cam, azel_to_enu(*lm['azel']))
+            out.append({'kind': 'vanishing', 'what': lm['what'], 'px': px, 'why': why})
         elif 'pos' in lm:
-            az, el = azel_between(tuple(entry['camera_pos']), tuple(lm['pos']))
-            out.append({'kind': 'x_only' if 'px_x' in lm else 'point', 'what': lm['what'],
-                        'px': cam.project_azel(az, el), 'marked': lm.get('px')})
+            px, why = place(cam, azel_to_enu(*azel_between(tuple(entry['camera_pos']), tuple(lm['pos']))))
+            out.append({'kind': 'x_only' if 'px_x' in lm else 'point', 'what': lm['what'], 'px': px, 'why': why,
+                        'marked': lm.get('px')})
     return out
+
+
+def marked_words(what):
+    """The words for the pixel marked for a surveyed point: 'marked', or what it shows when MARKED knows the point."""
+    return next((words for word, words in MARKED.items() if word in what), 'marked')
 
 
 def title(what):
@@ -161,6 +220,20 @@ class Card:
         for s, f, fill in lines:
             self.text((x, y), s, f, fill, anchor=align + 't')
             y += f.size / SS + gap
+
+    def extent(self, xy, lines, align='l', gap=7):
+        """The box (x0, y0, x1, y1) that block() fills with these lines."""
+        wide = max(self.width_of(s, f) for s, f, _ in lines)
+        x0 = {'l': xy[0], 'm': xy[0] - wide / 2, 'r': xy[0] - wide}[align]
+        return x0, xy[1], x0 + wide, xy[1] + sum(f.size / SS for _, f, _ in lines) + gap * (len(lines) - 1)
+
+    def clear(self, box, pts, margin=12):
+        """True when the box lies inside the frame and none of the points (canvas pixels) comes within margin of it."""
+        x0, y0, x1, y1 = box
+        if x0 < self.x0 + margin or y0 < self.y0 + margin or x1 > self.x1 - margin or y1 > self.y1 - margin:
+            return False
+        return not ((pts[:, 0] > x0 - margin) & (pts[:, 0] < x1 + margin) &
+                    (pts[:, 1] > y0 - margin) & (pts[:, 1] < y1 + margin)).any()
 
     def save(self, path):
         self.img.resize((W, H), Image.LANCZOS).save(path)
@@ -285,6 +358,7 @@ def make(no, picks, credits, out):
     notes, marks = [], landmarks(entry, cam)
     for lm in marks:
         if lm['px'] is None:
+            notes.append(f"{title(lm['what'])} is not drawn: {lm['why']}")
             continue
         lx, ly = card.at(lm['px'])
         if lm['kind'] == 'vanishing':  # flagged to the left of a leader, below the compass letters
@@ -302,9 +376,11 @@ def make(no, picks, credits, out):
             card.dot((lx, ly), 3.0, INK)
             mx, my = card.at(lm['marked']) if lm['marked'] else (lx, ly)
             card.cross((mx, my), 18, INK, 2)
-            # labels hang below the marker, clear of the horizon it sits on
-            card.block((mx - 30, my + 2), [('marked', label, INK)] +
-                       ([(f"{lm['marked'][0] / cam.width:.3f} of the width", note, INK2)] if lm['marked'] else []),
+            # labels hang below the marker, clear of the horizon it sits on; the marked pixel gives both fractions, as
+            # Muse Spark's guess does, so the gap between the two reads as base against chapel, not as a miss
+            card.block((mx - 30, my + 2), [(marked_words(lm['what']), label, INK)] +
+                       ([(f"{lm['marked'][0] / cam.width:.3f} of the width, "
+                          f"{lm['marked'][1] / cam.height:.3f} of the height", label, INK2)] if lm['marked'] else []),
                        align='r')
             detail = lm['what'].partition(',')[2].strip()
             card.block((mx + 18, my + 80), [(title(lm['what']), label_b, INK),
@@ -320,13 +396,18 @@ def make(no, picks, credits, out):
         i, word = GUESSES[no]
         g = json.loads((ROOT / 'events' / EVENT / 'witness' / f'{no}.json').read_text())['landmarks'][i]
         gx, gy = card.at((g['x_frac'] * cam.width, g['y_frac'] * cam.height))
-        same = [lm for lm in marks if word in lm['what'] and lm.get('marked')]
+        same = [lm for lm in marks if word in lm['what'] and lm.get('marked') and lm['px'] is not None]
         if same:  # a faint guide down to the marked landmark: the two share a column
             mx, my = card.at(same[0]['marked'])
             card.dashed((gx, gy + 22), (mx, my - 24), INK3 + (150,), 1.5, dash=4, gap=6)
         card.ring((gx, gy), 17, MUSE, 3)
-        card.block((gx - 30, gy - 22), [("Muse Spark's guess", label, MUSE),
-                                        (f"{g['x_frac']} of the width", note, MUSE2)], align='r')
+        lines = [("Muse Spark's guess", label, MUSE),
+                 (f"{g['x_frac']} of the width, {g['y_frac']} of the height", label, MUSE2)]
+        # beside the ring, or above it when the SAM points run beside it
+        dots = np.array([card.at(r['centroid']) for r in rows])
+        spots = [(gx - 30, gy - 22), (gx + 18, gy - 30 - (card.extent((0, 0), lines)[3]))]
+        card.block(next((xy for xy in spots if card.clear(card.extent(xy, lines, 'r'), dots)), spots[-1]), lines,
+                   align='r')
         notes.append(f"Muse Spark's guess at ({g['x_frac']}, {g['y_frac']}) of the frame")
 
     draw_track(card, rows, label_b, label, note)
@@ -347,7 +428,12 @@ def main(argv):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument('clips', nargs='*', default=list(CLIPS))
     ap.add_argument('--out', type=pathlib.Path, default=ROOT / 'out' / 'demo' / 'cards')
+    ap.add_argument('--font', type=pathlib.Path, metavar='PATH',
+                    help=f'font file for the text (default {HELVETICA}, which macOS ships)')
+    ap.add_argument('--bold', type=pathlib.Path, metavar='PATH',
+                    help='font file for the bold text (default face 1 of Helvetica.ttc; with --font alone, that font)')
     args = ap.parse_args(argv)
+    use_fonts(args.font, args.bold)
     picks = json.loads((ROOT / 'events' / EVENT / 'picks.json').read_text())
     credits = {c['clip']: c for c in json.loads((ROOT / 'events' / EVENT / 'credits.json').read_text())}
     for no in args.clips:
