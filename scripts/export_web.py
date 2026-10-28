@@ -315,7 +315,8 @@ def colombia():
         'id': case.id, 'title': 'Green fireball over Colombia', 'when_utc': case.event['utc'], 'role': 'open case',
         'when': when(case.event, 'in Colombia'),
         # close enough that each requested town's two-line label fits beside its own dot without covering a neighbour's
-        # (Málaga sits between San Gil and the flash), with Medellín still in view on the left
+        # (Málaga sits between San Gil and the flash), with Medellín still in view on the left; where the map area beside
+        # the panel is narrower (a desktop window under about 1200 px), the viewer moves and steps back from it (fitView)
         'view': {'center': [-73.4, 6.0], 'zoom': 7.2, 'pitch': 52, 'bearing': 8},
         # a phone's map is small: it comes closer to the flash and tilts less, so the requested towns' labels have room
         'view_narrow': {'center': [-72.65, 6.4], 'zoom': 6.35, 'pitch': 40, 'bearing': 8},

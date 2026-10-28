@@ -201,8 +201,8 @@ function solvedLayers(d) {
   const tried = state.highlight && d.tried.find(x => x.step === state.highlight);
   const first = sol.path[0], last = sol.path[sol.path.length - 1];
   const layers = [];
-  if (state.show.mc && d.montecarlo && !live) {
-    layers.push(new deck.PathLayer({id: 'mc', data: d.montecarlo.lines, getPath: l => l, getColor: [...GLOW, 26], getWidth: 1,
+  if (state.show.mc && d.montecarlo && !live) {  // faint: with no depth written, every line adds to the band where they overlap
+    layers.push(new deck.PathLayer({id: 'mc', data: d.montecarlo.lines, getPath: l => l, getColor: [...GLOW, 8], getWidth: 1,
       widthUnits: 'pixels', billboard: true, ...SHEER}));
   }
   if (state.show.sight) {
@@ -336,10 +336,14 @@ function projector(vp) {
   };
 }
 
+// deck.gl lays each row of a label out 1.2 em tall (the row of its font atlas), times the layer's line height.
+const ROW = 1.2;
+
 // The screen box a label's background covers, for a label at screen point `at`, drawn at scale `s` as `tag` says.
 function labelBox(at, s, label, tag) {
   ruler.font = `${tag.weight} ${tag.size}px ${FONT}`;
-  const rows = String(label).split('\n'), w = Math.max(...rows.map(r => ruler.measureText(r).width)), h = rows.length * tag.size * tag.lineHeight;
+  const rows = String(label).split('\n'), w = Math.max(...rows.map(r => ruler.measureText(r).width));
+  const h = rows.length * tag.size * tag.lineHeight * ROW;
   const [pl, pt, pr, pb] = tag.pad, [ox, oy] = tag.offset, x = ox + {start: 0, end: -w, middle: -w / 2}[tag.anchor];
   return [at[0] + s * (x - pl), at[1] + s * (oy - h / 2 - pt), at[0] + s * (x + w + pr), at[1] + s * (oy + h / 2 + pb)];
 }
@@ -380,33 +384,45 @@ function caseBoxes(d, vp) {
 }
 
 // Around its dot a label tries the right first, then the left, then a half or a whole height higher or lower on either
-// side, then above or below: [anchor, shift up or down, gaps out from the dot].
+// side, then above or below: [anchor, shift up or down, gaps out from the dot, shift sideways in label widths].
 const SPOTS = [['start', 0], ['end', 0], ['start', -1], ['start', 1], ['end', -1], ['end', 1], ['middle', -1], ['middle', 1],
-  ['start', -2], ['start', 2], ['end', -2], ['end', 2]].map(([anchor, dy]) => [anchor, dy, 1]);
-// A label that must show also tries spots farther out, to step past a neighbour's dot or a line.
-const FAR = [...SPOTS, ...[2, 3.5, 5].flatMap(k => [0, -1, 1, -2, 2, -3, 3].flatMap(dy => [['start', dy, k], ['end', dy, k]])),
-  ...[-2, 2, -3, 3, -4, 4].map(dy => ['middle', dy, 1])];
+  ['start', -2], ['start', 2], ['end', -2], ['end', 2]].map(([anchor, dy]) => [anchor, dy, 1, 0]);
+// A label that must show also tries spots above or below its dot moved a little to one side, then farther out, to step
+// past a neighbour's dot or a line.
+const FAR = [...SPOTS, ...[0.15, -0.15, 0.3, -0.3].flatMap(sx => [['middle', 1, 1, sx], ['middle', -1, 1, sx]]),
+  ...[2, 3.5, 5].flatMap(k => [0, -1, 1, -2, 2, -3, 3].flatMap(dy => [['start', dy, k, 0], ['end', dy, k, 0]])),
+  ...[-2, 2, -3, 3, -4, 4].map(dy => ['middle', dy, 1, 0])];
 const NEAR = 6;  // pixels: another dot should stand twice as far from a label as its own dot, and this much farther still
+const BREAK = 100;  // a broken rule weighs more than any number of dots inside that margin
 
 // Where the open case's town labels go in one view. A label must read as the name of its own dot: its own dot is the
 // nearest to it, by a clear margin, and it covers no other dot. The labels that must show (the towns the agent asked for
-// and the filmed one) are placed together, and may sit farther out: of every combination of their spots, the one that
-// breaks fewest rules. Then every other blue dot, from the nearest out, takes the first spot that breaks none and covers
-// no label, line, map key, zoom button or edge of the map. A blue dot with no such spot keeps no label.
+// and the filmed one) are placed together and may sit farther out, but stay on the map, clear of the map key and the zoom
+// buttons, wherever a spot there exists: of every combination of their spots, the one that breaks fewest rules, then
+// leaves fewest other dots inside the margin. Then every other blue dot, from the nearest out, takes the first spot that
+// breaks no rule, keeps the margin and covers no label, line, map key, zoom button or edge of the map. A blue dot with no
+// such spot keeps no label. The spots come back with their `cost`: BREAK for each rule the labels that must show break,
+// for each requested town left without a label and for the flash or its label out of view, and 1 for each dot inside a
+// margin.
 function placeTowns(d, view) {
   const vp = viewport(view), {xy, scale} = projector(vp), g = d.satellite.lonlat, [h0, h1] = skyKm(d).map(h => h * 1000);
   const pad = view.padding, edge = [pad.left + 6, pad.top + 6, vp.width - pad.right - 6, vp.height - pad.bottom - 6];
   const wanted = asked(d), filmed = new Set(filmedSites(d).map(w => w.site));
   // the dots on screen, the flash's too, out to where their stroke reaches
   const dots = d.towns.map(t => ({t, at: xy(t.lonlat), s: scale(t.lonlat), r: (townRadius(d, t) + 0.75) * scale(t.lonlat)}));
-  dots.push({at: xy(g), r: 8 * LOOK.dot * scale(g)});
+  const flash = {at: xy(g), r: 8 * LOOK.dot * scale(g)};
+  dots.push(flash);
   const lines = [[xy(g), xy(g, COLUMN_TOP), 3], ...filmedSites(d).map(w => [xy(w.lonlat), xy(g, (h0 + h1) / 2), 2.5])];
-  const placed = [labelBox(xy(g, COLUMN_TOP), scale(g, COLUMN_TOP), glmText(d), TAG())];
+  const ui = [];  // the map key and the zoom buttons
   for (const el of [document.body.classList.contains('bare') ? null : $('#legend'), $('.maplibregl-ctrl-top-right')]) {
-    const r = el && el.getBoundingClientRect();  // the map key and the zoom buttons
-    if (r && r.width) placed.push([r.left - 6, r.top - 6, r.right + 6, r.bottom + 6]);
+    const r = el && el.getBoundingClientRect();
+    if (r && r.width) ui.push([r.left - 6, r.top - 6, r.right + 6, r.bottom + 6]);
   }
+  const glm = labelBox(xy(g, COLUMN_TOP), scale(g, COLUMN_TOP), glmText(d), TAG()), placed = [glm, ...ui];
   const gapTo = boxGap, overlaps = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+  const onMap = b => b[0] >= edge[0] && b[1] >= edge[1] && b[2] <= edge[2] && b[3] <= edge[3];
+  const inView = b => onMap(b) && !ui.some(u => overlaps(b, u));
+  const dotInView = ([x, y]) => x > edge[0] && x < edge[2] && y > edge[1] && y < edge[3];
   const crosses = (b, [p, q, hw]) => {
     const n = Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / 3);
     for (let i = 0; i <= n; i++) {
@@ -415,36 +431,37 @@ function placeTowns(d, view) {
     }
     return false;
   };
-  // Each broken rule weighs as much as text over text: another label under this one, the edge of the map, the flash's
-  // column or the witness line under it, and every other dot that the label covers or that stands as near to it as its
-  // own dot. A dot only a little farther than its own (within the margin) weighs a quarter: it still lets the eye pair
-  // the label with the wrong dot.
+  // Each broken rule weighs BREAK: another label under this one, the edge of the map, the flash's column or the witness
+  // line under it, and every other dot that the label covers or that stands as near to it as its own dot. A dot only a
+  // little farther than its own (within the margin) weighs 1: it still lets the eye pair the label with the wrong dot. The
+  // margin keeps a pixel in hand, as drawn edges land on whole pixels.
   const clashes = (me, b) => {
-    const own = Math.max(gapTo(b, me.at) - me.r, 0);
+    const own = Math.max(gapTo(b, me.at) - me.r, 0), margin = 2 * own + NEAR * LOOK.dot + 1;
     const near = dots.filter(o => o !== me).map(o => gapTo(b, o.at) - o.r);
-    return 20 * (placed.filter(p => overlaps(b, p)).length + (b[0] < edge[0] || b[1] < edge[1] || b[2] > edge[2] || b[3] > edge[3])
-      + lines.filter(l => crosses(b, l)).length + near.filter(x => x < Math.max(own, 1)).length)
-      + 5 * near.filter(x => x >= Math.max(own, 1) && x < 2 * own + NEAR * LOOK.dot).length;
+    return BREAK * (placed.filter(p => overlaps(b, p)).length + !onMap(b) + lines.filter(l => crosses(b, l)).length
+      + near.filter(x => x < Math.max(own, 1)).length) + near.filter(x => x >= Math.max(own, 1) && x < margin).length;
   };
   const tries = (t, spots) => {
-    const me = dots.find(o => o.t === t), label = townLabel(d, t), [, pt] = LOOK.pad;
-    const h = label.split('\n').length * LOOK.text * LINE, gap = LOOK.gap + townRadius(d, t) - 4.5 * LOOK.dot;  // clear of a larger dot
+    const me = dots.find(o => o.t === t), label = townLabel(d, t), [, pt] = LOOK.pad, tag = TOWN_TAG();
+    const h = label.split('\n').length * LOOK.text * LINE * ROW, gap = LOOK.gap + townRadius(d, t) - 4.5 * LOOK.dot;  // clear of a larger dot
     const lift = townRadius(d, t) + 1.75;  // a label above or below starts just clear of the dot's stroke
-    return spots.map(([anchor, dy, k]) => {
-      const offset = [{start: k * gap, end: -k * gap, middle: 0}[anchor], dy * (anchor === 'middle' ? lift + h / 2 + pt : h / 2 + pt)];
-      const box = labelBox(me.at, me.s, label, {...TOWN_TAG(), anchor, offset});
+    const box0 = labelBox([0, 0], 1, label, {...tag, anchor: 'start', offset: [0, 0]}), w = box0[2] - box0[0];
+    return spots.map(([anchor, dy, k, sx]) => {
+      const offset = [{start: k * gap, end: -k * gap, middle: sx * w}[anchor], dy * (anchor === 'middle' ? lift + h / 2 + pt : h / 2 + pt)];
+      const box = labelBox(me.at, me.s, label, {...tag, anchor, offset});
       return {t, anchor, offset, box, cost: clashes(me, box)};
     });
   };
   const spots = new Map(), take = r => { spots.set(r.t.city, {anchor: r.anchor, offset: r.offset}); placed.push(r.box); };
-  const inView = t => { const [x, y] = xy(t.lonlat); return x > edge[0] && x < edge[2] && y > edge[1] && y < edge[3]; };
-  const must = d.towns.filter(t => (wanted.has(t.city) || filmed.has(t.city)) && inView(t))
-    .map(t => tries(t, FAR).sort((a, b) => a.cost - b.cost).slice(0, 24));
+  const must = d.towns.filter(t => (wanted.has(t.city) || filmed.has(t.city)) && dotInView(xy(t.lonlat))).map(t => {
+    const all = tries(t, FAR), seen = all.filter(r => inView(r.box));
+    return (seen.length ? seen : all).sort((a, b) => a.cost - b.cost).slice(0, 24);
+  });
   let best = [], least = Infinity;
   const search = (i, chosen, cost) => {  // branch and bound over the spots of the labels that must show
     if (cost >= least) return;
     if (i === must.length) { best = chosen; least = cost; return; }
-    for (const r of must[i]) search(i + 1, [...chosen, r], cost + r.cost + 20 * chosen.filter(c => overlaps(c.box, r.box)).length);
+    for (const r of must[i]) search(i + 1, [...chosen, r], cost + r.cost + BREAK * chosen.filter(c => overlaps(c.box, r.box)).length);
   };
   search(0, [], 0);
   best.forEach(take);
@@ -452,7 +469,50 @@ function placeTowns(d, view) {
     const free = tries(t, SPOTS).find(r => r.cost === 0);
     if (free) take(free);
   }
+  spots.cost = least + BREAK * (d.towns.filter(t => wanted.has(t.city) && !spots.has(t.city)).length + !inView(glm) + !dotInView(flash.at));
   return spots;
+}
+
+// The view the data gives, unless a label that must show breaks a rule there, as happens where the map area beside the
+// panel is narrow (a desktop window under about 1200 px). Then the flash, its label and the requested towns move to the
+// middle of the free map area, or a little to either side, and the map steps back a tenth of a zoom level at a time. The
+// first view where those labels break no rule and keep their margins wins; failing that, the one where they break fewest.
+function fitView(d, view) {
+  let best = {v: view, cost: placeTowns(d, view).cost};
+  if (best.cost < BREAK) return view;
+  for (let k = 0; k <= 15; k++) {
+    const middle = centred(d, {...view, zoom: view.zoom - k / 10});
+    for (const share of [0, -0.15, 0.15, -0.3, 0.3]) {
+      const v = shifted(middle, share), cost = placeTowns(d, v).cost;
+      if (!cost) return v;
+      if (cost < best.cost) best = {v, cost};
+    }
+  }
+  return best.v;
+}
+
+// The view moved so that what it shows moves sideways by a share of the free map area's width.
+function shifted(view, share) {
+  if (!share) return view;
+  const vp = viewport(view), pad = view.padding, width = vp.width - pad.left - pad.right;
+  return {...view, center: vp.unproject([(pad.left + vp.width - pad.right) / 2 - share * width, (pad.top + vp.height - pad.bottom) / 2])};
+}
+
+// The view moved so that the flash, its label and the requested towns, each with room for its label on either side, stand
+// in the middle of the free map area (where the view's centre falls).
+function centred(d, view) {
+  const g = d.satellite.lonlat, towns = d.towns.filter(t => asked(d).has(t.city));
+  for (let i = 0; i < 3; i++) {
+    const vp = viewport(view), {xy, scale} = projector(vp), [x, y] = xy(g);
+    const boxes = [labelBox(xy(g, COLUMN_TOP), scale(g, COLUMN_TOP), glmText(d), TAG()), [x, y, x, y]];
+    for (const t of towns) {
+      const at = xy(t.lonlat), b = labelBox(at, scale(t.lonlat), townLabel(d, t), {...TOWN_TAG(), offset: [LOOK.gap, 0]});
+      boxes.push([2 * at[0] - b[2], b[1], b[2], b[3]]);  // its label right of its dot, or as far to the left
+    }
+    const mid = k => (Math.min(...boxes.map(b => b[k])) + Math.max(...boxes.map(b => b[k + 2]))) / 2;
+    view = {...view, center: vp.unproject([mid(0), mid(1)])};
+  }
+  return view;
 }
 
 function redraw() {
@@ -860,6 +920,7 @@ function drawLegend(d) {
     redraw();
     namesUnderLabels();
   }));
+  $('#legend details').addEventListener('toggle', placeHud);  // the replay bar may sit above the key
 }
 
 function stageKey() {  // the key lists only what the current stage shows
@@ -907,8 +968,28 @@ function stop(finished) {
   if (finished) state.t = null;
   $('#play').textContent = state.t === null ? 'Replay' : 'Resume';
   readout();
+  placeHud();
   redraw();
 }
+
+// On a desktop the replay bar sits at the foot of the map, in the middle of it or as near the middle as the map key allows,
+// and its readout wraps to stay in the gap between the panel and the key; where that gap leaves the readout more than two
+// lines, the bar rises above the key. On a phone and in ?panel=0 the style sheet places it.
+function placeHud() {
+  const hud = $('#hud'), s = hud.style, text = $('#readout');
+  s.left = s.bottom = s.maxWidth = '';
+  if (hud.hidden || narrow.matches || document.body.classList.contains('bare')) return;
+  const from = $('#panel').getBoundingClientRect().right + 12, key = $('#legend').getBoundingClientRect();
+  const to = key.width ? key.left - 12 : innerWidth - 12, middle = (from + innerWidth - 12) / 2;
+  s.maxWidth = `${to - from}px`;
+  s.left = `${Math.min(middle, to - hud.getBoundingClientRect().width / 2)}px`;
+  const lines = text.getBoundingClientRect().height / parseFloat(getComputedStyle(text).lineHeight);
+  if (!key.width || (lines < 2.5 && hud.scrollWidth <= hud.clientWidth + 1)) return;
+  s.left = `${middle}px`;
+  s.maxWidth = `${innerWidth - 12 - from}px`;
+  s.bottom = `${innerHeight - key.top + 10}px`;
+}
+addEventListener('resize', placeHud);
 
 // ---- cases -----------------------------------------------------------------------------------------------------------
 
@@ -935,13 +1016,15 @@ async function show(id) {
   $('#play').textContent = 'Replay';
   drawLegend(d);
   readout();
+  placeHud();
   // A phone sees more of the solved case; the open case has a view of its own for a phone (view_narrow), closer to the flash
   // and less tilted, where the requested towns' labels have room beside their dots. In video mode the open case comes
   // closer to the flash, so its larger labels have room, and the solved case steps back beside the wider panel, so every
-  // witness site stays in view.
+  // witness site stays in view. Where the map area left free is smaller, the open case's view fits itself to it (fitView).
   const closer = !video ? 0 : !d.solution ? 0.5 : document.body.classList.contains('bare') ? 0 : -0.2;
   const base = narrow.matches && d.view_narrow ? d.view_narrow : {...d.view, zoom: d.view.zoom - (narrow.matches ? 1.3 : 0)};
-  const view = {...base, zoom: base.zoom + closer, padding: padding()};
+  const asGiven = {...base, zoom: base.zoom + closer, padding: padding()};
+  const view = d.solution ? asGiven : fitView(d, asGiven);
   state.spots = d.solution ? new Map() : placeTowns(d, view);  // placed for where the camera is going
   under = [];  // the basemap names under the last case's labels; found again once the map has drawn this one
   quietNames();
@@ -974,7 +1057,7 @@ addEventListener('keydown', e => {
   }
   if (e.target.closest('input, textarea, button')) return;
   if (e.code === 'Space') { e.preventDefault(); play(); }
-  if (e.key === 'h') { document.body.classList.toggle('bare'); map.easeTo({padding: padding(), duration: 600}); }
+  if (e.key === 'h') { document.body.classList.toggle('bare'); placeHud(); map.easeTo({padding: padding(), duration: 600}); }
 });
 
 (async function init() {

@@ -88,7 +88,9 @@ try {
     document.head.append(css);
     map.jumpTo({zoom: ${ZOOM}, center: ${JSON.stringify(CENTER)}});
     window.__drawn = async () => {
-      await new Promise(r => { map.once('idle', r); map.triggerRepaint(); setTimeout(r, 20000); });  // tiles and label fades
+      // tiles and label fades; twice, because on the first idle the viewer may hide or restore basemap names under its
+      // labels (namesUnderLabels), which starts a fade of its own
+      for (let i = 0; i < 2; i++) await new Promise(r => { map.once('idle', r); map.triggerRepaint(); setTimeout(r, 20000); });
       for (let i = 0; i < 4; i++) await new Promise(r => requestAnimationFrame(r));  // deck.gl draws on its own frame
     };
     window.__frame = async (t, bearing, mc) => {
