@@ -1,0 +1,791 @@
+{
+ "run_id": "20261027T185758-cee8",
+ "event": "chelyabinsk-2013",
+ "started": "2026-10-27T18:57:58",
+ "git": {
+  "commit": "cb6b9f8",
+  "dirty": false
+ },
+ "planner": "native",
+ "planner_model": "muse-spark-1.3",
+ "instructions_sha": "363f389846be",
+ "tools_sha": "ea0d5367f35b",
+ "inputs": {
+  "events/chelyabinsk-2013/event.json": "d28f59096737c403",
+  "events/chelyabinsk-2013/picks.json": "e7648337b14b9e08",
+  "events/chelyabinsk-2013/calibration.json": "0c172019050f25c3",
+  "events/chelyabinsk-2013/glm-window.json": "379fe14221486da4",
+  "events/chelyabinsk-2013/city-geometry.json": null,
+  "events/chelyabinsk-2013/reentries.json": null,
+  "out/sam/chelyabinsk-2013-2.json": "0f9b07035b900123",
+  "events/chelyabinsk-2013/witness/2.json": "585ee9b20f3466eb",
+  "out/sam/chelyabinsk-2013-14.json": "bf8cb11450567d10",
+  "events/chelyabinsk-2013/witness/14.json": "88448a54ef074828",
+  "out/sam/chelyabinsk-2013-48.json": "1957e134e9a70008",
+  "events/chelyabinsk-2013/witness/48.json": "ef43b6970da7f5dc",
+  "out/sam/chelyabinsk-2013-15.json": "9807bde1770a18e4",
+  "events/chelyabinsk-2013/witness/15.json": "eda281d62d8d5373",
+  "out/sam/chelyabinsk-2013-81.json": "8b42aa3dc1e7c44e",
+  "events/chelyabinsk-2013/witness/81.json": "47cab89f23127328",
+  "out/sam/chelyabinsk-2013-257.json": "76f65af71cd6ee3a",
+  "events/chelyabinsk-2013/witness/257.json": "334825536b2069aa",
+  "out/sam/chelyabinsk-2013-238.json": "746f64d40919697b",
+  "events/chelyabinsk-2013/witness/238.json": "2d06829ffb8ec93a",
+  "out/sam/chelyabinsk-2013-10.json": "843a21b2236a6482",
+  "events/chelyabinsk-2013/witness/10.json": "628303a9b4fdd467",
+  "events/chelyabinsk-2013/montecarlo-2-10-48.json": "cfeb644dbbff4f15",
+  "events/chelyabinsk-2013/montecarlo-2-10.json": "209121dddc22a302"
+ },
+ "resumed_from": "20261027T183453-9c57",
+ "notes": "El reporte en español atribuye la incertidumbre a una base corta. No lo es: las dos cámaras están lejos y sus planos se cruzan en ángulo amplio. Quiten esa frase.",
+ "history": [],
+ "finished": "2026-10-27T18:58:37",
+ "status": "awaiting_review",
+ "block": null,
+ "final": {
+  "clips": [
+   "2",
+   "10"
+  ],
+  "q_max_deg": 66.3,
+  "warnings": [],
+  "seen_for_s": 13.7,
+  "azimuth_deg": 282.12,
+  "slope_deg": 17.48,
+  "begin": "54.427 N, 64.101 E, 89.5 km",
+  "end": "54.914 N, 60.615 E, 11.4 km",
+  "speed_kms": 19.65,
+  "speed_sigma_kms": 0.29,
+  "speed_sigma_formal_kms": 0.15,
+  "speed_spread_kms": 0.29,
+  "speed_band_95_kms": [
+   12.11,
+   23.72
+  ],
+  "speed_band_source": "Monte Carlo, 500 draws",
+  "uncertainty": {
+   "source": "montecarlo-2-10.json",
+   "draws": 500,
+   "azimuth_deg": {
+    "median": 279.34,
+    "1sigma": [
+     275.8,
+     282.57
+    ],
+    "2sigma": [
+     272.97,
+     284.44
+    ]
+   },
+   "slope_deg": {
+    "median": 17.01,
+    "1sigma": [
+     16.45,
+     17.57
+    ],
+    "2sigma": [
+     15.9,
+     17.95
+    ]
+   },
+   "speed_kms": {
+    "median": 17.59,
+    "1sigma": [
+     14.91,
+     20.31
+    ],
+    "2sigma": [
+     12.11,
+     23.72
+    ]
+   },
+   "end_h_km": {
+    "median": 11.88,
+    "1sigma": [
+     10.26,
+     13.66
+    ],
+    "2sigma": [
+     8.86,
+     15.8
+    ]
+   },
+   "begin_h_km": {
+    "median": 81.93,
+    "1sigma": [
+     69.89,
+     97.88
+    ],
+    "2sigma": [
+     58.05,
+     116.59
+    ]
+   }
+  },
+  "speed_per_camera": {
+   "2": 19.65,
+   "10": 19.07
+  },
+  "residual_rms_deg": {
+   "2": 0.687,
+   "10": 0.824
+  },
+  "verdict": "natural",
+  "verdict_reason": "19.6 km/s, 95% range 12.1 to 23.7 km/s (Monte Carlo, 500 draws) is above escape speed",
+  "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
+ },
+ "dropped": {
+  "48": {
+   "criterion": "near_parallel_pair",
+   "measured": {
+    "near_parallel_with": {
+     "2": {
+      "q_deg_with_it": 7.5,
+      "its_widest_q_deg": 66.3,
+      "this_widest_q_deg": 58.9
+     }
+    },
+    "threshold_deg": 10,
+    "rule": "of two cameras whose planes cross under 10 deg, the one that crosses the rest more widely stays"
+   },
+   "reason": "Tyumen parallels Kamensk at 7.5 deg while Kamensk crosses Korkino at 66.3 deg versus 58.9 deg for Tyumen."
+  }
+ },
+ "steps": [
+  {
+   "step": 1,
+   "action": "calibration",
+   "clip": "2",
+   "clips": null,
+   "args": {
+    "clip": "2",
+    "why": "Confirm orientation and residual for the final solution."
+   },
+   "why": "Confirm orientation and residual for the final solution.",
+   "result": {
+    "calibrated": true,
+    "lens": "pinhole with radial k1",
+    "hfov": 66.6,
+    "k1": -0.267,
+    "evidence": "v2: 18 vertical lines and the avenue lamp-head rows (two annotators, events/chelyabinsk-2013/lines-2.json) plus the chapel; lines alone leave the field of view free (the fit ran to 151 deg), so the ch",
+    "fit_rms_deg": 0.065
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae13a881e5ec1f5953a4f36",
+   "usage": {
+    "input_tokens": 2853,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 239,
+    "output_tokens_details": {
+     "reasoning_tokens": 144
+    },
+    "total_tokens": 3092
+   }
+  },
+  {
+   "step": 2,
+   "action": "calibration",
+   "clip": "48",
+   "clips": null,
+   "args": {
+    "clip": "48",
+    "why": "Confirm orientation and residual for Tyumen camera."
+   },
+   "why": "Confirm orientation and residual for Tyumen camera.",
+   "result": {
+    "calibrated": true,
+    "lens": "pinhole with radial k1",
+    "hfov": 62.8,
+    "k1": -0.332,
+    "evidence": "landmarks",
+    "fit_rms_deg": 0.031
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae13a89880d10186cd54722",
+   "usage": {
+    "input_tokens": 3050,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 188,
+    "output_tokens_details": {
+     "reasoning_tokens": 87
+    },
+    "total_tokens": 3238
+   }
+  },
+  {
+   "step": 3,
+   "action": "calibration",
+   "clip": "10",
+   "clips": null,
+   "args": {
+    "clip": "10",
+    "why": "Confirm orientation and residual for Korkino camera."
+   },
+   "why": "Confirm orientation and residual for Korkino camera.",
+   "result": {
+    "calibrated": true,
+    "lens": "wide pinhole with radial k1",
+    "hfov": 79.5,
+    "k1": -0.15,
+    "evidence": "v4: pointing from the annotated lines with k1 fixed at -0.15 (the 480x360 frame cannot pin it); hfov 79.5 from speed agreement with Kamensk (both saw the fireball before it slowed); the three-station ",
+    "fit_rms_deg": 0.065
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae13a8b58e0c45de3e3408f",
+   "usage": {
+    "input_tokens": 3192,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 66,
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "total_tokens": 3258
+   }
+  },
+  {
+   "step": 4,
+   "action": "planes",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "Measure intersection angles to assess triangulation geometry."
+   },
+   "why": "Measure intersection angles to assess triangulation geometry.",
+   "result": {
+    "calibrated_clips": [
+     "2",
+     "48",
+     "10"
+    ],
+    "pairs": [
+     {
+      "pair": [
+       "2",
+       "10"
+      ],
+      "q_deg": 66.3
+     },
+     {
+      "pair": [
+       "48",
+       "10"
+      ],
+      "q_deg": 58.9
+     },
+     {
+      "pair": [
+       "2",
+       "48"
+      ],
+      "q_deg": 7.5
+     }
+    ]
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae13a8c2b1215ec3ec74f1d",
+   "usage": {
+    "input_tokens": 3388,
+    "input_tokens_details": {
+     "cached_tokens": 3185
+    },
+    "output_tokens": 129,
+    "output_tokens_details": {
+     "reasoning_tokens": 56
+    },
+    "total_tokens": 3517
+   }
+  },
+  {
+   "step": 5,
+   "action": "solve",
+   "clip": null,
+   "clips": [
+    "2",
+    "48",
+    "10"
+   ],
+   "args": {
+    "clips": [
+     "2",
+     "48",
+     "10"
+    ],
+    "why": "Test full three-camera solution and residuals."
+   },
+   "why": "Test full three-camera solution and residuals.",
+   "result": {
+    "clips": [
+     "2",
+     "48",
+     "10"
+    ],
+    "q_max_deg": 66.3,
+    "warnings": [],
+    "seen_for_s": 13.7,
+    "azimuth_deg": 278.53,
+    "slope_deg": 16.8,
+    "begin": "54.463 N, 64.065 E, 87.1 km",
+    "end": "54.822 N, 60.540 E, 12.2 km",
+    "speed_kms": 19.49,
+    "speed_sigma_kms": 1.53,
+    "speed_sigma_formal_kms": 0.07,
+    "speed_spread_kms": 1.53,
+    "speed_band_95_kms": [
+     14.23,
+     29.88
+    ],
+    "speed_band_source": "Monte Carlo, 200 draws",
+    "uncertainty": {
+     "source": "montecarlo-2-10-48.json",
+     "draws": 200,
+     "azimuth_deg": {
+      "median": 277.04,
+      "1sigma": [
+       260.91,
+       281.14
+      ],
+      "2sigma": [
+       241.65,
+       284.56
+      ]
+     },
+     "slope_deg": {
+      "median": 16.45,
+      "1sigma": [
+       12.48,
+       17.19
+      ],
+      "2sigma": [
+       4.92,
+       17.82
+      ]
+     },
+     "speed_kms": {
+      "median": 19.09,
+      "1sigma": [
+       17.23,
+       22.93
+      ],
+      "2sigma": [
+       14.23,
+       29.88
+      ]
+     },
+     "end_h_km": {
+      "median": 12.34,
+      "1sigma": [
+       10.24,
+       20.28
+      ],
+      "2sigma": [
+       8.96,
+       48.38
+      ]
+     },
+     "begin_h_km": {
+      "median": 81.58,
+      "1sigma": [
+       73.15,
+       90.89
+      ],
+      "2sigma": [
+       66.55,
+       105.1
+      ]
+     }
+    },
+    "speed_per_camera": {
+     "2": 19.09,
+     "48": 19.59,
+     "10": 14.77
+    },
+    "residual_rms_deg": {
+     "2": 0.715,
+     "48": 0.312,
+     "10": 0.931
+    },
+    "verdict": "natural",
+    "verdict_reason": "19.5 km/s, 95% range 14.2 to 29.9 km/s (Monte Carlo, 200 draws) is above escape speed",
+    "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae13a8f3d97b23bd08340d8",
+   "usage": {
+    "input_tokens": 3534,
+    "input_tokens_details": {
+     "cached_tokens": 0
+    },
+    "output_tokens": 273,
+    "output_tokens_details": {
+     "reasoning_tokens": 167
+    },
+    "total_tokens": 3807
+   }
+  },
+  {
+   "step": 6,
+   "action": "solve",
+   "clip": null,
+   "clips": [
+    "2",
+    "10"
+   ],
+   "args": {
+    "clips": [
+     "2",
+     "10"
+    ],
+    "why": "Test Kamensk-Korkino pair with wide intersection."
+   },
+   "why": "Test Kamensk-Korkino pair with wide intersection.",
+   "result": {
+    "clips": [
+     "2",
+     "10"
+    ],
+    "q_max_deg": 66.3,
+    "warnings": [],
+    "seen_for_s": 13.7,
+    "azimuth_deg": 282.12,
+    "slope_deg": 17.48,
+    "begin": "54.427 N, 64.101 E, 89.5 km",
+    "end": "54.914 N, 60.615 E, 11.4 km",
+    "speed_kms": 19.65,
+    "speed_sigma_kms": 0.29,
+    "speed_sigma_formal_kms": 0.15,
+    "speed_spread_kms": 0.29,
+    "speed_band_95_kms": [
+     12.11,
+     23.72
+    ],
+    "speed_band_source": "Monte Carlo, 500 draws",
+    "uncertainty": {
+     "source": "montecarlo-2-10.json",
+     "draws": 500,
+     "azimuth_deg": {
+      "median": 279.34,
+      "1sigma": [
+       275.8,
+       282.57
+      ],
+      "2sigma": [
+       272.97,
+       284.44
+      ]
+     },
+     "slope_deg": {
+      "median": 17.01,
+      "1sigma": [
+       16.45,
+       17.57
+      ],
+      "2sigma": [
+       15.9,
+       17.95
+      ]
+     },
+     "speed_kms": {
+      "median": 17.59,
+      "1sigma": [
+       14.91,
+       20.31
+      ],
+      "2sigma": [
+       12.11,
+       23.72
+      ]
+     },
+     "end_h_km": {
+      "median": 11.88,
+      "1sigma": [
+       10.26,
+       13.66
+      ],
+      "2sigma": [
+       8.86,
+       15.8
+      ]
+     },
+     "begin_h_km": {
+      "median": 81.93,
+      "1sigma": [
+       69.89,
+       97.88
+      ],
+      "2sigma": [
+       58.05,
+       116.59
+      ]
+     }
+    },
+    "speed_per_camera": {
+     "2": 19.65,
+     "10": 19.07
+    },
+    "residual_rms_deg": {
+     "2": 0.687,
+     "10": 0.824
+    },
+    "verdict": "natural",
+    "verdict_reason": "19.6 km/s, 95% range 12.1 to 23.7 km/s (Monte Carlo, 500 draws) is above escape speed",
+    "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae13a9363c8b121319b4e3d",
+   "usage": {
+    "input_tokens": 4245,
+    "input_tokens_details": {
+     "cached_tokens": 3313
+    },
+    "output_tokens": 385,
+    "output_tokens_details": {
+     "reasoning_tokens": 281
+    },
+    "total_tokens": 4630
+   }
+  },
+  {
+   "step": 7,
+   "action": "drop_clip",
+   "clip": "48",
+   "clips": null,
+   "args": {
+    "clip": "48",
+    "criterion": "near_parallel_pair",
+    "reason": "Tyumen parallels Kamensk at 7.5 deg while Kamensk crosses Korkino at 66.3 deg versus 58.9 deg for Tyumen.",
+    "why": "Remove the weaker of the near-parallel pair before finalizing."
+   },
+   "why": "Remove the weaker of the near-parallel pair before finalizing.",
+   "result": {
+    "accepted": true,
+    "dropped": "48",
+    "criterion": "near_parallel_pair",
+    "measured": {
+     "near_parallel_with": {
+      "2": {
+       "q_deg_with_it": 7.5,
+       "its_widest_q_deg": 66.3,
+       "this_widest_q_deg": 58.9
+      }
+     },
+     "threshold_deg": 10,
+     "rule": "of two cameras whose planes cross under 10 deg, the one that crosses the rest more widely stays"
+    },
+    "reason": "Tyumen parallels Kamensk at 7.5 deg while Kamensk crosses Korkino at 66.3 deg versus 58.9 deg for Tyumen."
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae13a971f2dfb00655f43df",
+   "usage": {
+    "input_tokens": 4935,
+    "input_tokens_details": {
+     "cached_tokens": 2929
+    },
+    "output_tokens": 680,
+    "output_tokens_details": {
+     "reasoning_tokens": 514
+    },
+    "total_tokens": 5615
+   }
+  },
+  {
+   "step": 8,
+   "action": "finalize",
+   "clip": null,
+   "clips": [
+    "2",
+    "10"
+   ],
+   "args": {
+    "clips": [
+     "2",
+     "10"
+    ],
+    "why": "Submit Kamensk-Uralskiy plus Korkino as final wide-angle pair."
+   },
+   "why": "Submit Kamensk-Uralskiy plus Korkino as final wide-angle pair.",
+   "result": {
+    "accepted": true,
+    "final": {
+     "clips": [
+      "2",
+      "10"
+     ],
+     "q_max_deg": 66.3,
+     "warnings": [],
+     "seen_for_s": 13.7,
+     "azimuth_deg": 282.12,
+     "slope_deg": 17.48,
+     "begin": "54.427 N, 64.101 E, 89.5 km",
+     "end": "54.914 N, 60.615 E, 11.4 km",
+     "speed_kms": 19.65,
+     "speed_sigma_kms": 0.29,
+     "speed_sigma_formal_kms": 0.15,
+     "speed_spread_kms": 0.29,
+     "speed_band_95_kms": [
+      12.11,
+      23.72
+     ],
+     "speed_band_source": "Monte Carlo, 500 draws",
+     "uncertainty": {
+      "source": "montecarlo-2-10.json",
+      "draws": 500,
+      "azimuth_deg": {
+       "median": 279.34,
+       "1sigma": [
+        275.8,
+        282.57
+       ],
+       "2sigma": [
+        272.97,
+        284.44
+       ]
+      },
+      "slope_deg": {
+       "median": 17.01,
+       "1sigma": [
+        16.45,
+        17.57
+       ],
+       "2sigma": [
+        15.9,
+        17.95
+       ]
+      },
+      "speed_kms": {
+       "median": 17.59,
+       "1sigma": [
+        14.91,
+        20.31
+       ],
+       "2sigma": [
+        12.11,
+        23.72
+       ]
+      },
+      "end_h_km": {
+       "median": 11.88,
+       "1sigma": [
+        10.26,
+        13.66
+       ],
+       "2sigma": [
+        8.86,
+        15.8
+       ]
+      },
+      "begin_h_km": {
+       "median": 81.93,
+       "1sigma": [
+        69.89,
+        97.88
+       ],
+       "2sigma": [
+        58.05,
+        116.59
+       ]
+      }
+     },
+     "speed_per_camera": {
+      "2": 19.65,
+      "10": 19.07
+     },
+     "residual_rms_deg": {
+      "2": 0.687,
+      "10": 0.824
+     },
+     "verdict": "natural",
+     "verdict_reason": "19.6 km/s, 95% range 12.1 to 23.7 km/s (Monte Carlo, 500 draws) is above escape speed",
+     "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
+    }
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae13a9a62f7d46eddba4565",
+   "usage": {
+    "input_tokens": 5227,
+    "input_tokens_details": {
+     "cached_tokens": 3441
+    },
+    "output_tokens": 238,
+    "output_tokens_details": {
+     "reasoning_tokens": 136
+    },
+    "total_tokens": 5465
+   }
+  },
+  {
+   "step": 9,
+   "action": "write_report",
+   "clip": null,
+   "clips": null,
+   "args": {
+    "why": "Write bilingual report from the accepted two-camera solution."
+   },
+   "why": "Write bilingual report from the accepted two-camera solution.",
+   "result": {
+    "reports": {
+     "es": {
+      "figures": 29,
+      "traced": 29,
+      "passed": true,
+      "refused_drafts": 0
+     },
+     "en": {
+      "figures": 22,
+      "traced": 22,
+      "passed": true,
+      "refused_drafts": 0
+     }
+    },
+    "status": "awaiting_review"
+   },
+   "model": "muse-spark-1.3",
+   "response_id": "resp_6ae13a9c728051787d914f67",
+   "usage": {
+    "input_tokens": 5935,
+    "input_tokens_details": {
+     "cached_tokens": 5105
+    },
+    "output_tokens": 312,
+    "output_tokens_details": {
+     "reasoning_tokens": 232
+    },
+    "total_tokens": 6247
+   }
+  }
+ ],
+ "reports": {
+  "es": {
+   "check": {
+    "passed": true,
+    "numbers": 29,
+    "traced": 29,
+    "orphans": [],
+    "wrong_kind": [],
+    "hemisphere_mismatches": [],
+    "verdict_mismatches": []
+   },
+   "drafts": [],
+   "text": "Veredicto, escrito por el código: meteoroide natural. La velocidad es 19,6 km/s, y su rango del 95 % (Montecarlo de 500 sorteos), de 12,1 a 23,7 km/s, queda por encima de la velocidad de escape de la Tierra, 11,2 km/s.\n\nInforme del evento del 2013-02-15 09:20 (UTC+6, Yekaterinburg time), correspondiente a 2013-02-15T03:20:20Z en UTC. Existe vídeo testigo de Kamensk-Uralskiy, Beloretsk, Tyumen, Chebarkul, Yekaterinburg, Magnitogorsk, Plast y Korkino; ningún vídeo de la lista falta. Solo se pudo orientar la vista de Kamensk-Uralskiy, Tyumen y Korkino; en Beloretsk, Chebarkul, Yekaterinburg, Magnitogorsk y Plast ninguna cámara pudo orientarse. Lo sólido es la solución final con Kamensk-Uralskiy y Korkino, cuyo cruce es de 66.3 grados, seguida durante 13.7 segundos, desde 54.427 N, 64.101 E, 89.5 kilómetros hasta 54.914 N, 60.615 E, 11.4 kilómetros, con acimut de 282.12 grados y pendiente de 17.48 grados. La velocidad obtenida es de 19.65 kilómetros por segundo, con rango del 95% entre 12.11 y 23.72 kilómetros por segundo según Monte Carlo con 500 simulaciones. Lo incierto es la altura inicial, con mediana de 81.93 kilómetros y rango amplio entre 58.05 y 116.59 kilómetros. Falta incluir a Tyumen, descartada por paralelismo cercano con Kamensk-Uralskiy, y faltan orientaciones en otros sitios.\n"
+  },
+  "en": {
+   "check": {
+    "passed": true,
+    "numbers": 22,
+    "traced": 22,
+    "orphans": [],
+    "wrong_kind": [],
+    "hemisphere_mismatches": [],
+    "verdict_mismatches": []
+   },
+   "drafts": [],
+   "text": "Verdict, written by the code: natural meteoroid. The speed is 19.6 km/s, and its 95% range (Monte Carlo, 500 draws), 12.1 to 23.7 km/s, lies above Earth's escape speed of 11.2 km/s.\n\nOn 15 February 2013 at 09:20 Yekaterinburg time, UTC+6, 03:20:20 UTC, a bright fireball crossed the southern Urals for 13.7 seconds.\n\nWitness video exists for all eight sites checked: Kamensk-Uralskiy, Beloretsk, Tyumen, Chebarkul, Yekaterinburg, Magnitogorsk, Plast and Korkino. No site lacks video.\n\nSolid: two views, from Kamensk-Uralskiy and Korkino, could be oriented and cross at 66.3 degrees, giving a firm east-to-west track. It slopes at 17.48 degrees, from 54.427 N, 64.101 E at 89.5 km height to 54.914 N, 60.615 E at 11.4 km height.\n\nUncertain: height and speed remain broad. The speed is 19.65 km/s with a 95% range of 12.11 to 23.72 km/s from Monte Carlo, 500 draws. The start height in particular spreads widely around the best track.\n\nMissing: no camera at Beloretsk, Chebarkul, Yekaterinburg, Magnitogorsk or Plast could be oriented, and Tyumen was set aside as almost parallel to Kamensk, leaving only two usable views for the final track.\n"
+  }
+ },
+ "cost_usd": 0.0677
+}

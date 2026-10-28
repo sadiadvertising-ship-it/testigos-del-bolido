@@ -6,9 +6,9 @@
   "clips": null,
   "args": {
    "clip": "2",
-   "why": "Verify orientation and residual for Kamensk-Uralskiy before solving."
+   "why": "Confirm orientation and residual for the final solution."
   },
-  "why": "Verify orientation and residual for Kamensk-Uralskiy before solving.",
+  "why": "Confirm orientation and residual for the final solution.",
   "result": {
    "calibrated": true,
    "lens": "pinhole with radial k1",
@@ -18,17 +18,17 @@
    "fit_rms_deg": 0.065
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae1351fd333a326ea2943ca",
+  "response_id": "resp_6ae13a881e5ec1f5953a4f36",
   "usage": {
-   "input_tokens": 2855,
+   "input_tokens": 2853,
    "input_tokens_details": {
     "cached_tokens": 0
    },
-   "output_tokens": 223,
+   "output_tokens": 239,
    "output_tokens_details": {
-    "reasoning_tokens": 127
+    "reasoning_tokens": 144
    },
-   "total_tokens": 3078
+   "total_tokens": 3092
   }
  },
  {
@@ -38,9 +38,9 @@
   "clips": null,
   "args": {
    "clip": "48",
-   "why": "Verify orientation and residual for Tyumen before solving."
+   "why": "Confirm orientation and residual for Tyumen camera."
   },
-  "why": "Verify orientation and residual for Tyumen before solving.",
+  "why": "Confirm orientation and residual for Tyumen camera.",
   "result": {
    "calibrated": true,
    "lens": "pinhole with radial k1",
@@ -50,17 +50,17 @@
    "fit_rms_deg": 0.031
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13520e067987edda24d37",
+  "response_id": "resp_6ae13a89880d10186cd54722",
   "usage": {
-   "input_tokens": 3056,
+   "input_tokens": 3050,
    "input_tokens_details": {
     "cached_tokens": 0
    },
-   "output_tokens": 113,
+   "output_tokens": 188,
    "output_tokens_details": {
-    "reasoning_tokens": 24
+    "reasoning_tokens": 87
    },
-   "total_tokens": 3169
+   "total_tokens": 3238
   }
  },
  {
@@ -70,9 +70,9 @@
   "clips": null,
   "args": {
    "clip": "10",
-   "why": "Verify orientation and residual for Korkino before solving."
+   "why": "Confirm orientation and residual for Korkino camera."
   },
-  "why": "Verify orientation and residual for Korkino before solving.",
+  "why": "Confirm orientation and residual for Korkino camera.",
   "result": {
    "calibrated": true,
    "lens": "wide pinhole with radial k1",
@@ -82,17 +82,17 @@
    "fit_rms_deg": 0.065
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13522dc57ae8d36094514",
+  "response_id": "resp_6ae13a8b58e0c45de3e3408f",
   "usage": {
-   "input_tokens": 3199,
+   "input_tokens": 3192,
    "input_tokens_details": {
     "cached_tokens": 0
    },
-   "output_tokens": 67,
+   "output_tokens": 66,
    "output_tokens_details": {
     "reasoning_tokens": 0
    },
-   "total_tokens": 3266
+   "total_tokens": 3258
   }
  },
  {
@@ -101,9 +101,9 @@
   "clip": null,
   "clips": null,
   "args": {
-   "why": "Measure pair crossing angles to assess triangulation geometry."
+   "why": "Measure intersection angles to assess triangulation geometry."
   },
-  "why": "Measure pair crossing angles to assess triangulation geometry.",
+  "why": "Measure intersection angles to assess triangulation geometry.",
   "result": {
    "calibrated_clips": [
     "2",
@@ -135,17 +135,17 @@
    ]
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae135222eb22dc7bb694835",
+  "response_id": "resp_6ae13a8c2b1215ec3ec74f1d",
   "usage": {
-   "input_tokens": 3396,
+   "input_tokens": 3388,
    "input_tokens_details": {
-    "cached_tokens": 2801
+    "cached_tokens": 3185
    },
-   "output_tokens": 80,
+   "output_tokens": 129,
    "output_tokens_details": {
-    "reasoning_tokens": 6
+    "reasoning_tokens": 56
    },
-   "total_tokens": 3476
+   "total_tokens": 3517
   }
  },
  {
@@ -163,9 +163,9 @@
     "48",
     "10"
    ],
-   "why": "Test three-camera solution and check residuals and Monte Carlo speed range."
+   "why": "Test full three-camera solution and residuals."
   },
-  "why": "Test three-camera solution and check residuals and Monte Carlo speed range.",
+  "why": "Test full three-camera solution and residuals.",
   "result": {
    "clips": [
     "2",
@@ -262,17 +262,17 @@
    "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13525129c28db659340d5",
+  "response_id": "resp_6ae13a8f3d97b23bd08340d8",
   "usage": {
-   "input_tokens": 3543,
+   "input_tokens": 3534,
    "input_tokens_details": {
-    "cached_tokens": 3185
+    "cached_tokens": 0
    },
-   "output_tokens": 373,
+   "output_tokens": 273,
    "output_tokens_details": {
-    "reasoning_tokens": 268
+    "reasoning_tokens": 167
    },
-   "total_tokens": 3916
+   "total_tokens": 3807
   }
  },
  {
@@ -288,9 +288,9 @@
     "2",
     "10"
    ],
-   "why": "Compare Kamensk-Korkino pair geometry and residuals without Tyumen."
+   "why": "Test Kamensk-Korkino pair with wide intersection."
   },
-  "why": "Compare Kamensk-Korkino pair geometry and residuals without Tyumen.",
+  "why": "Test Kamensk-Korkino pair with wide intersection.",
   "result": {
    "clips": [
     "2",
@@ -384,17 +384,17 @@
    "verdict_rule": "natural if the 95% speed range lies above 11 km/s (Earth escape speed is 11.2 km/s); re-entry if it lies below 8.5 km/s and the passage is long (more than 20 s, or a slope under 10 degrees); inconclusive otherwise. The range is the Monte Carlo 2.5 to 97.5 percentiles when one exists, else the speed +/- 2 sigma with sigma at least 10% of the speed"
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13528333d4a5166cd4101",
+  "response_id": "resp_6ae13a9363c8b121319b4e3d",
   "usage": {
-   "input_tokens": 4259,
+   "input_tokens": 4245,
    "input_tokens_details": {
-    "cached_tokens": 3441
+    "cached_tokens": 3313
    },
-   "output_tokens": 402,
+   "output_tokens": 385,
    "output_tokens_details": {
-    "reasoning_tokens": 302
+    "reasoning_tokens": 281
    },
-   "total_tokens": 4661
+   "total_tokens": 4630
   }
  },
  {
@@ -405,10 +405,10 @@
   "args": {
    "clip": "48",
    "criterion": "near_parallel_pair",
-   "reason": "Tyumen parallels Kamensk-Uralskiy at 7.5 deg while Kamensk crosses Korkino at 66.3 deg.",
-   "why": "Tyumen and Kamensk planes are near-parallel so the better-placed one stays."
+   "reason": "Tyumen parallels Kamensk at 7.5 deg while Kamensk crosses Korkino at 66.3 deg versus 58.9 deg for Tyumen.",
+   "why": "Remove the weaker of the near-parallel pair before finalizing."
   },
-  "why": "Tyumen and Kamensk planes are near-parallel so the better-placed one stays.",
+  "why": "Remove the weaker of the near-parallel pair before finalizing.",
   "result": {
    "accepted": true,
    "dropped": "48",
@@ -424,20 +424,20 @@
     "threshold_deg": 10,
     "rule": "of two cameras whose planes cross under 10 deg, the one that crosses the rest more widely stays"
    },
-   "reason": "Tyumen parallels Kamensk-Uralskiy at 7.5 deg while Kamensk crosses Korkino at 66.3 deg."
+   "reason": "Tyumen parallels Kamensk at 7.5 deg while Kamensk crosses Korkino at 66.3 deg versus 58.9 deg for Tyumen."
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae1352d77da060488204cab",
+  "response_id": "resp_6ae13a971f2dfb00655f43df",
   "usage": {
-   "input_tokens": 4952,
+   "input_tokens": 4935,
    "input_tokens_details": {
-    "cached_tokens": 4209
+    "cached_tokens": 2929
    },
-   "output_tokens": 1197,
+   "output_tokens": 680,
    "output_tokens_details": {
-    "reasoning_tokens": 1037
+    "reasoning_tokens": 514
    },
-   "total_tokens": 6149
+   "total_tokens": 5615
   }
  },
  {
@@ -453,9 +453,9 @@
     "2",
     "10"
    ],
-   "why": "Submit the wide-pair Kamensk-Korkino solution after the accepted drop."
+   "why": "Submit Kamensk-Uralskiy plus Korkino as final wide-angle pair."
   },
-  "why": "Submit the wide-pair Kamensk-Korkino solution after the accepted drop.",
+  "why": "Submit Kamensk-Uralskiy plus Korkino as final wide-angle pair.",
   "result": {
    "accepted": true,
    "final": {
@@ -552,17 +552,17 @@
    }
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae1352f2eac089f6edc40d1",
+  "response_id": "resp_6ae13a9a62f7d46eddba4565",
   "usage": {
-   "input_tokens": 5237,
+   "input_tokens": 5227,
    "input_tokens_details": {
-    "cached_tokens": 0
+    "cached_tokens": 3441
    },
-   "output_tokens": 164,
+   "output_tokens": 238,
    "output_tokens_details": {
-    "reasoning_tokens": 54
+    "reasoning_tokens": 136
    },
-   "total_tokens": 5401
+   "total_tokens": 5465
   }
  },
  {
@@ -571,20 +571,20 @@
   "clip": null,
   "clips": null,
   "args": {
-   "why": "Write the Spanish-English report from the accepted Kamensk-Korkino solution."
+   "why": "Write bilingual report from the accepted two-camera solution."
   },
-  "why": "Write the Spanish-English report from the accepted Kamensk-Korkino solution.",
+  "why": "Write bilingual report from the accepted two-camera solution.",
   "result": {
    "reports": {
     "es": {
-     "figures": 24,
-     "traced": 24,
+     "figures": 29,
+     "traced": 29,
      "passed": true,
      "refused_drafts": 0
     },
     "en": {
-     "figures": 28,
-     "traced": 28,
+     "figures": 22,
+     "traced": 22,
      "passed": true,
      "refused_drafts": 0
     }
@@ -592,17 +592,17 @@
    "status": "awaiting_review"
   },
   "model": "muse-spark-1.3",
-  "response_id": "resp_6ae13532d62bb26357534122",
+  "response_id": "resp_6ae13a9c728051787d914f67",
   "usage": {
-   "input_tokens": 5944,
+   "input_tokens": 5935,
    "input_tokens_details": {
-    "cached_tokens": 3313
+    "cached_tokens": 5105
    },
-   "output_tokens": 551,
+   "output_tokens": 312,
    "output_tokens_details": {
-    "reasoning_tokens": 464
+    "reasoning_tokens": 232
    },
-   "total_tokens": 6495
+   "total_tokens": 6247
   }
  }
 ]

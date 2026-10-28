@@ -37,9 +37,16 @@
  },
  "resumed_from": "20261027T132419-a996",
  "notes": "Sent back by the reviewer, Diego Burbano. The signed report quoted the fit's formal speed error and called the geometry solid. Quote the speed's 95% range from the Monte Carlo instead, and say which results are least certain. Leaving a camera out now needs a criterion that the code measures.",
- "history": [],
+ "history": [
+  {
+   "at": "2026-10-27T18:57:44",
+   "review": "rejected",
+   "by": "Diego Burbano",
+   "notes": "El reporte en español atribuye la incertidumbre a una base corta. No lo es: las dos cámaras están lejos y sus planos se cruzan en ángulo amplio. Quiten esa frase."
+  }
+ ],
  "finished": "2026-10-27T18:35:29",
- "status": "awaiting_review",
+ "status": "rejected",
  "block": null,
  "final": {
   "clips": [

@@ -67,7 +67,7 @@ work may move on. That is how the case agent works (`src/testigos/agent.py`):
   fails if anything in `src/` reads them, and no agent input holds a value derived from them. `scripts/grade.py` grades a
   run afterwards.
 
-What the agent did on Chelyabinsk (run `20261027T183453-9c57`, 9 steps, US$ 0.07):
+What the agent did on Chelyabinsk (run `20261027T185758-cee8`, 9 steps, US$ 0.07):
 
 ```
 01  calibration   2         oriented        (02: 48 oriented, 03: 10 oriented)
@@ -77,7 +77,7 @@ What the agent did on Chelyabinsk (run `20261027T183453-9c57`, 9 steps, US$ 0.07
 07  drop_clip     48        near_parallel_pair, confirmed by the code: its planes cross Kamensk's at 7.5°,
                             and Kamensk crosses Korkino at 66.3° against Tyumen's 58.9°
 08  finalize      2+10      accepted by the code
-09  write_report            figures traced: es 24 of 24, en 28 of 28 -> awaiting review
+09  write_report            figures traced: es 29 of 29, en 22 of 22 -> awaiting review
 ```
 
 This is the case's second run. The first (`20261027T132419-a996`) chose the same cameras, but it dropped Tyumen citing a
@@ -85,8 +85,12 @@ rise in residuals that was below the code's own threshold, and the code then che
 from the tools. Its report quoted the fit's formal speed error, ±0.29 km/s, and called the geometry solid. Diego Burbano
 signed it off. A review that evening caught both. Drops now need a criterion the code measures, the verdict and the report
 read the Monte Carlo's range, and the run went back with the reviewer's notes (`python -m testigos resume … --notes`).
-Replayed with today's code, the first run's drop of Tyumen no longer goes through and its `finalize` is refused. The
-second run is waiting for the reviewer's signature.
+Replayed with today's code, the first run's drop of Tyumen no longer goes through and its `finalize` is refused.
+
+The second run (`20261027T183453-9c57`) passed every check, and its Spanish report still said the uncertainty came from
+a short baseline. That is false: the two cameras are 173 km apart and their planes cross at 66°. No figure was wrong,
+so no check could catch it; Diego Burbano did, and sent the report back (`review --reject --notes`). The third run is
+the one above, waiting for his signature. Each review is kept in the run record's history.
 
 ## Validation: Chelyabinsk, 15 February 2013
 
@@ -198,14 +202,14 @@ which is why the method uses each video's frame times and never its clock; in Ty
 orientation uses. Muse Spark 1.2 ran to its token cap on 4 of its 11 video reads; the retries recovered all of them.
 
 API spending is capped in code (`TESTIGOS_BUDGET_USD` a day, `TESTIGOS_TOTAL_BUDGET_USD` in total) and logged per call in
-`out/costs.jsonl`: US$ 2.53 for the whole project so far.
+`out/costs.jsonl`: US$ 2.60 for the whole project so far.
 
 ## Run it
 
 ```
 python3 -m venv .venv && .venv/bin/pip install -U pip && .venv/bin/pip install -e '.[test]'
 .venv/bin/python -m pytest                          # offline: geometry, report check, agent checks, replay
-.venv/bin/python -m testigos replay chelyabinsk-2013 20261027T183453-9c57 --echo   # the agent's tools again, no API key
+.venv/bin/python -m testigos replay chelyabinsk-2013 20261027T185758-cee8 --echo   # the agent's tools again, no API key
 .venv/bin/python scripts/grade.py chelyabinsk-2013  # grades the newest run against validation/
 .venv/bin/python scripts/triangulate.py 2 10        # the two-camera solution and the CBET gate
 .venv/bin/python scripts/holdout.py                 # Tyumen as a held-out witness

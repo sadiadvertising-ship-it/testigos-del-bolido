@@ -1,11 +1,3 @@
 Veredicto, escrito por el código: meteoroide natural. La velocidad es 19,6 km/s, y su rango del 95 % (Montecarlo de 500 sorteos), de 12,1 a 23,7 km/s, queda por encima de la velocidad de escape de la Tierra, 11,2 km/s.
 
-Informe del evento luminoso del 15 de febrero de 2013, visto a las 09:20 hora de Ekaterimburgo (UTC+6), correspondiente al 15 de febrero a las 03:20:20 UTC.
-
-Existen vídeos de testigos en Kamensk-Uralskiy, Beloretsk, Tyumen, Chebarkul, Ekaterimburgo, Magnitogorsk, Plast y Korkino; no falta ningún vídeo de la lista.
-
-Lo sólido es la trayectoria este-oeste durante 13,7 segundos, reconstruida con Kamensk-Uralskiy y Korkino, que se cruzan con un ángulo de 66,3 grados. Empezó sobre 54,427 N, 64,101 E, a 89,5 kilómetros y terminó sobre 54,914 N, 60,615 E, a 11,4 kilómetros, con rumbo de 282,12 grados y pendiente de 17,48 grados.
-
-La velocidad media fue de 19,65 kilómetros por segundo, pero lo prudente es el intervalo del 95 %: de 12,11 a 23,72 kilómetros por segundo según 500 simulaciones.
-
-Es incierto el punto exacto de inicio y fin por la corta base. Falta orientación de las cámaras de Beloretsk, Chebarkul, Ekaterimburgo, Magnitogorsk y Plast, y se descartó Tyumen por ser casi paralela a Kamensk-Uralskiy.
+Informe del evento del 2013-02-15 09:20 (UTC+6, Yekaterinburg time), correspondiente a 2013-02-15T03:20:20Z en UTC. Existe vídeo testigo de Kamensk-Uralskiy, Beloretsk, Tyumen, Chebarkul, Yekaterinburg, Magnitogorsk, Plast y Korkino; ningún vídeo de la lista falta. Solo se pudo orientar la vista de Kamensk-Uralskiy, Tyumen y Korkino; en Beloretsk, Chebarkul, Yekaterinburg, Magnitogorsk y Plast ninguna cámara pudo orientarse. Lo sólido es la solución final con Kamensk-Uralskiy y Korkino, cuyo cruce es de 66.3 grados, seguida durante 13.7 segundos, desde 54.427 N, 64.101 E, 89.5 kilómetros hasta 54.914 N, 60.615 E, 11.4 kilómetros, con acimut de 282.12 grados y pendiente de 17.48 grados. La velocidad obtenida es de 19.65 kilómetros por segundo, con rango del 95% entre 12.11 y 23.72 kilómetros por segundo según Monte Carlo con 500 simulaciones. Lo incierto es la altura inicial, con mediana de 81.93 kilómetros y rango amplio entre 58.05 y 116.59 kilómetros. Falta incluir a Tyumen, descartada por paralelismo cercano con Kamensk-Uralskiy, y faltan orientaciones en otros sitios.

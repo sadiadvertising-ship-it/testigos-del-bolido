@@ -1,0 +1,71 @@
+{
+ "run_id": "20261027T185758-cee8",
+ "run_status": "awaiting_review",
+ "cameras": [
+  "2",
+  "10"
+ ],
+ "graded_with": "validation/truth.json",
+ "passed": "4 of 5",
+ "q_max_deg": 66.3,
+ "warnings": [],
+ "residual_rms_deg": {
+  "2": 0.687,
+  "10": 0.824
+ },
+ "azimuth_deg": [
+  282.12,
+  279.5
+ ],
+ "slope_deg": [
+  17.48,
+  16.5
+ ],
+ "speed_kms": [
+  19.65,
+  17.5
+ ],
+ "speed_sigma_kms": 0.29,
+ "station_speeds_kms": {
+  "2": 19.65,
+  "10": 19.07
+ },
+ "flare_point_off_our_line_km": 4.2,
+ "our_height_near_flare_km": [
+  29.16,
+  31.73
+ ],
+ "cbet_end_point_off_our_line_km": 3.68,
+ "our_last_point_vs_cbet_end_km": 3.69,
+ "begin": [
+  54.4267,
+  64.1009,
+  89.49
+ ],
+ "end": [
+  54.9136,
+  60.6153,
+  11.42
+ ],
+ "gate": {
+  "azimuth": true,
+  "slope": true,
+  "flare_height": true,
+  "end_point": true,
+  "speed": false
+ },
+ "refereed_added_after_the_run": [
+  {
+   "who": "Borovi\u010dka et al. 2013, Nature 503, 235",
+   "v_kms": 19.03,
+   "speed_within_1_5_kms": true,
+   "slope_end_deg": 17.0,
+   "slope_within_3_deg": true
+  },
+  {
+   "who": "Popova et al. 2013, Science 342, 1069",
+   "v_kms": 19.16,
+   "speed_within_1_5_kms": true
+  }
+ ]
+}
