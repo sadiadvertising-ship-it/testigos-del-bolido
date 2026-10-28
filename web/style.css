@@ -112,14 +112,15 @@ details[open] summary { margin-bottom: 8px; }
 footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: calc(12px * var(--k)); }
 footer p { margin-bottom: 6px; }
 
+/* On a desktop, placeHud() in app.js moves the bar clear of the map key and sets its max-width; the readout wraps inside it. */
 #hud {
   position: fixed; bottom: 26px; left: calc(var(--panel-w) + 24px + (100vw - var(--panel-w) - 24px) / 2); transform: translateX(-50%);
   display: flex; align-items: center; gap: 12px; padding: 5px 14px 5px 5px; background: var(--panel); border: 1px solid var(--line);
-  border-radius: 999px; font-size: 13px; color: var(--ink-2); white-space: nowrap;
+  border-radius: 999px; font-size: 13px; color: var(--ink-2); width: max-content;
 }
 #hud[hidden] { display: none; }
 body.bare #hud { left: 50%; }
-#play { font: 600 13px var(--sans); color: #06101e; background: var(--accent); border: 0; border-radius: 999px; padding: 7px 16px; cursor: pointer; }
+#play { flex: none; font: 600 13px var(--sans); color: #06101e; background: var(--accent); border: 0; border-radius: 999px; padding: 7px 16px; cursor: pointer; }
 #readout { min-width: 13em; }
 body.video #hud { gap: 16px; padding: 7px 22px 7px 7px; font-size: 20px; }
 body.video #play { font-size: 20px; padding: 10px 24px; }
@@ -154,7 +155,8 @@ body.video #play { font-size: 20px; padding: 10px 24px; }
 @media (max-width: 760px) {
   :root { --panel-w: 100vw; }
   #panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 50vh; border-radius: 14px 14px 0 0; padding: 14px 16px 20px; }
-  #hud { left: 50%; bottom: calc(50vh + 10px); }
+  #hud { left: 50%; bottom: calc(50vh + 10px); max-width: calc(100vw - 32px); }
+  #readout { min-width: 0; }
   body.bare #hud { bottom: 26px; }
   #legend { top: 10px; left: 10px; right: auto; bottom: auto; width: auto; max-width: 230px; padding: 7px 10px; font-size: 12px; }
 }
