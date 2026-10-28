@@ -1,0 +1,160 @@
+{
+ "note": "Tyumen's drop, measured by the agent's own code.\n\nThe case is built as the runs that solved Chelyabinsk (a996, 9c57 and cee8) had it: Kamensk-Uralskiy (2), Tyumen (48)\nand Korkino (10) oriented, nothing dropped. For each criterion in agent.DROP_CRITERIA, a fresh case calls\ndrop_clip('48', criterion). The code measures the criterion and accepts or refuses the drop.\nThen run 20261027T132419-a996 is replayed offline with agent.replay. That run dropped Tyumen without naming a\ncriterion. What today's code returns for its drop_clip and finalize steps is kept beside what the run recorded.\nEvery case is set to replaying, so no final_solution.json, report or run record is written. The script checks that no\nfile in events/ or out/ changed.",
+ "clip": "48",
+ "oriented": [
+  "2",
+  "48",
+  "10"
+ ],
+ "dropped": {},
+ "planes": [
+  {
+   "pair": [
+    "2",
+    "10"
+   ],
+   "q_deg": 66.3
+  },
+  {
+   "pair": [
+    "48",
+    "10"
+   ],
+   "q_deg": 58.9
+  },
+  {
+   "pair": [
+    "2",
+    "48"
+   ],
+   "q_deg": 7.5
+  }
+ ],
+ "criteria": {
+  "near_parallel_pair": {
+   "accepted": true,
+   "measured": {
+    "near_parallel_with": {
+     "2": {
+      "q_deg_with_it": 7.5,
+      "its_widest_q_deg": 66.3,
+      "this_widest_q_deg": 58.9
+     }
+    },
+    "threshold_deg": 10,
+    "rule": "of two cameras whose planes cross under 10 deg, the one that crosses the rest more widely stays"
+   }
+  },
+  "narrow_planes": {
+   "accepted": false,
+   "measured": {
+    "q_deg_with_kept": {
+     "2": 7.5,
+     "10": 58.9
+    },
+    "threshold_deg": 10
+   },
+   "problems": [
+    "narrow_planes does not hold for camera 48: it stays in the solution"
+   ]
+  },
+  "raises_residuals": {
+   "accepted": false,
+   "measured": {
+    "residual_rms_deg_with_and_without": {
+     "2": [
+      0.715,
+      0.687
+     ],
+     "10": [
+      0.931,
+      0.824
+     ]
+    },
+    "threshold": "more than 25% and 0.1 deg on every other camera"
+   },
+   "problems": [
+    "raises_residuals does not hold for camera 48: it stays in the solution"
+   ],
+   "rise_with_it": {
+    "2": {
+     "deg": 0.028,
+     "percent": 4.1
+    },
+    "10": {
+     "deg": 0.107,
+     "percent": 13.0
+    }
+   }
+  },
+  "not_oriented": {
+   "accepted": false,
+   "measured": {
+    "note": "camera 48 is oriented"
+   },
+   "problems": [
+    "not_oriented does not hold for camera 48: it stays in the solution"
+   ]
+  }
+ },
+ "replay": {
+  "run_id": "20261027T132419-a996",
+  "steps": 11,
+  "steps_that_differ_today": [
+   "1 read_witness",
+   "6 solve",
+   "7 solve",
+   "8 solve",
+   "9 drop_clip",
+   "10 finalize",
+   "11 write_report"
+  ],
+  "drop_clip": {
+   "step": 9,
+   "args": {
+    "clip": "48",
+    "reason": "Pair Q 7.5 deg with clip 2 is under 10 deg and adding it raises residuals from 0.687 to 0.715 deg (clip 2) and 0.824 to 0.931 deg (clip 10)"
+   },
+   "recorded": {
+    "dropped": "48",
+    "reason": "Pair Q 7.5 deg with clip 2 is under 10 deg and adding it raises residuals from 0.687 to 0.715 deg (clip 2) and 0.824 to 0.931 deg (clip 10)"
+   },
+   "today": {
+    "error": "missing arguments: ['criterion']"
+   }
+  },
+  "finalize": {
+   "step": 10,
+   "args": {
+    "clips": [
+     "2",
+     "10"
+    ]
+   },
+   "recorded": {
+    "accepted": true,
+    "final_clips": [
+     "2",
+     "10"
+    ]
+   },
+   "today": {
+    "accepted": false,
+    "problems": [
+     "camera 48 is oriented but left out without an accepted drop_clip"
+    ],
+    "refusals": 1,
+    "escalated": false
+   }
+  }
+ },
+ "files_changed_under_events_and_out": [],
+ "summary": [
+  "Of the 4 drop criteria, the code accepts near_parallel_pair for Tyumen.",
+  "near_parallel_pair holds: Tyumen's planes cross Kamensk-Uralskiy's at 7.5 degrees. Kamensk-Uralskiy's planes cross Korkino's at 66.3 degrees, and Tyumen's cross Korkino's at 58.9.",
+  "narrow_planes does not hold: Tyumen's planes cross Kamensk-Uralskiy's at 7.5 degrees and Korkino's at 58.9 degrees, and the criterion asks under 10 degrees with every kept camera.",
+  "raises_residuals does not hold: with Tyumen, Kamensk-Uralskiy's residual goes from 0.687 to 0.715 degrees (4.1 percent) and Korkino's residual goes from 0.824 to 0.931 degrees (13.0 percent). The code's threshold is \"more than 25% and 0.1 deg on every other camera\".",
+  "not_oriented does not hold: camera 48 is oriented.",
+  "Run 20261027T132419-a996 dropped Tyumen without naming a criterion. Replayed with today's code, its drop_clip (step 9) returns \"missing arguments: ['criterion']\", and its finalize (step 10) is refused: camera 48 is oriented but left out without an accepted drop_clip."
+ ]
+}

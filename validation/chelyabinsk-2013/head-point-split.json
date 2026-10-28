@@ -1,0 +1,2569 @@
+{
+ "note": "Kamensk-Uralskiy's head point: where its definition changes, and what each side gives with Korkino.\n\ntrack.head_point measures the fireball inside SAM's box. Its brightest pixels are those at or above both the box's\n99th percentile and 90 percent of its peak. When they spread at least 3 times farther along their long axis than across\nit, the fireball is a streak, and its head is the mean position of the leading tenth of them along the motion.\nOtherwise it is a round glow, and its head is the mean position of all of them.\nThe video frames are not in the repository. out/sam/chelyabinsk-2013-2.json keeps each frame's SAM box and head point,\nbut not which of the two the code used. The box shows where the fireball's shape in the image changes. The split frame\nis the first frame whose box is not longer along the motion than across it. The motion is the image direction from the\nfirst to the last box centre (track.motion_direction).\nKamensk-Uralskiy's points before the split frame, and from it on, are each solved with Korkino's points through\ntestigos.solve, with the stations the agent builds (Case._stations). The README's figures are compared with each side.\nEvery split frame within 20 tracked frames of the change is also tried, to find the ones that give the README's figures.",
+ "head_point_rule": {
+  "streak_ratio": 3.0,
+  "lead_frac": 0.1,
+  "source": "src/testigos/track.py, head_point"
+ },
+ "split_rule": "the first frame whose SAM box is not longer along the motion than across it",
+ "motion_direction_px": [
+  0.9636,
+  0.2675
+ ],
+ "split_frame": 304,
+ "split_t_s": 10.133,
+ "last_box_before": {
+  "frame": 303,
+  "t_s": 10.1,
+  "box_px": [
+   130,
+   36,
+   493,
+   149
+  ],
+  "length_along_motion_px": 380,
+  "length_across_px": 206
+ },
+ "first_box_after": {
+  "frame": 304,
+  "t_s": 10.133,
+  "box_px": [
+   430,
+   69,
+   497,
+   149
+  ],
+  "length_along_motion_px": 86,
+  "length_across_px": 95
+ },
+ "box_shape_segments": [
+  {
+   "first": 103,
+   "last": 303,
+   "frames": 201,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 304,
+   "last": 323,
+   "frames": 20,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 324,
+   "last": 324,
+   "frames": 1,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 325,
+   "last": 325,
+   "frames": 1,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 326,
+   "last": 330,
+   "frames": 5,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 331,
+   "last": 398,
+   "frames": 66,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 399,
+   "last": 408,
+   "frames": 10,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 409,
+   "last": 413,
+   "frames": 5,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 414,
+   "last": 418,
+   "frames": 5,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 419,
+   "last": 425,
+   "frames": 7,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 426,
+   "last": 467,
+   "frames": 42,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 468,
+   "last": 470,
+   "frames": 3,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 471,
+   "last": 472,
+   "frames": 2,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 473,
+   "last": 473,
+   "frames": 1,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 474,
+   "last": 477,
+   "frames": 4,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 478,
+   "last": 484,
+   "frames": 7,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 485,
+   "last": 492,
+   "frames": 8,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 493,
+   "last": 495,
+   "frames": 3,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 496,
+   "last": 498,
+   "frames": 3,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 499,
+   "last": 500,
+   "frames": 2,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 501,
+   "last": 502,
+   "frames": 2,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 503,
+   "last": 505,
+   "frames": 3,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 506,
+   "last": 506,
+   "frames": 1,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 507,
+   "last": 508,
+   "frames": 2,
+   "longer_along_the_motion": false
+  },
+  {
+   "first": 509,
+   "last": 509,
+   "frames": 1,
+   "longer_along_the_motion": true
+  },
+  {
+   "first": 510,
+   "last": 515,
+   "frames": 5,
+   "longer_along_the_motion": false
+  }
+ ],
+ "head_point_in_its_box": {
+  "meaning": "where the head point sits in its box along the motion: 0 at the box centre, 1 at its leading end",
+  "median_before": 0.64,
+  "median_from_the_split": 0.17,
+  "median_frames_304_to_323": 0.32,
+  "median_per_block_of_20_frames": [
+   [
+    103,
+    122,
+    0.71
+   ],
+   [
+    123,
+    142,
+    0.85
+   ],
+   [
+    143,
+    162,
+    0.93
+   ],
+   [
+    163,
+    182,
+    0.89
+   ],
+   [
+    183,
+    202,
+    0.56
+   ],
+   [
+    203,
+    222,
+    0.39
+   ],
+   [
+    223,
+    242,
+    0.41
+   ],
+   [
+    243,
+    262,
+    0.43
+   ],
+   [
+    263,
+    282,
+    0.6
+   ],
+   [
+    283,
+    302,
+    0.7
+   ],
+   [
+    303,
+    322,
+    0.33
+   ],
+   [
+    323,
+    342,
+    0.47
+   ],
+   [
+    343,
+    363,
+    0.11
+   ],
+   [
+    364,
+    384,
+    0.0
+   ],
+   [
+    385,
+    404,
+    0.12
+   ],
+   [
+    405,
+    424,
+    0.44
+   ],
+   [
+    425,
+    444,
+    0.78
+   ],
+   [
+    445,
+    464,
+    0.73
+   ],
+   [
+    465,
+    484,
+    0.08
+   ],
+   [
+    485,
+    504,
+    0.1
+   ],
+   [
+    505,
+    515,
+    -0.02
+   ]
+  ],
+  "per_frame": [
+   [
+    103,
+    0.66
+   ],
+   [
+    104,
+    0.66
+   ],
+   [
+    105,
+    0.68
+   ],
+   [
+    106,
+    0.61
+   ],
+   [
+    107,
+    0.59
+   ],
+   [
+    108,
+    0.69
+   ],
+   [
+    109,
+    0.72
+   ],
+   [
+    110,
+    0.66
+   ],
+   [
+    111,
+    0.73
+   ],
+   [
+    112,
+    0.75
+   ],
+   [
+    113,
+    0.75
+   ],
+   [
+    114,
+    0.66
+   ],
+   [
+    115,
+    0.66
+   ],
+   [
+    116,
+    0.81
+   ],
+   [
+    117,
+    0.77
+   ],
+   [
+    118,
+    0.71
+   ],
+   [
+    119,
+    0.87
+   ],
+   [
+    120,
+    0.87
+   ],
+   [
+    121,
+    0.83
+   ],
+   [
+    122,
+    0.83
+   ],
+   [
+    123,
+    0.79
+   ],
+   [
+    124,
+    0.88
+   ],
+   [
+    125,
+    0.85
+   ],
+   [
+    126,
+    0.85
+   ],
+   [
+    127,
+    0.87
+   ],
+   [
+    128,
+    0.89
+   ],
+   [
+    129,
+    0.84
+   ],
+   [
+    130,
+    0.79
+   ],
+   [
+    131,
+    0.84
+   ],
+   [
+    132,
+    0.87
+   ],
+   [
+    133,
+    0.84
+   ],
+   [
+    134,
+    0.87
+   ],
+   [
+    135,
+    0.89
+   ],
+   [
+    136,
+    0.85
+   ],
+   [
+    137,
+    0.84
+   ],
+   [
+    138,
+    0.86
+   ],
+   [
+    139,
+    0.88
+   ],
+   [
+    140,
+    0.87
+   ],
+   [
+    141,
+    0.85
+   ],
+   [
+    142,
+    0.9
+   ],
+   [
+    143,
+    0.92
+   ],
+   [
+    144,
+    0.92
+   ],
+   [
+    145,
+    0.92
+   ],
+   [
+    146,
+    0.94
+   ],
+   [
+    147,
+    0.93
+   ],
+   [
+    148,
+    0.93
+   ],
+   [
+    149,
+    0.94
+   ],
+   [
+    150,
+    0.93
+   ],
+   [
+    151,
+    0.93
+   ],
+   [
+    152,
+    0.91
+   ],
+   [
+    153,
+    0.92
+   ],
+   [
+    154,
+    0.9
+   ],
+   [
+    155,
+    0.93
+   ],
+   [
+    156,
+    0.88
+   ],
+   [
+    157,
+    0.94
+   ],
+   [
+    158,
+    0.92
+   ],
+   [
+    159,
+    0.9
+   ],
+   [
+    160,
+    0.93
+   ],
+   [
+    161,
+    0.91
+   ],
+   [
+    162,
+    0.94
+   ],
+   [
+    163,
+    0.92
+   ],
+   [
+    164,
+    0.93
+   ],
+   [
+    165,
+    0.91
+   ],
+   [
+    166,
+    0.9
+   ],
+   [
+    167,
+    0.93
+   ],
+   [
+    168,
+    0.91
+   ],
+   [
+    169,
+    0.9
+   ],
+   [
+    170,
+    0.89
+   ],
+   [
+    171,
+    0.88
+   ],
+   [
+    172,
+    0.88
+   ],
+   [
+    173,
+    0.9
+   ],
+   [
+    174,
+    0.9
+   ],
+   [
+    175,
+    0.69
+   ],
+   [
+    176,
+    0.58
+   ],
+   [
+    177,
+    0.76
+   ],
+   [
+    178,
+    0.52
+   ],
+   [
+    179,
+    0.35
+   ],
+   [
+    180,
+    0.52
+   ],
+   [
+    181,
+    0.44
+   ],
+   [
+    182,
+    0.48
+   ],
+   [
+    183,
+    0.58
+   ],
+   [
+    184,
+    0.35
+   ],
+   [
+    185,
+    0.63
+   ],
+   [
+    186,
+    0.81
+   ],
+   [
+    187,
+    0.61
+   ],
+   [
+    188,
+    0.69
+   ],
+   [
+    189,
+    0.69
+   ],
+   [
+    190,
+    0.66
+   ],
+   [
+    191,
+    0.63
+   ],
+   [
+    192,
+    0.94
+   ],
+   [
+    193,
+    0.6
+   ],
+   [
+    194,
+    0.41
+   ],
+   [
+    195,
+    0.47
+   ],
+   [
+    196,
+    0.52
+   ],
+   [
+    197,
+    0.53
+   ],
+   [
+    198,
+    0.55
+   ],
+   [
+    199,
+    0.47
+   ],
+   [
+    200,
+    0.52
+   ],
+   [
+    201,
+    0.42
+   ],
+   [
+    202,
+    0.39
+   ],
+   [
+    203,
+    0.41
+   ],
+   [
+    204,
+    0.45
+   ],
+   [
+    205,
+    0.47
+   ],
+   [
+    206,
+    0.45
+   ],
+   [
+    207,
+    0.43
+   ],
+   [
+    208,
+    0.38
+   ],
+   [
+    209,
+    0.39
+   ],
+   [
+    210,
+    0.35
+   ],
+   [
+    211,
+    0.35
+   ],
+   [
+    212,
+    0.36
+   ],
+   [
+    213,
+    0.37
+   ],
+   [
+    214,
+    0.35
+   ],
+   [
+    215,
+    0.33
+   ],
+   [
+    216,
+    0.3
+   ],
+   [
+    217,
+    0.31
+   ],
+   [
+    218,
+    0.34
+   ],
+   [
+    219,
+    0.41
+   ],
+   [
+    220,
+    0.41
+   ],
+   [
+    221,
+    0.45
+   ],
+   [
+    222,
+    0.41
+   ],
+   [
+    223,
+    0.38
+   ],
+   [
+    224,
+    0.33
+   ],
+   [
+    225,
+    0.34
+   ],
+   [
+    226,
+    0.35
+   ],
+   [
+    227,
+    0.37
+   ],
+   [
+    228,
+    0.36
+   ],
+   [
+    229,
+    0.46
+   ],
+   [
+    230,
+    0.45
+   ],
+   [
+    231,
+    0.41
+   ],
+   [
+    232,
+    0.4
+   ],
+   [
+    233,
+    0.42
+   ],
+   [
+    234,
+    0.38
+   ],
+   [
+    235,
+    0.42
+   ],
+   [
+    236,
+    0.43
+   ],
+   [
+    237,
+    0.42
+   ],
+   [
+    238,
+    0.43
+   ],
+   [
+    239,
+    0.44
+   ],
+   [
+    240,
+    0.43
+   ],
+   [
+    241,
+    0.41
+   ],
+   [
+    242,
+    0.42
+   ],
+   [
+    243,
+    0.42
+   ],
+   [
+    244,
+    0.44
+   ],
+   [
+    245,
+    0.43
+   ],
+   [
+    246,
+    0.47
+   ],
+   [
+    247,
+    0.38
+   ],
+   [
+    248,
+    0.42
+   ],
+   [
+    249,
+    0.42
+   ],
+   [
+    250,
+    0.52
+   ],
+   [
+    251,
+    0.51
+   ],
+   [
+    252,
+    0.43
+   ],
+   [
+    253,
+    0.4
+   ],
+   [
+    254,
+    0.43
+   ],
+   [
+    255,
+    0.41
+   ],
+   [
+    256,
+    0.41
+   ],
+   [
+    257,
+    0.44
+   ],
+   [
+    258,
+    0.45
+   ],
+   [
+    259,
+    0.45
+   ],
+   [
+    260,
+    0.48
+   ],
+   [
+    261,
+    0.49
+   ],
+   [
+    262,
+    0.48
+   ],
+   [
+    263,
+    0.5
+   ],
+   [
+    264,
+    0.5
+   ],
+   [
+    265,
+    0.5
+   ],
+   [
+    266,
+    0.53
+   ],
+   [
+    267,
+    0.49
+   ],
+   [
+    268,
+    0.51
+   ],
+   [
+    269,
+    0.51
+   ],
+   [
+    270,
+    0.62
+   ],
+   [
+    271,
+    0.64
+   ],
+   [
+    272,
+    0.61
+   ],
+   [
+    273,
+    0.62
+   ],
+   [
+    274,
+    0.56
+   ],
+   [
+    275,
+    0.59
+   ],
+   [
+    276,
+    0.65
+   ],
+   [
+    277,
+    0.62
+   ],
+   [
+    278,
+    0.65
+   ],
+   [
+    279,
+    0.58
+   ],
+   [
+    280,
+    0.62
+   ],
+   [
+    281,
+    0.66
+   ],
+   [
+    282,
+    0.61
+   ],
+   [
+    283,
+    0.69
+   ],
+   [
+    284,
+    0.65
+   ],
+   [
+    285,
+    0.7
+   ],
+   [
+    286,
+    0.7
+   ],
+   [
+    287,
+    0.7
+   ],
+   [
+    288,
+    0.71
+   ],
+   [
+    289,
+    0.63
+   ],
+   [
+    290,
+    0.7
+   ],
+   [
+    291,
+    0.66
+   ],
+   [
+    292,
+    0.64
+   ],
+   [
+    293,
+    0.66
+   ],
+   [
+    294,
+    0.73
+   ],
+   [
+    295,
+    0.77
+   ],
+   [
+    296,
+    0.75
+   ],
+   [
+    297,
+    0.8
+   ],
+   [
+    298,
+    0.76
+   ],
+   [
+    299,
+    0.79
+   ],
+   [
+    300,
+    0.84
+   ],
+   [
+    301,
+    0.85
+   ],
+   [
+    302,
+    0.84
+   ],
+   [
+    303,
+    0.9
+   ],
+   [
+    304,
+    0.34
+   ],
+   [
+    305,
+    0.2
+   ],
+   [
+    306,
+    0.11
+   ],
+   [
+    307,
+    0.25
+   ],
+   [
+    308,
+    0.23
+   ],
+   [
+    309,
+    0.27
+   ],
+   [
+    310,
+    0.35
+   ],
+   [
+    311,
+    0.3
+   ],
+   [
+    312,
+    0.37
+   ],
+   [
+    313,
+    0.34
+   ],
+   [
+    314,
+    0.32
+   ],
+   [
+    315,
+    0.39
+   ],
+   [
+    316,
+    0.38
+   ],
+   [
+    317,
+    0.28
+   ],
+   [
+    318,
+    0.36
+   ],
+   [
+    319,
+    0.39
+   ],
+   [
+    320,
+    0.31
+   ],
+   [
+    321,
+    0.27
+   ],
+   [
+    322,
+    0.33
+   ],
+   [
+    323,
+    0.31
+   ],
+   [
+    324,
+    0.33
+   ],
+   [
+    325,
+    0.39
+   ],
+   [
+    326,
+    0.53
+   ],
+   [
+    327,
+    0.53
+   ],
+   [
+    328,
+    0.59
+   ],
+   [
+    329,
+    0.71
+   ],
+   [
+    330,
+    0.56
+   ],
+   [
+    331,
+    0.49
+   ],
+   [
+    332,
+    0.55
+   ],
+   [
+    333,
+    0.68
+   ],
+   [
+    334,
+    0.46
+   ],
+   [
+    335,
+    0.49
+   ],
+   [
+    336,
+    0.41
+   ],
+   [
+    337,
+    0.63
+   ],
+   [
+    338,
+    0.45
+   ],
+   [
+    339,
+    0.39
+   ],
+   [
+    340,
+    0.44
+   ],
+   [
+    341,
+    0.25
+   ],
+   [
+    342,
+    0.32
+   ],
+   [
+    343,
+    0.29
+   ],
+   [
+    344,
+    0.31
+   ],
+   [
+    345,
+    0.4
+   ],
+   [
+    346,
+    0.11
+   ],
+   [
+    347,
+    0.07
+   ],
+   [
+    348,
+    0.1
+   ],
+   [
+    349,
+    0.22
+   ],
+   [
+    350,
+    0.33
+   ],
+   [
+    351,
+    0.23
+   ],
+   [
+    352,
+    0.13
+   ],
+   [
+    353,
+    0.13
+   ],
+   [
+    354,
+    -0.02
+   ],
+   [
+    355,
+    0.09
+   ],
+   [
+    357,
+    -0.05
+   ],
+   [
+    358,
+    0.1
+   ],
+   [
+    359,
+    0.05
+   ],
+   [
+    360,
+    0.13
+   ],
+   [
+    361,
+    -0.05
+   ],
+   [
+    362,
+    -0.11
+   ],
+   [
+    363,
+    -0.08
+   ],
+   [
+    364,
+    -0.05
+   ],
+   [
+    365,
+    0.1
+   ],
+   [
+    366,
+    0.13
+   ],
+   [
+    367,
+    0.08
+   ],
+   [
+    368,
+    0.11
+   ],
+   [
+    370,
+    -0.12
+   ],
+   [
+    371,
+    -0.04
+   ],
+   [
+    372,
+    -0.07
+   ],
+   [
+    373,
+    0.07
+   ],
+   [
+    374,
+    0.05
+   ],
+   [
+    375,
+    -0.03
+   ],
+   [
+    376,
+    -0.02
+   ],
+   [
+    377,
+    -0.07
+   ],
+   [
+    378,
+    -0.03
+   ],
+   [
+    379,
+    0.0
+   ],
+   [
+    380,
+    0.0
+   ],
+   [
+    381,
+    0.11
+   ],
+   [
+    382,
+    0.13
+   ],
+   [
+    383,
+    0.03
+   ],
+   [
+    384,
+    -0.02
+   ],
+   [
+    385,
+    0.01
+   ],
+   [
+    386,
+    0.11
+   ],
+   [
+    387,
+    0.01
+   ],
+   [
+    388,
+    0.15
+   ],
+   [
+    389,
+    0.09
+   ],
+   [
+    390,
+    0.21
+   ],
+   [
+    391,
+    0.17
+   ],
+   [
+    392,
+    0.16
+   ],
+   [
+    393,
+    0.11
+   ],
+   [
+    394,
+    0.11
+   ],
+   [
+    395,
+    0.02
+   ],
+   [
+    396,
+    0.02
+   ],
+   [
+    397,
+    0.13
+   ],
+   [
+    398,
+    0.02
+   ],
+   [
+    399,
+    -0.33
+   ],
+   [
+    400,
+    0.57
+   ],
+   [
+    401,
+    0.54
+   ],
+   [
+    402,
+    0.69
+   ],
+   [
+    403,
+    0.79
+   ],
+   [
+    404,
+    0.79
+   ],
+   [
+    405,
+    0.79
+   ],
+   [
+    406,
+    0.83
+   ],
+   [
+    407,
+    0.71
+   ],
+   [
+    408,
+    0.64
+   ],
+   [
+    409,
+    -0.07
+   ],
+   [
+    410,
+    -0.43
+   ],
+   [
+    411,
+    0.59
+   ],
+   [
+    412,
+    0.34
+   ],
+   [
+    413,
+    0.42
+   ],
+   [
+    414,
+    0.45
+   ],
+   [
+    415,
+    0.46
+   ],
+   [
+    416,
+    -0.87
+   ],
+   [
+    417,
+    -0.87
+   ],
+   [
+    418,
+    -0.04
+   ],
+   [
+    419,
+    -0.06
+   ],
+   [
+    420,
+    0.58
+   ],
+   [
+    421,
+    0.56
+   ],
+   [
+    422,
+    0.64
+   ],
+   [
+    423,
+    0.43
+   ],
+   [
+    424,
+    -0.33
+   ],
+   [
+    425,
+    -0.35
+   ],
+   [
+    426,
+    -0.84
+   ],
+   [
+    427,
+    -0.83
+   ],
+   [
+    428,
+    -0.85
+   ],
+   [
+    429,
+    -0.83
+   ],
+   [
+    430,
+    0.26
+   ],
+   [
+    431,
+    -0.17
+   ],
+   [
+    432,
+    -0.19
+   ],
+   [
+    433,
+    0.71
+   ],
+   [
+    434,
+    0.75
+   ],
+   [
+    435,
+    0.88
+   ],
+   [
+    436,
+    0.8
+   ],
+   [
+    437,
+    0.92
+   ],
+   [
+    438,
+    0.89
+   ],
+   [
+    439,
+    0.91
+   ],
+   [
+    440,
+    0.89
+   ],
+   [
+    441,
+    0.92
+   ],
+   [
+    442,
+    0.92
+   ],
+   [
+    443,
+    0.93
+   ],
+   [
+    444,
+    0.92
+   ],
+   [
+    445,
+    0.92
+   ],
+   [
+    446,
+    0.92
+   ],
+   [
+    447,
+    0.93
+   ],
+   [
+    448,
+    0.92
+   ],
+   [
+    449,
+    0.94
+   ],
+   [
+    450,
+    0.92
+   ],
+   [
+    451,
+    0.79
+   ],
+   [
+    452,
+    0.74
+   ],
+   [
+    453,
+    0.74
+   ],
+   [
+    454,
+    0.72
+   ],
+   [
+    455,
+    0.76
+   ],
+   [
+    456,
+    0.71
+   ],
+   [
+    457,
+    0.68
+   ],
+   [
+    458,
+    0.65
+   ],
+   [
+    459,
+    0.64
+   ],
+   [
+    460,
+    0.59
+   ],
+   [
+    461,
+    0.66
+   ],
+   [
+    462,
+    0.13
+   ],
+   [
+    463,
+    0.32
+   ],
+   [
+    464,
+    0.6
+   ],
+   [
+    465,
+    0.22
+   ],
+   [
+    466,
+    0.13
+   ],
+   [
+    467,
+    0.13
+   ],
+   [
+    468,
+    -0.11
+   ],
+   [
+    469,
+    0.02
+   ],
+   [
+    470,
+    0.12
+   ],
+   [
+    471,
+    0.01
+   ],
+   [
+    472,
+    0.0
+   ],
+   [
+    473,
+    0.02
+   ],
+   [
+    474,
+    0.08
+   ],
+   [
+    475,
+    0.11
+   ],
+   [
+    476,
+    0.15
+   ],
+   [
+    477,
+    0.15
+   ],
+   [
+    478,
+    -0.03
+   ],
+   [
+    479,
+    0.07
+   ],
+   [
+    480,
+    0.08
+   ],
+   [
+    481,
+    -0.03
+   ],
+   [
+    482,
+    0.01
+   ],
+   [
+    483,
+    0.14
+   ],
+   [
+    484,
+    0.2
+   ],
+   [
+    485,
+    0.01
+   ],
+   [
+    486,
+    -0.01
+   ],
+   [
+    487,
+    0.12
+   ],
+   [
+    488,
+    0.06
+   ],
+   [
+    489,
+    0.02
+   ],
+   [
+    490,
+    0.17
+   ],
+   [
+    491,
+    0.1
+   ],
+   [
+    492,
+    0.09
+   ],
+   [
+    493,
+    0.26
+   ],
+   [
+    494,
+    0.08
+   ],
+   [
+    495,
+    0.22
+   ],
+   [
+    496,
+    0.09
+   ],
+   [
+    497,
+    0.23
+   ],
+   [
+    498,
+    0.23
+   ],
+   [
+    499,
+    0.11
+   ],
+   [
+    500,
+    0.11
+   ],
+   [
+    501,
+    0.23
+   ],
+   [
+    502,
+    0.09
+   ],
+   [
+    503,
+    0.03
+   ],
+   [
+    504,
+    0.09
+   ],
+   [
+    505,
+    0.3
+   ],
+   [
+    506,
+    -0.04
+   ],
+   [
+    507,
+    0.26
+   ],
+   [
+    508,
+    0.11
+   ],
+   [
+    509,
+    0.16
+   ],
+   [
+    510,
+    -0.11
+   ],
+   [
+    511,
+    -0.2
+   ],
+   [
+    512,
+    0.0
+   ],
+   [
+    513,
+    -0.15
+   ],
+   [
+    515,
+    -0.1
+   ]
+  ]
+ },
+ "frames": {
+  "before": {
+   "first": 103,
+   "last": 303,
+   "count": 201
+  },
+  "after": {
+   "first": 304,
+   "last": 515,
+   "count": 209
+  }
+ },
+ "kamensk_uralskiy_and_korkino": {
+  "all_frames": {
+   "heading_deg": 282.12,
+   "slope_deg": 17.48,
+   "speed_kms": 19.65,
+   "speed_per_camera_kms": {
+    "2": 19.65,
+    "10": 19.07
+   },
+   "residual_rms_deg": {
+    "2": 0.687,
+    "10": 0.824
+   },
+   "q_deg": 66.3
+  },
+  "before": {
+   "heading_deg": 282.43,
+   "slope_deg": 15.81,
+   "speed_kms": 16.67,
+   "speed_per_camera_kms": {
+    "2": 16.7,
+    "10": 15.13
+   },
+   "residual_rms_deg": {
+    "2": 0.48,
+    "10": 0.822
+   },
+   "q_deg": 65.8
+  },
+  "after": {
+   "heading_deg": 283.12,
+   "slope_deg": 20.21,
+   "speed_kms": 19.07,
+   "speed_per_camera_kms": {
+    "2": 19.06,
+    "10": 36.68
+   },
+   "residual_rms_deg": {
+    "2": 0.524,
+    "10": 0.83
+   },
+   "q_deg": 66.1
+  }
+ },
+ "readme_figures": {
+  "source": "README.md at commit 70c300a, \"What these numbers do not say\"",
+  "before": {
+   "slope_deg": 16.2,
+   "speed_kms": 16.8
+  },
+  "after": {
+   "slope_deg": 20.3,
+   "speed_kms": 19.1
+  }
+ },
+ "reproduces_the_readme": false,
+ "split_frames_tried": [
+  284,
+  324
+ ],
+ "split_frames_that_give_the_readme_figures": [
+  300
+ ],
+ "scan": [
+  {
+   "split_frame": 284,
+   "t_s": 9.467,
+   "before": {
+    "slope_deg": 17.41,
+    "speed_kms": 17.73
+   },
+   "after": {
+    "slope_deg": 20.63,
+    "speed_kms": 20.45
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 285,
+   "t_s": 9.5,
+   "before": {
+    "slope_deg": 17.36,
+    "speed_kms": 17.63
+   },
+   "after": {
+    "slope_deg": 20.63,
+    "speed_kms": 20.38
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 286,
+   "t_s": 9.533,
+   "before": {
+    "slope_deg": 17.29,
+    "speed_kms": 17.54
+   },
+   "after": {
+    "slope_deg": 20.61,
+    "speed_kms": 20.33
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 287,
+   "t_s": 9.567,
+   "before": {
+    "slope_deg": 17.23,
+    "speed_kms": 17.52
+   },
+   "after": {
+    "slope_deg": 20.58,
+    "speed_kms": 20.28
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 288,
+   "t_s": 9.6,
+   "before": {
+    "slope_deg": 17.16,
+    "speed_kms": 17.44
+   },
+   "after": {
+    "slope_deg": 20.57,
+    "speed_kms": 20.19
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 289,
+   "t_s": 9.633,
+   "before": {
+    "slope_deg": 17.09,
+    "speed_kms": 17.35
+   },
+   "after": {
+    "slope_deg": 20.53,
+    "speed_kms": 20.14
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 290,
+   "t_s": 9.667,
+   "before": {
+    "slope_deg": 17.04,
+    "speed_kms": 17.34
+   },
+   "after": {
+    "slope_deg": 20.56,
+    "speed_kms": 20.02
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 291,
+   "t_s": 9.7,
+   "before": {
+    "slope_deg": 16.96,
+    "speed_kms": 17.25
+   },
+   "after": {
+    "slope_deg": 20.53,
+    "speed_kms": 19.95
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 292,
+   "t_s": 9.733,
+   "before": {
+    "slope_deg": 16.9,
+    "speed_kms": 17.24
+   },
+   "after": {
+    "slope_deg": 20.54,
+    "speed_kms": 19.88
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 293,
+   "t_s": 9.767,
+   "before": {
+    "slope_deg": 16.85,
+    "speed_kms": 17.14
+   },
+   "after": {
+    "slope_deg": 20.56,
+    "speed_kms": 19.73
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 294,
+   "t_s": 9.8,
+   "before": {
+    "slope_deg": 16.78,
+    "speed_kms": 17.05
+   },
+   "after": {
+    "slope_deg": 20.55,
+    "speed_kms": 19.64
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 295,
+   "t_s": 9.833,
+   "before": {
+    "slope_deg": 16.68,
+    "speed_kms": 17.04
+   },
+   "after": {
+    "slope_deg": 20.51,
+    "speed_kms": 19.52
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 296,
+   "t_s": 9.867,
+   "before": {
+    "slope_deg": 16.58,
+    "speed_kms": 16.96
+   },
+   "after": {
+    "slope_deg": 20.48,
+    "speed_kms": 19.47
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 297,
+   "t_s": 9.9,
+   "before": {
+    "slope_deg": 16.5,
+    "speed_kms": 16.94
+   },
+   "after": {
+    "slope_deg": 20.44,
+    "speed_kms": 19.41
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 298,
+   "t_s": 9.933,
+   "before": {
+    "slope_deg": 16.39,
+    "speed_kms": 16.89
+   },
+   "after": {
+    "slope_deg": 20.4,
+    "speed_kms": 19.31
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 299,
+   "t_s": 9.967,
+   "before": {
+    "slope_deg": 16.3,
+    "speed_kms": 16.84
+   },
+   "after": {
+    "slope_deg": 20.37,
+    "speed_kms": 19.25
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 300,
+   "t_s": 10.0,
+   "before": {
+    "slope_deg": 16.2,
+    "speed_kms": 16.82
+   },
+   "after": {
+    "slope_deg": 20.33,
+    "speed_kms": 19.14
+   },
+   "gives_the_readme_figures": true
+  },
+  {
+   "split_frame": 301,
+   "t_s": 10.033,
+   "before": {
+    "slope_deg": 16.08,
+    "speed_kms": 16.78
+   },
+   "after": {
+    "slope_deg": 20.29,
+    "speed_kms": 19.12
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 302,
+   "t_s": 10.067,
+   "before": {
+    "slope_deg": 15.98,
+    "speed_kms": 16.76
+   },
+   "after": {
+    "slope_deg": 20.25,
+    "speed_kms": 19.1
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 303,
+   "t_s": 10.1,
+   "before": {
+    "slope_deg": 15.87,
+    "speed_kms": 16.71
+   },
+   "after": {
+    "slope_deg": 20.21,
+    "speed_kms": 19.06
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 304,
+   "t_s": 10.133,
+   "before": {
+    "slope_deg": 15.81,
+    "speed_kms": 16.67
+   },
+   "after": {
+    "slope_deg": 20.21,
+    "speed_kms": 19.07
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 305,
+   "t_s": 10.167,
+   "before": {
+    "slope_deg": 15.74,
+    "speed_kms": 16.66
+   },
+   "after": {
+    "slope_deg": 20.18,
+    "speed_kms": 19.01
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 306,
+   "t_s": 10.2,
+   "before": {
+    "slope_deg": 15.67,
+    "speed_kms": 16.6
+   },
+   "after": {
+    "slope_deg": 20.15,
+    "speed_kms": 18.98
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 307,
+   "t_s": 10.233,
+   "before": {
+    "slope_deg": 15.61,
+    "speed_kms": 16.59
+   },
+   "after": {
+    "slope_deg": 20.13,
+    "speed_kms": 18.94
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 308,
+   "t_s": 10.267,
+   "before": {
+    "slope_deg": 15.64,
+    "speed_kms": 16.56
+   },
+   "after": {
+    "slope_deg": 20.14,
+    "speed_kms": 18.87
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 309,
+   "t_s": 10.3,
+   "before": {
+    "slope_deg": 15.58,
+    "speed_kms": 16.52
+   },
+   "after": {
+    "slope_deg": 20.12,
+    "speed_kms": 18.84
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 310,
+   "t_s": 10.333,
+   "before": {
+    "slope_deg": 15.55,
+    "speed_kms": 16.52
+   },
+   "after": {
+    "slope_deg": 20.1,
+    "speed_kms": 18.83
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 311,
+   "t_s": 10.367,
+   "before": {
+    "slope_deg": 15.5,
+    "speed_kms": 16.49
+   },
+   "after": {
+    "slope_deg": 20.07,
+    "speed_kms": 18.81
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 312,
+   "t_s": 10.4,
+   "before": {
+    "slope_deg": 15.55,
+    "speed_kms": 16.5
+   },
+   "after": {
+    "slope_deg": 20.1,
+    "speed_kms": 18.79
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 313,
+   "t_s": 10.433,
+   "before": {
+    "slope_deg": 15.54,
+    "speed_kms": 16.47
+   },
+   "after": {
+    "slope_deg": 20.08,
+    "speed_kms": 18.8
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 314,
+   "t_s": 10.467,
+   "before": {
+    "slope_deg": 15.48,
+    "speed_kms": 16.46
+   },
+   "after": {
+    "slope_deg": 20.04,
+    "speed_kms": 18.78
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 315,
+   "t_s": 10.5,
+   "before": {
+    "slope_deg": 15.43,
+    "speed_kms": 16.44
+   },
+   "after": {
+    "slope_deg": 20.0,
+    "speed_kms": 18.77
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 316,
+   "t_s": 10.533,
+   "before": {
+    "slope_deg": 15.37,
+    "speed_kms": 16.42
+   },
+   "after": {
+    "slope_deg": 19.96,
+    "speed_kms": 18.76
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 317,
+   "t_s": 10.567,
+   "before": {
+    "slope_deg": 15.33,
+    "speed_kms": 16.41
+   },
+   "after": {
+    "slope_deg": 19.92,
+    "speed_kms": 18.75
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 318,
+   "t_s": 10.6,
+   "before": {
+    "slope_deg": 15.38,
+    "speed_kms": 16.39
+   },
+   "after": {
+    "slope_deg": 19.94,
+    "speed_kms": 18.73
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 319,
+   "t_s": 10.633,
+   "before": {
+    "slope_deg": 15.35,
+    "speed_kms": 16.36
+   },
+   "after": {
+    "slope_deg": 19.9,
+    "speed_kms": 18.72
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 320,
+   "t_s": 10.667,
+   "before": {
+    "slope_deg": 15.31,
+    "speed_kms": 16.35
+   },
+   "after": {
+    "slope_deg": 19.86,
+    "speed_kms": 18.72
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 321,
+   "t_s": 10.7,
+   "before": {
+    "slope_deg": 15.28,
+    "speed_kms": 16.32
+   },
+   "after": {
+    "slope_deg": 19.82,
+    "speed_kms": 18.69
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 322,
+   "t_s": 10.733,
+   "before": {
+    "slope_deg": 15.26,
+    "speed_kms": 16.32
+   },
+   "after": {
+    "slope_deg": 19.78,
+    "speed_kms": 18.66
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 323,
+   "t_s": 10.767,
+   "before": {
+    "slope_deg": 15.3,
+    "speed_kms": 16.3
+   },
+   "after": {
+    "slope_deg": 19.79,
+    "speed_kms": 18.65
+   },
+   "gives_the_readme_figures": false
+  },
+  {
+   "split_frame": 324,
+   "t_s": 10.8,
+   "before": {
+    "slope_deg": 15.33,
+    "speed_kms": 16.28
+   },
+   "after": {
+    "slope_deg": 19.77,
+    "speed_kms": 18.62
+   },
+   "gives_the_readme_figures": false
+  }
+ ],
+ "summary": [
+  "Kamensk-Uralskiy's SAM box is longer along the motion than across it in frames 103 to 303. At frame 304 (t = 10.13 s) it is not: its length along the motion falls from 380 px to 86 px, against 95 px across it.",
+  "Along the motion, the head point sits a median 0.64 of the way from the box centre to its leading end before the split, and 0.32 in frames 304 to 323, while the box is not longer along the motion.",
+  "Before the split, while the box is still longer along the motion, the head point already moves in it: in blocks of 20 frames its median goes from 0.93 (frames 143 to 162) down to 0.39 (frames 203 to 222), and back to 0.7 (frames 283 to 302). The track does not record which of the two definitions each frame used, so the box rule is a proxy.",
+  "Solved with Korkino, Kamensk-Uralskiy's 201 frames before frame 304 give a 15.8 degree slope and 16.7 km/s. Its 209 frames from frame 304 on give 20.2 degrees and 19.1 km/s.",
+  "Of the split frames from 284 to 324, only 300 (t = 10.00 s) gives the README's four figures."
+ ]
+}

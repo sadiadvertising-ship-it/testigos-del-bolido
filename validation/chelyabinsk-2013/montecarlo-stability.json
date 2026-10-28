@@ -1,0 +1,312 @@
+{
+ "note": "Monte Carlo stability: how many draws slide off the heading, with Tyumen and without it.\n\nevents/chelyabinsk-2013/montecarlo-2-10-48.json holds the draws of Kamensk-Uralskiy (2), Korkino (10) and Tyumen (48).\nmontecarlo-2-10.json holds the draws of Kamensk-Uralskiy and Korkino. Each file keeps one line per draw, from its first\nto its last observed point. This script measures each draw's heading and slope at the last point, as solve() does. It\nchecks that their percentiles give back the stats each file stores.\nA draw slides when its heading is more than 10 degrees from a reference heading, or its slope is under 12 degrees.\nThere are two references: the fitted heading of the same cameras, and the fitted heading of Kamensk-Uralskiy and\nKorkino. Both come from the solve steps of run 20261027T185758-cee8.\nThe files keep no angle between planes of sight. With --rerun, every three-camera draw and the first 20 two-camera\ndraws are run again with the seed, priors and camera order of scripts/montecarlo.py. Each line is compared with the\nstored one. Each draw's angles between planes go to validation/chelyabinsk-2013/montecarlo-rerun.json, which also\nrecords how long the re-run took. No file in events/ is written.",
+ "convention": "heading and slope at the last point of each line, where solve() measures them",
+ "rule": "a draw slides when its heading is more than 10 degrees from the reference heading, or its slope is under 12 degrees",
+ "fitted_headings_from": "events/chelyabinsk-2013/runs/20261027T185758-cee8.json",
+ "configurations": [
+  {
+   "file": "events/chelyabinsk-2013/montecarlo-2-10-48.json",
+   "cameras": [
+    "2 Kamensk-Uralskiy",
+    "10 Korkino",
+    "48 Tyumen"
+   ],
+   "draws": 200,
+   "lines": 200,
+   "each_draw_keeps": [
+    "lat0",
+    "lon0",
+    "h0_m",
+    "lat1",
+    "lon1",
+    "h1_m"
+   ],
+   "fitted": {
+    "step": 5,
+    "clips": [
+     "2",
+     "48",
+     "10"
+    ],
+    "heading_deg": 278.53,
+    "slope_deg": 16.8
+   },
+   "check_against_stored_stats": {
+    "heading_deg": {
+     "computed": {
+      "median": 277.04,
+      "1sigma": [
+       260.91,
+       281.14
+      ],
+      "2sigma": [
+       241.65,
+       284.56
+      ]
+     },
+     "stored": {
+      "median": 277.04,
+      "1sigma": [
+       260.91,
+       281.14
+      ],
+      "2sigma": [
+       241.65,
+       284.56
+      ]
+     },
+     "largest_difference": 0.005
+    },
+    "slope_deg": {
+     "computed": {
+      "median": 16.45,
+      "1sigma": [
+       12.48,
+       17.19
+      ],
+      "2sigma": [
+       4.92,
+       17.82
+      ]
+     },
+     "stored": {
+      "median": 16.45,
+      "1sigma": [
+       12.48,
+       17.19
+      ],
+      "2sigma": [
+       4.92,
+       17.82
+      ]
+     },
+     "largest_difference": 0.004
+    }
+   },
+   "slides_from_own_fitted_heading": {
+    "reference_heading_deg": 278.53,
+    "draws_that_slide": 51,
+    "heading_off_by_more_than_10_deg": 51,
+    "slope_under_12_deg": 26,
+    "both": 26
+   },
+   "slides_from_two_camera_heading": {
+    "reference_heading_deg": 282.12,
+    "draws_that_slide": 62,
+    "heading_off_by_more_than_10_deg": 62,
+    "slope_under_12_deg": 26,
+    "both": 26
+   },
+   "angles": {
+    "rerun_file": "validation/chelyabinsk-2013/montecarlo-rerun.json",
+    "draws_rerun": 200,
+    "draws_stored": 200,
+    "lines_identical_to_stored": 200,
+    "seconds": 613,
+    "solver_against_stored_line_deg": {
+     "largest_heading_difference": 0.003,
+     "largest_slope_difference": 0.001
+    },
+    "solve_thresholds_deg": {
+     "warns_under": 10.0,
+     "refuses_two_cameras_under": 5.0
+    },
+    "angle_between_planes_deg": {
+     "q_2_10_deg": {
+      "cameras": "Kamensk-Uralskiy and Korkino",
+      "min": 28.95,
+      "median": 66.67,
+      "1sigma": [
+       62.45,
+       72.18
+      ],
+      "2sigma": [
+       57.88,
+       85.56
+      ],
+      "max": 89.93,
+      "draws_under_warn": 0,
+      "draws_under_min": 0,
+      "median_of_draws_that_slide_from_own_heading": 64.56,
+      "median_of_the_other_draws_from_own_heading": 67.39,
+      "median_of_draws_that_slide_from_two_camera_heading": 64.0,
+      "median_of_the_other_draws_from_two_camera_heading": 67.99
+     },
+     "q_2_48_deg": {
+      "cameras": "Kamensk-Uralskiy and Tyumen",
+      "min": 3.13,
+      "median": 7.12,
+      "1sigma": [
+       5.94,
+       8.52
+      ],
+      "2sigma": [
+       4.42,
+       9.66
+      ],
+      "max": 11.13,
+      "draws_under_warn": 199,
+      "draws_under_min": 10,
+      "median_of_draws_that_slide_from_own_heading": 6.11,
+      "median_of_the_other_draws_from_own_heading": 7.57,
+      "median_of_draws_that_slide_from_two_camera_heading": 6.16,
+      "median_of_the_other_draws_from_two_camera_heading": 7.67
+     },
+     "q_10_48_deg": {
+      "cameras": "Korkino and Tyumen",
+      "min": 35.45,
+      "median": 59.69,
+      "1sigma": [
+       55.2,
+       65.8
+      ],
+      "2sigma": [
+       50.74,
+       81.41
+      ],
+      "max": 88.16,
+      "draws_under_warn": 0,
+      "draws_under_min": 0,
+      "median_of_draws_that_slide_from_own_heading": 58.44,
+      "median_of_the_other_draws_from_own_heading": 60.17,
+      "median_of_draws_that_slide_from_two_camera_heading": 57.68,
+      "median_of_the_other_draws_from_two_camera_heading": 60.4
+     }
+    },
+    "smallest_2_48": {
+     "draw": 183,
+     "q_deg": 3.134,
+     "heading_deg": 223.57,
+     "slope_deg": -6.022
+    }
+   }
+  },
+  {
+   "file": "events/chelyabinsk-2013/montecarlo-2-10.json",
+   "cameras": [
+    "2 Kamensk-Uralskiy",
+    "10 Korkino"
+   ],
+   "draws": 500,
+   "lines": 500,
+   "each_draw_keeps": [
+    "lat0",
+    "lon0",
+    "h0_m",
+    "lat1",
+    "lon1",
+    "h1_m"
+   ],
+   "fitted": {
+    "step": 6,
+    "clips": [
+     "2",
+     "10"
+    ],
+    "heading_deg": 282.12,
+    "slope_deg": 17.48
+   },
+   "check_against_stored_stats": {
+    "heading_deg": {
+     "computed": {
+      "median": 279.33,
+      "1sigma": [
+       275.8,
+       282.57
+      ],
+      "2sigma": [
+       272.97,
+       284.44
+      ]
+     },
+     "stored": {
+      "median": 279.34,
+      "1sigma": [
+       275.8,
+       282.57
+      ],
+      "2sigma": [
+       272.97,
+       284.44
+      ]
+     },
+     "largest_difference": 0.006
+    },
+    "slope_deg": {
+     "computed": {
+      "median": 17.01,
+      "1sigma": [
+       16.45,
+       17.57
+      ],
+      "2sigma": [
+       15.9,
+       17.95
+      ]
+     },
+     "stored": {
+      "median": 17.01,
+      "1sigma": [
+       16.45,
+       17.57
+      ],
+      "2sigma": [
+       15.9,
+       17.95
+      ]
+     },
+     "largest_difference": 0.004
+    }
+   },
+   "slides_from_own_fitted_heading": {
+    "reference_heading_deg": 282.12,
+    "draws_that_slide": 4,
+    "heading_off_by_more_than_10_deg": 4,
+    "slope_under_12_deg": 2,
+    "both": 2
+   },
+   "angles": {
+    "rerun_file": "validation/chelyabinsk-2013/montecarlo-rerun.json",
+    "draws_rerun": 20,
+    "draws_stored": 500,
+    "lines_identical_to_stored": 20,
+    "seconds": 30,
+    "solver_against_stored_line_deg": {
+     "largest_heading_difference": 0.002,
+     "largest_slope_difference": 0.001
+    },
+    "solve_thresholds_deg": {
+     "warns_under": 10.0,
+     "refuses_two_cameras_under": 5.0
+    },
+    "angle_between_planes_deg": {
+     "q_2_10_deg": {
+      "cameras": "Kamensk-Uralskiy and Korkino",
+      "min": 58.53,
+      "median": 67.79,
+      "1sigma": [
+       62.79,
+       86.04
+      ],
+      "2sigma": [
+       59.76,
+       89.68
+      ],
+      "max": 89.81,
+      "draws_under_warn": 0,
+      "draws_under_min": 0
+     }
+    }
+   }
+  }
+ ],
+ "summary": [
+  "With Kamensk-Uralskiy, Korkino and Tyumen, 51 of 200 draws slide from their own fitted heading, 278.53 degrees, and 62 from the two-camera heading, 282.12 degrees.",
+  "Run again with the seed of scripts/montecarlo.py, all 200 draws give back their stored lines exactly (613 s).",
+  "In those draws the planes of Kamensk-Uralskiy and Tyumen cross at 3.13 to 11.13 degrees, median 7.12. They cross under 10 degrees, where solve() warns, in 199 draws, and under 5 degrees, where solve() refuses two cameras, in 10.",
+  "The smallest angle, 3.13 degrees, is in draw 183, whose line heads 223.57 degrees at a slope of -6.02 degrees.",
+  "The draws that slide from the two-camera heading have a median angle of 6.16 degrees between those planes, the other draws 7.67 degrees.",
+  "With Kamensk-Uralskiy and Korkino, 4 of 500 draws slide from the fitted heading, 282.12 degrees.",
+  "Run again with the seed of scripts/montecarlo.py, the first 20 draws give back their stored lines exactly (30 s)."
+ ]
+}
