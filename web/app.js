@@ -60,12 +60,13 @@ const video = params.get('video') === '1';  // ?video=1: larger type and a wider
 const autoplay = params.get('replay') !== '0' && !matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.body.classList.toggle('bare', bare);
 document.body.classList.toggle('video', video);
-// The witness video's window (d.clip): off in ?panel=0 (the README's GIF) and, unless &clip=1, in ?video=1 (the demo's
+// The witness videos' window (d.videos): off in ?panel=0 (the README's GIF) and, unless &clip=1, in ?video=1 (the demo's
 // screen recording), so neither carries witness footage; ?clip=0 turns it off anywhere.
 const clipOn = !bare && (video ? params.get('clip') === '1' : params.get('clip') !== '0');
 const narrow = matchMedia('(max-width: 760px)');
+const short = matchMedia('(max-width: 760px) and (max-height: 500px)');  // a phone on its side: the sheet takes 65%
 const padding = () => (document.body.classList.contains('bare') ? {top: 0, bottom: 0, left: 0, right: 0}
-  : narrow.matches ? {top: 0, bottom: innerHeight * 0.5, left: 0, right: 0}
+  : narrow.matches ? {top: 0, bottom: innerHeight * (short.matches ? 0.65 : 0.5), left: 0, right: 0}
     : {top: 0, bottom: 0, left: $('#panel').getBoundingClientRect().right, right: 0});
 
 // Sizes on the map, in pixels.
@@ -971,50 +972,115 @@ function stageKey() {  // the key lists only what the current stage shows
   $('#legend').querySelectorAll('[data-stage]').forEach(el => { el.hidden = !shows(Number(el.dataset.stage)); });
 }
 
-// ---- the witness video ------------------------------------------------------------------------------------------------
-// One witness video can play beside the replay: its uploader's own YouTube video in YouTube's player (youtube-nocookie.com),
-// which the uploader allows (the export reads credits.json). Nothing loads from YouTube until a reader presses play. The
-// video's second is the replay's second plus start_s, both in real time; the replay follows the player when it starts,
-// stalls, seeks or pauses, and the player follows the replay's Replay, Pause and Resume.
+// ---- the witness videos -----------------------------------------------------------------------------------------------
+// The witness videos whose uploaders allow embedding play in the side panel, each its uploader's own YouTube video in
+// YouTube's player (youtube-nocookie.com); nothing loads from YouTube until a reader presses play. A video from an oriented
+// camera runs with the replay: its second is the replay's second plus start_s, both in real time; the replay follows the
+// player when it starts, stalls, seeks or pauses, and the player follows the replay's Replay, Pause and Resume. A camera
+// that was never oriented has no clock on the path, so its video plays on its own.
 
-const clip = {player: null, ready: false, visible: true, observer: null, timer: 0};
+const clip = {player: null, ready: false, visible: true, observer: null, timer: 0, quiet: false, pick: null};
 const CLIP_ERRORS = {100: 'The video is no longer on YouTube, or it is private.', 101: 'Its uploader no longer allows it to play on other sites.',
   150: 'Its uploader no longer allows it to play on other sites.', 153: "YouTube's player needs this page's address, and the browser did not send it."};
 const clock = (x, d = 0) => `${Math.floor(x / 60)}:${d ? (x % 60).toFixed(d).padStart(d + 3, '0') : String(Math.floor(x % 60)).padStart(2, '0')}`;  // 0:06, 0:18.8
 const recall = () => { try { return localStorage.getItem('testigos.clip.open'); } catch (e) { return null; } };
 const remember = open => { try { localStorage.setItem('testigos.clip.open', open ? '1' : '0'); } catch (e) { /* not kept */ } };
 const external = (url, text) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+const videos = d => (d && d.videos && d.videos.shown) || [];
+const picked = () => videos(state.data).find(v => v.clip === clip.pick) || null;
+
+function clipText(d, v) {  // what one video shows, and whose it is
+  const st = d.stations.find(x => x.id === v.clip), out = v.left_out, pair = out && out.pairs[0];
+  const where = /car/.test(v.camera) ? `Filmed from a ${esc(v.camera)} in ${esc(v.site)}.`
+    : `Filmed by a ${esc(v.camera === 'security' ? 'security camera' : v.camera)} in ${esc(v.site)}.`;
+  const sam = `SAM 3.1 follows the fireball from ${clock(v.fireball_s[0], 1)} to ${clock(v.fireball_s[1], 1)}${
+    v.trimmed_s[1] - v.fireball_s[1] < 0.5 ? ', where the stretch that was measured ends' : ''}`;
+  let what;
+  if (v.synced) {
+    const role = out ? `The agent left this camera out of the fit${pair ? ` (its planes cross ${esc(pair.site)}'s at ${fmt(pair.q_deg, 1)}°)` : ''},
+      so it is a check on the fit: its lines of sight miss the fitted path by ${fmt(st.miss_deg, 2)}° RMS.`
+      : v.status === 'used' ? `It is one of the ${count(d.solution.clips.length)} cameras of the fit; its lines of sight miss the fitted
+      path by ${fmt(st.miss_deg, 2)}° RMS.` : '';
+    what = `${role} Play runs the replay from ${clock(v.start_s)}, the instant this camera's own clock puts at the top of the path;
+      ${sam}. The fireball slowed and the replay flies the fitted line at one speed, so toward the end the replay's dot runs ahead
+      of the video.`;
+  } else {
+    what = `This camera was not oriented${v.camera_moves ? ' (Muse Spark reported that it moves)' : ''}, so its video gives no
+      direction and plays on its own, not with the replay. ${sam}.`;
+  }
+  return `<p class="note">${where} ${what}</p>
+    <p class="clip-credit">${external(v.url, `“${esc(v.title)}”`)}, uploaded by ${esc(v.uploader)} (${esc(v.channel)}) on
+    ${esc(v.uploaded)} (UTC), plays in YouTube's player; nothing of it is stored here.</p>`;
+}
+
+const poster = v => `<div class="clip-frame"><button type="button" class="clip-poster"><span class="clip-play" aria-hidden="true"></span>
+  <span>${v.synced ? 'Play the video with the replay' : `Play the video from ${esc(v.site)}`}</span>
+  <small>The fireball shows from ${clock(v.fireball_s[0])}. YouTube's player loads when you press play.</small></button></div>`;
 
 function drawClip(d) {
   dropClip();
-  const el = $('#clip'), c = d.clip;
-  if (!clipOn || !c || !c.youtube_id) { el.innerHTML = ''; return; }
-  const st = d.stations.find(x => x.id === c.clip), out = c.left_out, pair = out && out.pairs[0];
+  const el = $('#clip'), list = videos(d);
+  if (!clipOn || !list.length) { el.innerHTML = ''; return; }
+  clip.pick = d.videos.first;
   const kept = recall(), open = kept === null || kept === '1';
-  const why = out ? `The agent left this camera out of the fit${pair ? ` (its planes cross ${esc(pair.site)}'s at ${fmt(pair.q_deg, 1)}°)` : ''},
-    so it is the check: its lines of sight miss the fitted path by ${fmt(st.miss_deg, 2)}°.` : '';
-  const others = (c.linked || []).map(l => `${esc(l.site)}'s uploader does not allow the video on other sites:
-    ${external(l.url, `watch it on YouTube from ${clock(l.at_s)}`)}.`).join(' ');
-  el.innerHTML = `<details${open ? ' open' : ''}><summary><span class="dot dashed"></span>A witness video · filmed in ${esc(c.site)}${out
-    ? ', left out of the fit' : ''}</summary>
-    <div class="clip-frame"><button type="button" class="clip-poster"><span class="clip-play" aria-hidden="true"></span>
-      <span>Play the video with the replay</span>
-      <small>The fireball crosses it from ${clock(c.fireball_s[0])} to ${clock(c.fireball_s[1])}. YouTube's player loads when you press
-      play.</small></button></div>
+  const chip = v => `<button type="button" data-clip="${esc(v.clip)}" aria-pressed="${v.clip === clip.pick}">${esc(v.site)}</button>`;
+  const withReplay = list.filter(v => v.synced), alone = list.filter(v => !v.synced);
+  el.innerHTML = `<details${open ? ' open' : ''}><summary><span class="dot dashed"></span>Witness videos · the fireball from
+    ${count(list.length)} places</summary>
+    <div class="clip-views" role="group" aria-label="Witness videos">${withReplay.length ? `<span>With the replay</span>${withReplay.map(chip).join('')}` : ''}
+      ${alone.length ? `<span>Other views, not oriented</span>${alone.map(chip).join('')}` : ''}</div>
+    ${(d.videos.linked || []).map(l => `<p class="clip-credit">${esc(l.site)}, one of the ${count(d.solution.clips.length)} cameras of
+      the fit, is not here: its uploader does not allow the video on other sites. ${external(l.url, `Watch it on YouTube from
+      ${clock(l.at_s)}`)}.</p>`).join('')}
+    ${poster(picked())}
     <p class="clip-hint" role="status"></p>
-    <p class="note">Filmed from a ${esc(c.camera)} in ${esc(c.site)}. ${why} Play runs the replay from ${clock(c.start_s)}, the instant
-    this camera's own clock puts at the top of the path; SAM 3.1 picks the fireball up at ${clock(c.fireball_s[0], 1)}. The fireball
-    slowed and the replay flies the fitted line at one speed, so at the camera's last sight of it (${clock(c.fireball_s[1], 1)}) the
-    replay's dot is ${fmt(c.ahead_at_last_s, 1)} s ahead.</p>
-    <p class="clip-credit">${external(c.url, `“${esc(c.title)}”`)}, uploaded by ${esc(c.uploader)} (${esc(c.channel)}) on
-    ${esc(c.uploaded)}, plays in YouTube's player; nothing of it is stored here. ${others}</p></details>`;
+    <div class="clip-text">${clipText(d, picked())}</div></details>`;
   const details = el.querySelector('details');
-  details.addEventListener('toggle', () => { remember(details.open); if (!details.open) syncClip(false); });
-  el.querySelector('.clip-poster').addEventListener('click', () => startClip(d));
-  if ('IntersectionObserver' in window) {  // YouTube asks that scripted playback start only while half the player shows
+  details.addEventListener('toggle', () => {
+    remember(details.open);
+    if (!details.open) quietClip(); else rejoinClip();
+  });
+  el.querySelectorAll('.clip-views button').forEach(b => b.addEventListener('click', () => pickClip(d, b.dataset.clip)));
+  bindPoster(d);
+}
+
+function bindPoster(d) {  // the poster's press, and the check that half the player is in view (YouTube asks for it)
+  const frame = $('#clip .clip-frame');
+  if (!frame) return;
+  const b = frame.querySelector('.clip-poster');
+  if (b) b.addEventListener('click', () => startClip(d));
+  if (clip.observer) clip.observer.disconnect();
+  if ('IntersectionObserver' in window) {
     clip.observer = new IntersectionObserver(es => { clip.visible = es[0].intersectionRatio >= 0.5; }, {threshold: [0, 0.5, 1]});
-    clip.observer.observe(el.querySelector('.clip-frame'));
+    clip.observer.observe(frame);
   }
+}
+
+// Another view: with a player running, it loads the new video (a video that runs with the replay restarts it once it plays);
+// before the first press, or after a failure, it shows that video's poster.
+function pickClip(d, id) {
+  if (state.data !== d || id === clip.pick) return;
+  clip.pick = id;
+  const v = picked();
+  $('#clip').querySelectorAll('.clip-views button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.clip === id)));
+  $('#clip .clip-text').innerHTML = clipText(d, v);
+  hint('');
+  if (clip.player && clip.ready) {
+    if (state.playing || state.t !== null) stop(true);
+    try {
+      clip.player.mute();  // muted before the load, so the new video may start without a press of its own
+      clip.player.loadVideoById({videoId: v.youtube_id, startSeconds: v.start_s, endSeconds: v.end_s});
+    } catch (e) { clipFail(d, "YouTube's player could not play it here."); }
+    setTimeout(() => {  // a load that stays unstarted or cued gets one push
+      try { if (clip.pick === id && [-1, 5].includes(clip.player.getPlayerState())) clip.player.playVideo(); } catch (e) { /* gone */ }
+    }, 2000);
+    return;
+  }
+  dropClip();
+  clip.pick = id;
+  const old = $('#clip .clip-frame') || $('#clip .clip-fail');
+  if (old) old.outerHTML = poster(v);
+  bindPoster(d);
 }
 
 let youTube = null;
@@ -1033,16 +1099,16 @@ function loadYouTube() {  // YouTube's IFrame API, once, with a time limit
 }
 
 async function startClip(d) {
-  const c = d.clip, frame = $('#clip .clip-frame');
-  if (!frame || clip.player) return;
+  const frame = $('#clip .clip-frame'), v = picked();
+  if (!frame || !v || clip.player) return;
   frame.innerHTML = '<p class="clip-wait">Loading YouTube\'s player…</p>';
-  try { await loadYouTube(); } catch (e) { return clipFail(d, "YouTube's player could not load here."); }
-  if (state.data !== d) return;
+  try { await loadYouTube(); } catch (e) { return frame.isConnected && clipFail(d, "YouTube's player could not load here."); }
+  if (state.data !== d || !frame.isConnected) return;
   const f = document.createElement('iframe');
-  const q = new URLSearchParams({enablejsapi: 1, origin: location.origin, start: Math.floor(c.start_s), end: Math.ceil(c.end_s),
+  const q = new URLSearchParams({enablejsapi: 1, origin: location.origin, start: Math.floor(v.start_s), end: Math.ceil(v.end_s),
     mute: 1, playsinline: 1, rel: 0});
-  f.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(c.youtube_id)}?${q}`;
-  f.title = `${c.title}, by ${c.uploader}, in YouTube's player`;
+  f.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.youtube_id)}?${q}`;
+  f.title = `Witness videos in YouTube's player`;
   f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
   f.referrerPolicy = 'strict-origin-when-cross-origin';  // YouTube refuses to play for a page that sends no address
   frame.replaceChildren(f);
@@ -1053,67 +1119,96 @@ async function startClip(d) {
         if (state.data !== d) return;
         clearTimeout(clip.timer);
         clip.ready = true;
-        // One press runs both, from the replay's paused instant or from the start. The video starts first; the replay
-        // follows once the video actually plays (onClipState), so a slow start does not leave the replay ahead.
-        const from = !state.playing && state.t !== null ? state.t : 0;
-        if (state.playing) stop(false);
+        // One press runs the video, and a video that runs with the replay takes the replay along from the replay's paused
+        // instant or from the start: the video starts first and the replay follows once the video plays (onClipState), so a
+        // slow start does not leave the replay ahead. A video on its own leaves the map in its still view.
+        const w = picked(), from = w.synced && !state.playing && state.t !== null ? state.t : 0, was = state.playing;
         state.t = null;
+        if (was) stop(false); else $('#play').textContent = 'Replay';
         readout();
         redraw();
-        try { clip.player.mute(); clip.player.seekTo(c.start_s + from, true); clip.player.playVideo(); } catch (e) { /* the HUD still works */ }
+        try { clip.player.mute(); clip.player.seekTo(w.start_s + from, true); clip.player.playVideo(); } catch (e) { /* the HUD still works */ }
       },
       onStateChange: e => onClipState(d, e),
       onError: e => clipFail(d, CLIP_ERRORS[e.data] || "YouTube's player could not play it here."),
-      onAutoplayBlocked: () => hint('Press play in the video; the replay will follow.'),
+      onAutoplayBlocked: () => hint(picked() && picked().synced ? 'Press play in the video; the replay will follow.' : 'Press play in the video.'),
     }});
   } catch (e) { clipFail(d, "YouTube's player could not load here."); }
 }
 
-// The replay drives the player: Replay and Resume seek the video to start_s + t and play it, Pause and the end pause it.
+// The replay drives a video that runs with it: Replay and Resume seek it to start_s + t and play it; Pause, the end, a
+// collapsed card or a hidden panel pause any video.
 function syncClip(on, from = 0) {
-  const p = clip.player, c = state.data && state.data.clip;
-  if (!p || !clip.ready || !c) return;
+  const p = clip.player, v = picked();
+  if (!p || !clip.ready || !v) return;
   try {
-    if (!on) { if (p.getPlayerState() === YT.PlayerState.PLAYING) p.pauseVideo(); return; }
-    if (!clip.visible || !$('#clip details').open) return;
-    const want = c.start_s + from;
+    if (!on) {
+      const s = p.getPlayerState(), S = YT.PlayerState;
+      if (s !== S.PAUSED && s !== S.ENDED && s !== S.CUED) p.pauseVideo();
+      return;
+    }
+    if (!v.synced || !clip.visible || !$('#clip details').open) return;
+    const want = v.start_s + from;
     if (Math.abs(p.getCurrentTime() - want) > 0.3) p.seekTo(want, true);
     p.playVideo();
   } catch (e) { /* the replay never depends on the player */ }
 }
 
-// The player drives the replay: when it starts, stalls or seeks, the replay takes the video's time; when the reader plays
-// or pauses inside the player, the replay follows; at the fragment's end the player goes back to its start.
+// The player drives the replay, for a video that runs with it: when the video starts, stalls or seeks, the replay takes
+// the video's time; when the reader plays or pauses inside the player, the replay follows. At the fragment's end the
+// player goes back to its start.
 function onClipState(d, e) {
   if (state.data !== d || !clip.ready) return;
-  const p = clip.player, c = d.clip, S = YT.PlayerState, dur = d.solution.times[d.solution.times.length - 1];
+  const p = clip.player, v = picked(), S = YT.PlayerState, dur = d.solution.times[d.solution.times.length - 1];
+  if (!v) return;
+  if (e.data === S.PLAYING) { hint(''); clip.quiet = false; }
+  if (e.data === S.ENDED) {
+    try { p.cueVideoById({videoId: v.youtube_id, startSeconds: v.start_s, endSeconds: v.end_s}); } catch (err) { /* stays ended */ }
+    return;
+  }
+  if (e.data === S.PAUSED && clip.quiet) { clip.quiet = false; return; }  // paused to hide the player: the replay goes on
+  if (!v.synced) return;
   let t;
-  try { t = p.getCurrentTime() - c.start_s; } catch (err) { return; }
+  try { t = p.getCurrentTime() - v.start_s; } catch (err) { return; }
   if (e.data === S.PLAYING) {
-    hint('');
     if (state.playing) {
       if (t < -1 || t >= dur) stop(false);
       else if (Math.abs(t - state.t) > 0.4) started = performance.now() - Math.max(0, t) * 1000;
     } else if (t >= -1 && t < dur) { state.t = Math.max(0, t); play(); }
   } else if (e.data === S.PAUSED && state.playing) stop(false);
-  else if (e.data === S.ENDED) {
-    try { p.cueVideoById({videoId: c.youtube_id, startSeconds: c.start_s, endSeconds: c.end_s}); } catch (err) { /* stays ended */ }
-  }
 }
 
 function clipFail(d, why) {
   if (state.data !== d) return;
-  const c = d.clip, frame = $('#clip .clip-frame');
+  const v = picked(), frame = $('#clip .clip-frame');
   dropClip();
-  if (frame) frame.outerHTML = `<p class="clip-fail" role="status">${esc(why)} ${external(`${c.url}&t=${Math.floor(c.start_s)}s`,
-    `Watch it on YouTube from ${clock(c.start_s)}`)}.</p>`;
+  clip.pick = v && v.clip;
+  if (frame && v) frame.outerHTML = `<p class="clip-fail" role="status">${esc(why)} ${external(`${v.url}&t=${Math.floor(v.start_s)}s`,
+    `Watch it on YouTube from ${clock(v.start_s)}`)}.</p>`;
 }
 
 function dropClip() {
   clearTimeout(clip.timer);
   if (clip.observer) clip.observer.disconnect();
   try { if (clip.player && clip.player.destroy) clip.player.destroy(); } catch (e) { /* already gone */ }
-  Object.assign(clip, {player: null, ready: false, visible: true, observer: null, timer: 0});
+  Object.assign(clip, {player: null, ready: false, visible: true, observer: null, timer: 0, quiet: false});
+}
+
+// Hide the player without stopping the replay (the card collapsed, or the panel hidden with h): its PAUSED event is
+// marked as ours, so it does not stop the replay; the next PLAYING clears the mark.
+function quietClip() {
+  if (!clip.player || !clip.ready) return;
+  try {
+    const s = clip.player.getPlayerState(), S = YT.PlayerState;
+    if (s === S.PAUSED || s === S.ENDED || s === S.CUED) return;
+  } catch (e) { return; }
+  clip.quiet = true;
+  syncClip(false);
+}
+
+// When the player shows again, a video that runs with the replay joins it, once the page has measured that it is in view.
+function rejoinClip() {
+  setTimeout(() => { if (state.playing) syncClip(true, state.t); }, 200);
 }
 
 function hint(text) {
@@ -1139,7 +1234,14 @@ function play() {
   if (!d || !d.solution) return;
   if (state.playing) return stop(false);
   const dur = d.solution.times[d.solution.times.length - 1];
-  const from = state.t !== null && state.t < dur ? state.t : 0;
+  let from = state.t !== null && state.t < dur ? state.t : 0;
+  try {  // the reader may have moved the paused player: resume from there
+    const w = picked();
+    if (w && w.synced && clip.ready && state.t !== null && clip.player.getPlayerState() === YT.PlayerState.PAUSED) {
+      const v = clip.player.getCurrentTime() - w.start_s;
+      if (v >= 0 && v < dur && Math.abs(v - from) > 0.3) from = v;
+    }
+  } catch (e) { /* the replay never depends on the player */ }
   state.playing = true;
   $('#play').textContent = 'Pause';
   started = performance.now() - from * 1000;
@@ -1256,7 +1358,8 @@ addEventListener('keydown', e => {
   if (e.code === 'Space') { e.preventDefault(); play(); }
   if (e.key === 'h') {
     document.body.classList.toggle('bare');
-    if (document.body.classList.contains('bare')) syncClip(false);  // the panel, and the player in it, are hidden
+    // the panel, and the player in it, are hidden; the replay goes on, and the video joins it again when the panel returns
+    if (document.body.classList.contains('bare')) quietClip(); else rejoinClip();
     placeHud();
     map.easeTo({padding: padding(), duration: 600});
   }

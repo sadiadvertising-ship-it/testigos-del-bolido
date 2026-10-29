@@ -16,9 +16,15 @@
   "clip": "14",
   "site": "Beloretsk",
   "source": "https://www.youtube.com/watch?v=5_1ytDqps8A",
+  "title": "Метеорит над Челябинском ч.3 15.02.13",
   "credit": "YouTube uploader MrKuzaman (@MrKuzaman), uploaded 2013-02-15",
-  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading)",
-  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published"
+  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading); the 3D viewer plays the uploader's own video in YouTube's player (youtube-nocookie.com, run by YouTube's IFrame API script from www.youtube.com), which the uploader's embedding setting allows, and loads both only when a reader presses play",
+  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published",
+  "embed": {
+   "allowed": true,
+   "checked": "2026-10-29",
+   "how": "YouTube oEmbed answered 200"
+  }
  },
  {
   "clip": "48",
@@ -26,7 +32,7 @@
   "source": "https://www.youtube.com/watch?v=1ZdYf2vM5LA",
   "title": "Метеорит или НЛО в Челябинске, вид из Тюмени",
   "credit": "YouTube uploader Alexander Voronov (@EastSide287), uploaded 2013-02-15",
-  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading); the 3D viewer plays the uploader's own video in YouTube's player (youtube-nocookie.com), which the uploader's embedding setting allows, and loads it only when a reader presses play",
+  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading); the 3D viewer plays the uploader's own video in YouTube's player (youtube-nocookie.com, run by YouTube's IFrame API script from www.youtube.com), which the uploader's embedding setting allows, and loads both only when a reader presses play",
   "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published",
   "embed": {
    "allowed": true,
@@ -38,40 +44,65 @@
   "clip": "15",
   "site": "Chebarkul",
   "source": "https://www.youtube.com/watch?v=xboo7LiNR08",
+  "title": "метеорит над Чебаркулем 15.02.2013",
   "credit": "YouTube uploader 🫐 голубика🫐 (@голубика-ю3ф), uploaded 2013-02-19",
-  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading)",
-  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published"
+  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading); the 3D viewer plays the uploader's own video in YouTube's player (youtube-nocookie.com, run by YouTube's IFrame API script from www.youtube.com), which the uploader's embedding setting allows, and loads both only when a reader presses play",
+  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published",
+  "embed": {
+   "allowed": true,
+   "checked": "2026-10-29",
+   "how": "YouTube oEmbed answered 200"
+  }
  },
  {
   "clip": "81",
   "site": "Yekaterinburg",
   "source": "https://www.youtube.com/watch?v=kZxr9nAVQSo",
+  "title": "Метеорит 15.02.2013",
   "credit": "YouTube uploader Мясников Сергей (@МясниковСергей-ъ2л), uploaded 2013-02-15",
-  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading)",
-  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published"
+  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading); the 3D viewer plays the uploader's own video in YouTube's player (youtube-nocookie.com, run by YouTube's IFrame API script from www.youtube.com), which the uploader's embedding setting allows, and loads both only when a reader presses play",
+  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published",
+  "embed": {
+   "allowed": true,
+   "checked": "2026-10-29",
+   "how": "YouTube oEmbed answered 200"
+  }
  },
  {
   "clip": "257",
   "site": "Magnitogorsk",
   "source": "https://www.youtube.com/watch?v=2kXIFt9JzvU",
+  "title": "метеорит в челябинске / Аsteroid in Russia (Chelyabinsk)",
   "credit": "YouTube uploader Сергей Давлеткулов (@gfggfox), uploaded 2013-02-15",
-  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading)",
-  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published"
+  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading); the 3D viewer plays the uploader's own video in YouTube's player (youtube-nocookie.com, run by YouTube's IFrame API script from www.youtube.com), which the uploader's embedding setting allows, and loads both only when a reader presses play",
+  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published",
+  "embed": {
+   "allowed": true,
+   "checked": "2026-10-29",
+   "how": "YouTube oEmbed answered 200"
+  }
  },
  {
   "clip": "238",
   "site": "Plast",
   "source": "https://www.youtube.com/watch?v=6kwxK430DW4",
+  "title": "Полет метеорита над Пластом 15 02 2013г",
   "credit": "YouTube uploader Максим Речинский (@МаксимРечинский-ж1н), uploaded 2013-02-15",
-  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading)",
-  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published"
+  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading); the 3D viewer plays the uploader's own video in YouTube's player (youtube-nocookie.com, run by YouTube's IFrame API script from www.youtube.com), which the uploader's embedding setting allows, and loads both only when a reader presses play",
+  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published",
+  "embed": {
+   "allowed": true,
+   "checked": "2026-10-29",
+   "how": "YouTube oEmbed answered 200"
+  }
  },
  {
   "clip": "10",
   "site": "Korkino",
   "source": "https://www.youtube.com/watch?v=odKjwrjIM-k",
+  "title": "Коркино. Метеорит",
   "credit": "YouTube uploader Никита Зенкович (@НикитаЗенкович), uploaded 2013-02-15",
-  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading)",
+  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading); the 3D viewer plays the uploader's own video in YouTube's player (youtube-nocookie.com, run by YouTube's IFrame API script from www.youtube.com), which the uploader's embedding setting allows, and loads both only when a reader presses play",
   "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published",
   "embed": {
    "allowed": true,

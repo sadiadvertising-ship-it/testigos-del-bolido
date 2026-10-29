@@ -2,9 +2,10 @@
 
 Only derived numbers and credits leave the machine: camera sites rounded to about 100 m, each line of sight as the point
 where it passes closest to the solved path, the solutions the agent tried, the Monte Carlo lines, the agent log and report,
-and published values (labelled; the agent never sees them). No video, frame or pixel track is exported. For the one
-witness video the viewer can play (SHOWN), the export names the uploader's YouTube video, its title and credit, and the
-upload's seconds that tie it to the replay; the viewer loads it in YouTube's player only when a reader presses play.
+and published values (labelled; the agent never sees them). No video, frame or pixel track is exported. For the
+witness videos the viewer can play (those whose uploaders allow embedding), the export names each uploader's YouTube video,
+its title and credit, and the upload's seconds that tie it to the replay; the viewer loads them in YouTube's player only
+when a reader presses play.
 Usage: .venv/bin/python scripts/export_web.py
 """
 import datetime as dt
@@ -52,9 +53,10 @@ SPEEDS = dict(zip(('escape_kms', 'orbital_kms'), map(float, re.search(
 # 30,000 to 40,000 ft).
 CITIES = (('Bogotá', 4.60971, -74.08175), ('Medellín', 6.25020, -75.56758))
 CRUISE_KM = 10
-# The witness video the viewer can play beside the replay, per case: Kamensk-Uralskiy's uploader does not allow embedding,
-# so Tyumen's. It is shown only while the case's credits record that its uploader allows embedding (YouTube's oEmbed).
-SHOWN = {'chelyabinsk-2013': '48'}
+# The witness videos the viewer can play, per case: every clip whose credits record that its uploader allows embedding
+# (YouTube's oEmbed, 29 October 2026; Kamensk-Uralskiy's does not). FIRST is the one the window opens with: Tyumen's, a
+# 1280x720 dashcam in which SAM followed the fireball for 10 s, where Korkino's 480x360 copy shows it for under 4 s.
+FIRST = {'chelyabinsk-2013': '48'}
 UPLOADER = re.compile(r'YouTube uploader (.+) \((@[^)]+)\), uploaded (\d{4}-\d\d-\d\d)')
 
 
@@ -124,45 +126,58 @@ def credits(case):
     return {c['clip']: c for c in json.loads(f.read_text())} if f.exists() else {}
 
 
-def witness_video(case, sol, s0, v, final, log, names, creds=None):
-    """The witness video the viewer can play beside the replay (SHOWN), or None when the case has none, or its credits do
-    not record that the uploader allows embedding. Only ids, seconds and credits: start_s is the upload's second that
-    lines up with the replay's zero (the trimmed clip starts at window_s[0] of the upload, and the camera's own clock is
-    shifted as in each station's track), fireball_s the seconds where SAM followed the fireball, and ahead_at_last_s how
-    far the replay's dot runs ahead at the camera's last sight of it (the replay flies the fitted line at one speed; the
-    fireball slowed). linked lists the solution's cameras whose uploaders do not allow embedding, as links to YouTube at
-    the second their own clock reads 0."""
-    clip, creds = SHOWN.get(case.id), creds if creds is not None else credits(case)
-    c = creds.get(clip) if clip else None
-    ev = next((x for x in case.event['clips'] if str(x['catalog_no']) == clip), None)
-    if not c or not ev or (c.get('embed') or {}).get('allowed') is not True or c['source'] != ev['source']:
-        return None
-    st = case._stations([clip])[0]
-    _, s, _, shift = own_clock(sol, s0, st)
-    w0, w1 = ev['window_s']
-    last = int(np.argmax(st.times))
-    up = UPLOADER.match(c['credit'])
-    drop = next((x for x in log if x['action'] == 'drop_clip' and x.get('clip') == clip and x['result'].get('accepted', True)
-                 and 'error' not in x['result']), None)
-    linked = []
-    for other in final:
-        o = creds.get(other)
-        if other == clip or not o or (o.get('embed') or {}).get('allowed') is not False:
+def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
+    """The witness videos the viewer can play, or None when the case has none: every clip whose credits record that its
+    uploader allows embedding, the oriented ones first (FIRST before the rest), then the others in the case's order. Only
+    ids, seconds and credits leave the machine. For an oriented camera the video runs with the replay: start_s is the
+    upload's second that lines up with the replay's zero (the trimmed clip starts at window_s[0] of the upload, and the
+    camera's own clock is shifted as in each station's track), and end_s leaves room for the whole replay. A camera that
+    was never oriented has no clock on the path, so its video plays on its own, over the trimmed window. fireball_s are the
+    seconds where SAM followed the fireball; camera_moves is Muse Spark's reading. linked lists the solution's cameras
+    whose uploaders do not allow embedding, as links to YouTube at the second their own clock reads 0."""
+    creds = creds if creds is not None else credits(case)
+    first = FIRST.get(case.id)
+    shown, linked = [], []
+    for ev in case.event['clips']:
+        clip, c = str(ev['catalog_no']), creds.get(str(ev['catalog_no']))
+        if not c or not ev.get('source') or c['source'] != ev['source']:
             continue
-        oe = next(x for x in case.event['clips'] if str(x['catalog_no']) == other)
-        at = int(np.floor(oe['window_s'][0] + own_clock(sol, s0, case._stations([other])[0])[3]))
-        ou = UPLOADER.match(o['credit'])
-        linked.append({'site': oe['site'], 'url': f"https://www.youtube.com/watch?v={youtube_id(o['source'])}&t={at}s", 'at_s': at,
-                       'uploader': ou and ou[1], 'channel': ou and ou[2]})
-    return {'clip': clip, 'site': ev['site'], 'camera': ev['camera'], 'youtube_id': youtube_id(c['source']), 'url': c['source'],
-            'title': c.get('title'), 'uploader': up and up[1], 'channel': up and up[2], 'uploaded': up and up[3],
-            'trimmed_s': [w0, w1], 'start_s': round(float(w0 + shift), 3), 'end_s': w1,
-            'fireball_s': [round(float(w0 + st.times.min()), 2), round(float(w0 + st.times.max()), 2)],
-            'ahead_at_last_s': round(float((st.times[last] - shift) - (s[last] - s0) / v), 1),
-            'left_out': drop and {'step': drop['step'], 'criterion': drop['result'].get('criterion'),
-                                  'pairs': [{'site': names.get(k, k), 'q_deg': r['q_deg_with_it']} for k, r in
-                                            ((drop['result'].get('measured') or {}).get('near_parallel_with') or {}).items()]},
-            'linked': linked}
+        allowed = (c.get('embed') or {}).get('allowed')
+        oriented = case.calibration(clip)['calibrated']
+        if allowed is False and clip in final:
+            at = int(np.floor(ev['window_s'][0] + own_clock(sol, s0, case._stations([clip])[0])[3]))
+            ou = UPLOADER.match(c['credit'])
+            linked.append({'site': ev['site'], 'url': f"https://www.youtube.com/watch?v={youtube_id(c['source'])}&t={at}s",
+                           'at_s': at, 'uploader': ou and ou[1], 'channel': ou and ou[2]})
+        if allowed is not True:
+            continue
+        w0, w1 = ev['window_s']
+        if oriented:
+            st = case._stations([clip])[0]
+            times, start = st.times, w0 + own_clock(sol, s0, st)[3]
+            end = max(w1, start + dur + 1)
+        else:  # the solver's rows of SAM's track (a centroid, not a repeated frame), on the trimmed clip's clock
+            rows = json.loads((ROOT / 'out' / 'sam' / f'{case.key(clip)}.json').read_text())['rows']
+            times = np.array([r['t'] for r in rows if r['centroid'] is not None and not r['dup']])
+            start, end = w0, w1
+        up = UPLOADER.match(c['credit'])
+        drop = next((x for x in log if x['action'] == 'drop_clip' and x.get('clip') == clip and x['result'].get('accepted', True)
+                     and 'error' not in x['result']), None) if oriented and clip not in final else None
+        reading = case.dir / 'witness' / f'{clip}.json'
+        shown.append({'clip': clip, 'site': ev['site'], 'camera': ev['camera'],
+                      'status': 'used' if clip in final else 'left out' if drop else 'oriented' if oriented else 'not oriented',
+                      'synced': bool(oriented), 'youtube_id': youtube_id(c['source']), 'url': c['source'], 'title': c.get('title'),
+                      'uploader': up and up[1], 'channel': up and up[2], 'uploaded': up and up[3],
+                      'trimmed_s': [w0, w1], 'start_s': round(float(start), 3), 'end_s': round(float(end), 1),
+                      'fireball_s': [round(float(w0 + times.min()), 2), round(float(w0 + times.max()), 2)],
+                      'camera_moves': json.loads(reading.read_text()).get('camera_moves') if reading.exists() else None,
+                      'left_out': drop and {'step': drop['step'], 'criterion': drop['result'].get('criterion'),
+                                            'pairs': [{'site': names.get(k, k), 'q_deg': r['q_deg_with_it']} for k, r in
+                                                      ((drop['result'].get('measured') or {}).get('near_parallel_with') or {}).items()]}})
+    if not shown:
+        return None
+    shown.sort(key=lambda x: (x['clip'] != first, not x['synced']))  # stable: the case's order within each group
+    return {'first': shown[0]['clip'], 'shown': shown, 'linked': linked}
 
 
 def drop_reason(result, names):
@@ -320,8 +335,8 @@ def chelyabinsk():
         'catalogue': catalogue(case),
         'calibration_history': f'{history.relative_to(ROOT)}/' if history.is_dir() else None,
         'stations': stations,
-        # the witness video the viewer can play beside the replay (the uploader's YouTube video, loaded only on a press)
-        'clip': witness_video(case, sol, s0, v, final, log, names),
+        # the witness videos the viewer can play (the uploaders' YouTube videos, loaded only on a press)
+        'videos': witness_videos(case, sol, s0, float((s1 - s0) / v), final, log, names),
         'tried': tried,
         # the stretch the cameras saw beside the distance between two cities, the flare's height on our line beside a
         # cruising airliner, and the speeds the verdict tells apart
