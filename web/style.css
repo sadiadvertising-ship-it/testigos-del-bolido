@@ -123,7 +123,10 @@ details[open] summary { margin-bottom: 8px; }
 .clip-views button[aria-pressed="true"] { background: var(--raise); color: var(--ink); border-color: var(--accent); }
 .clip-views button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .clip-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; margin: 0 0 8px; background: #000; }
-.clip-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.clip-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; transition: opacity 0.4s; }
+/* SAM's track, drawn from the measurements while a video loads (or where it cannot be shown); the player is transparent
+   until it plays, and the canvas steps aside then, so nothing is drawn over a playing video. */
+canvas.sam { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .clip-poster {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
   width: 100%; padding: 12px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--ink);
@@ -148,8 +151,6 @@ body.wall #hud { left: 50%; }
 #wall { position: fixed; top: 12px; left: 12px; right: 12px; background: var(--bg); border-radius: 12px; }
 #wall .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 #wall.one-row .tiles { grid-template-columns: repeat(8, minmax(0, 1fr)); }
-#wall.one-row .tile-head { flex-wrap: wrap; row-gap: 1px; }  /* eight to a row: the uploader on a line of its own */
-#wall.one-row .tile-head .by { flex-basis: 100%; padding-left: calc(14px * var(--k)); }
 #wall .tile { padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; transition: border-color 0.2s; }
 #wall .tile.sees { border-color: var(--accent); }
 #wall .tile-head {
@@ -161,9 +162,17 @@ body.wall #hud { left: 50%; }
 #wall .tile-head b a { color: inherit; text-decoration: none; }
 #wall .tile.sees .tile-head b { color: var(--ink); }
 #wall .tile-head .role { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-#wall .tile-head .by { flex: 0 1 auto; min-width: 3.5em; padding-left: 8px; overflow: hidden; text-overflow: ellipsis; }
 #wall .tile-box { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; background: #000; }
-#wall .tile-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+#wall .tile-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; transition: opacity 0.4s; }
+#wall .tile-strip {
+  position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 5px 8px; background: rgba(3, 7, 13, 0.82);
+  color: var(--ink-2); font-size: calc(11.5px * var(--k)); line-height: 1.35;
+}
+#wall .tile-credit {
+  margin: 4px 2px 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--ink-3);
+  font-size: calc(11.5px * var(--k));
+}
+#wall .tile-credit a { color: var(--ink-2); }
 #wall .tile-note {
   position: absolute; inset: 0; display: grid; place-content: center; gap: 6px; padding: 12px; text-align: center;
   background: var(--surface); color: var(--ink-2); font-size: calc(12.5px * var(--k));
@@ -172,7 +181,11 @@ body.wall #hud { left: 50%; }
   display: flex; align-items: flex-start; gap: 14px; margin-top: 8px; padding: 7px 10px 7px 12px; background: var(--surface);
   border: 1px solid var(--line); border-radius: 10px; color: var(--ink-2); font-size: calc(12px * var(--k)); line-height: 1.45;
 }
-#wall .bar p { margin: 0; }
+#wall .bar p { margin: 6px 0 0; }
+#wall .bar details { flex: 1 1 auto; }
+#wall .bar summary { color: var(--ink-2); font-size: calc(12px * var(--k)); }
+#wall .bar summary::marker { color: var(--ink-3); }
+#wall .bar summary .more { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
 #wall .wall-hint { margin-left: 6px; color: var(--accent); }
 #wall .wall-close {
   flex: none; font: 600 calc(12.5px * var(--k)) var(--sans); color: var(--ink); background: var(--raise); border: 1px solid var(--line);

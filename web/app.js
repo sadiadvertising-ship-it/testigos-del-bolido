@@ -981,8 +981,8 @@ function stageKey() {  // the key lists only what the current stage shows
 // pausing the replay pauses them. Pausing a player pauses the replay; pressing play in a player while the replay is
 // stopped starts the replay from that player's instant.
 
-const clip = {players: new Map(), pick: null, wall: false, mode: null, starting: false, loop: 0, wait: 0, observer: null,
-  visible: true, keyOpen: null, refit: 0};
+const clip = {players: new Map(), pick: null, wall: false, mode: null, loop: 0, observer: null, visible: true, keyOpen: null,
+  refit: 0, sams: []};
 const CLIP_ERRORS = {100: 'The video is no longer on YouTube, or it is private.', 101: 'Its uploader no longer allows it to play on other sites.',
   150: 'Its uploader no longer allows it to play on other sites.', 153: "YouTube's player needs this page's address, and the browser did not send it."};
 const clock = (x, d = 0) => `${Math.floor(x / 60)}:${d ? (x % 60).toFixed(d).padStart(d + 3, '0') : String(Math.floor(x % 60)).padStart(2, '0')}`;  // 0:06, 0:18.8
@@ -994,7 +994,7 @@ const picked = () => videos(state.data).find(v => v.clip === clip.pick) || null;
 const flight = d => d.solution.times[d.solution.times.length - 1];
 // The wall needs players of YouTube's 200 px minimum, eight in a row from 1840 px wide, else four in two rows, and room
 // for the map below them.
-const wallFits = () => !narrow.matches && innerWidth >= 1100 && innerHeight >= (innerWidth >= 1840 ? 600 : 800);
+const wallFits = () => !narrow.matches && innerWidth >= 1100 && innerHeight >= (innerWidth >= 1840 ? 620 : 840);
 
 function role(d, v) {  // a camera's part in the solution, in a few words
   return v.status === 'used' ? 'in the fit' : v.status === 'left out' ? 'left out' : v.oriented ? 'oriented' : '≈ not oriented';
@@ -1032,6 +1032,58 @@ function clipText(d, v) {  // what one video shows, and whose it is
     <p class="clip-credit">${external(v.url, `“${esc(v.title)}”`)}, uploaded by ${esc(v.uploader)} (${esc(v.channel)}) on
     ${esc(v.uploaded)} (UTC), plays in YouTube's player; no frame or sound of it is stored here.</p>`;
 }
+
+// SAM's track on a canvas, drawn from the measurements (shares of the frame, no pixel of the video): the frame's outline,
+// the trail up to the camera's second that lines up with the replay's time, and the head as large as SAM's box. Before
+// and after the replay, the whole track, faint. It shows while the video loads, or in place of a video that cannot be shown.
+function samCanvas(box, item, label) {
+  const cv = document.createElement('canvas');
+  cv.className = 'sam';
+  cv.setAttribute('aria-hidden', 'true');
+  box.prepend(cv);
+  clip.sams.push({cv, item, label});
+  drawSam(clip.sams[clip.sams.length - 1]);
+  return cv;
+}
+
+function drawSam({cv, item, label, top}) {
+  const r = cv.getBoundingClientRect();
+  if (!r.width || cv.style.visibility === 'hidden' || !item.track || !item.frame_px) return;
+  const k = devicePixelRatio || 1, W = Math.round(r.width * k), H = Math.round(r.height * k);
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  const g = cv.getContext('2d'), [fw, fh] = item.frame_px, s = Math.min(W / fw, H / fh), ox = (W - fw * s) / 2, oy = (H - fh * s) / 2;
+  g.fillStyle = '#03070d';
+  g.fillRect(0, 0, W, H);
+  g.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+  g.lineWidth = k;
+  g.strokeRect(ox + k / 2, oy + k / 2, fw * s - k, fh * s - k);
+  const t = state.t, now = t === null ? Infinity : item.start_s + t, xy = p => [ox + p[1] * fw * s, oy + p[2] * fh * s];
+  const seen = item.track.filter(p => p[0] <= now);
+  if (seen.length) {
+    g.strokeStyle = t === null ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.6)';
+    g.lineWidth = 1.5 * k;
+    g.beginPath();
+    seen.forEach((p, i) => { const [x, y] = xy(p); if (i) g.lineTo(x, y); else g.moveTo(x, y); });
+    g.stroke();
+    if (t !== null && now <= item.track[item.track.length - 1][0] + 0.3) {  // the head, while the camera still sees it
+      const p = seen[seen.length - 1], [x, y] = xy(p), rad = Math.min(fw * s * 0.09, Math.max(3 * k, p[3] * fw * s * 0.5));
+      const glow = g.createRadialGradient(x, y, 0, x, y, rad * 2);
+      glow.addColorStop(0, 'rgba(255, 255, 245, 1)');
+      glow.addColorStop(0.35, 'rgba(255, 238, 200, 0.75)');
+      glow.addColorStop(1, 'rgba(255, 215, 150, 0)');
+      g.fillStyle = glow;
+      g.beginPath();
+      g.arc(x, y, rad * 2, 0, 2 * Math.PI);
+      g.fill();
+    }
+  }
+  g.fillStyle = 'rgba(168, 181, 199, 0.9)';
+  g.font = `${11 * k}px ${FONT}`;
+  g.textBaseline = top ? 'top' : 'alphabetic';  // at the foot, unless a strip of text already sits there
+  g.fillText(label, ox + 7 * k, top ? oy + 6 * k : oy + fh * s - 8 * k);
+}
+
+function drawSams() { clip.sams.forEach(drawSam); }
 
 const linkedText = d => (d.videos.linked || []).map(l => `<p class="clip-credit">${esc(l.site)}, one of the
   ${count(d.solution.clips.length)} cameras of the fit, is not here: its uploader does not allow the video on other sites.
@@ -1116,13 +1168,15 @@ function enterWall(d) {
   const tiles = [...(d.videos.linked || []).map(l => ({linked: l, rank: 0, id: (d.stations.find(x => x.site === l.site) || {}).id})),
     ...vids.map(v => ({v, rank: byRole(v), id: v.clip}))].sort((a, b) => a.rank - b.rank);
   const tile = x => x.linked
-    ? `<div class="tile" data-site="${esc(x.linked.site)}"><p class="tile-head">${swatch(d, x.id)}<b>${esc(x.linked.site)}</b><span class="role">· in the fit</span><span
-        class="by" title="Uploaded by ${esc(x.linked.uploader)} (${esc(x.linked.channel)})">${esc(x.linked.uploader)}</span></p>
-        <div class="tile-box"><div class="tile-note"><span>Its uploader does not allow the video on other sites.</span>
-        ${external(x.linked.url, `Watch it on YouTube from ${clock(x.linked.at_s)}`)}</div></div></div>`
-    : `<div class="tile" data-clip="${esc(x.v.clip)}"><p class="tile-head">${swatch(d, x.v.clip)}<b>${external(x.v.url, esc(x.v.site))}</b><span
-        class="role">· ${role(d, x.v)}</span><span class="by" title="“${esc(x.v.title)}”, uploaded by ${esc(x.v.uploader)} (${esc(x.v.channel)}) on ${esc(x.v.uploaded)} (UTC)">${esc(x.v.uploader)}</span></p>
-        <div class="tile-box"></div></div>`;
+    ? `<div class="tile" data-site="${esc(x.linked.site)}"><p class="tile-head">${swatch(d, x.id)}<b>${esc(x.linked.site)}</b><span class="role">· in the fit</span></p>
+        <div class="tile-box"><p class="tile-strip">Its uploader does not allow the video on other sites.</p></div>
+        <p class="tile-credit">Video by ${esc(x.linked.uploader)} (${esc(x.linked.channel)}), ${esc(x.linked.uploaded)} ·
+        ${external(x.linked.url, `watch it on YouTube from ${clock(x.linked.at_s)}`)}</p></div>`
+    : `<div class="tile" data-clip="${esc(x.v.clip)}"><p class="tile-head">${swatch(d, x.v.clip)}<b>${esc(x.v.site)}</b><span
+        class="role">· ${role(d, x.v)}</span></p>
+        <div class="tile-box"></div>
+        <p class="tile-credit" title="“${esc(x.v.title)}”, uploaded by ${esc(x.v.uploader)} (${esc(x.v.channel)}) on ${esc(x.v.uploaded)} (UTC)">${external(x.v.url,
+        `“${esc(x.v.title)}”`)} · ${esc(x.v.uploader)}, ${esc(x.v.uploaded)}</p></div>`;
   const g = d.videos, glowed = vids.filter(v => !v.oriented);
   const refs = Object.entries(g.glow_from || {}).map(([site, at]) => `${esc(site)}'s ${fmt(at, 1)} s`);
   const wall = document.createElement('div');
@@ -1131,21 +1185,27 @@ function enterWall(d) {
   const cap = x => x.charAt(0).toUpperCase() + x.slice(1);
   wall.className = innerWidth >= 1840 ? 'one-row' : '';
   wall.innerHTML = `<div class="tiles">${tiles.map(tile).join('')}</div>
-    <div class="bar"><p>${cap(count(vids.length))} witness videos with the replay. ${vids.filter(v => v.oriented).map(v => esc(v.site)).join(' and ')}
-      run by their own clocks; their lines of sight appear as the replay's point reaches them and run ahead of the videos toward the
-      end, as the fireball slowed. The ${count(glowed.length)} marked ≈ come from cameras not oriented: they add nothing to the path, and
-      each is lined up on SAM's largest box around the fireball (${fmt(g.glow_replay_s, 1)} s, between ${list(refs)}), which can be a
-      second or more off. Each is its uploader's video in YouTube's player; no frame or sound of them is stored here.
-      <span class="wall-hint" role="status"></span></p>
+    <div class="bar"><details><summary>${cap(count(vids.length))} witness videos with the replay; ≈ marks a camera not oriented, which adds
+      nothing to the path. Until a video plays, its tile draws SAM's track. <span class="more">How they line up</span></summary>
+      <p>${vids.filter(v => v.oriented).map(v => esc(v.site)).join(' and ')} run by their own clocks; their lines of sight appear as the
+      replay's point reaches them and run ahead of the videos toward the end, as the fireball slowed. The ${count(glowed.length)} marked ≈
+      are each lined up on SAM's largest box around the fireball (${fmt(g.glow_replay_s, 1)} s, between ${list(refs)}), which can be a
+      second or more off. Each is its uploader's video in YouTube's player; no frame or sound of them is stored here.</p></details>
+      <span class="wall-hint" role="status"></span>
       <button type="button" class="wall-close">Close</button></div>`;
   document.body.append(wall);
   document.body.classList.add('wall');
+  (d.videos.linked || []).forEach(l => {  // the camera whose video cannot be shown: its track, always
+    const box = wall.querySelector(`.tile[data-site="${CSS.escape(l.site)}"] .tile-box`);
+    if (box && l.track) { samCanvas(box, l, "SAM 3.1's track of its video"); clip.sams[clip.sams.length - 1].top = true; drawSams(); }
+  });
   wall.querySelector('.wall-close').addEventListener('click', () => exitWall(true));
   const key = $('#legend details');
   clip.keyOpen = key ? key.open : null;
   if (key) key.open = false;
   placeHud();
   fitWall(d);
+  drawSams();
   startPlayers(d, vids, vids.map(v => wall.querySelector(`.tile[data-clip="${CSS.escape(v.clip)}"] .tile-box`)));
 }
 
@@ -1208,24 +1268,26 @@ function loadYouTube() {  // YouTube's IFrame API, once, with a time limit
   return youTube;
 }
 
-// Start the players for these videos in these boxes; the replay starts from 0 once the first of them plays.
+// Start the players for these videos in these boxes. The replay starts from 0 at once: until a video is ready, its box
+// draws SAM's track at the replay's pace, and each video joins in step when it plays (follow()).
 async function startPlayers(d, list, boxes) {
   if (!list.length || clip.players.size) return;
-  boxes.forEach(b => { if (b) b.innerHTML = '<p class="clip-wait">Loading YouTube\'s player…</p>'; });
-  try { await loadYouTube(); } catch (e) {
-    boxes.forEach((b, i) => b && b.isConnected && boxFail(d, list[i], b, "YouTube's player could not load here."));
-    if (state.data === d && !state.playing) { state.t = null; play(); }  // the replay runs on its own
-    return;
-  }
-  if (state.data !== d || !boxes.some(b => b && b.isConnected)) return;
+  boxes.forEach((b, i) => {
+    if (!b) return;
+    b.innerHTML = '';
+    if (list[i].track) samCanvas(b, list[i], "SAM 3.1's track, while YouTube's player loads");
+    else b.innerHTML = '<p class="clip-wait">Loading YouTube\'s player…</p>';
+  });
   if (state.playing) stop(false);
   state.t = null;
-  $('#play').textContent = 'Replay';
-  readout();
-  redraw();
-  clip.starting = true;
-  clip.wait = setTimeout(() => begin(d), 8000);  // a slow player does not hold the others back for long
+  play();
+  try { await loadYouTube(); } catch (e) {
+    boxes.forEach((b, i) => b && b.isConnected && boxFail(d, list[i], b, "YouTube's player could not load here."));
+    return;  // the replay runs on its own, with SAM's tracks
+  }
+  if (state.data !== d || !boxes.some(b => b && b.isConnected)) return;
   list.forEach((v, i) => { if (boxes[i] && boxes[i].isConnected) clip.players.set(v.clip, makePlayer(d, v, boxes[i])); });
+  follow();
 }
 
 function makePlayer(d, v, box) {
@@ -1236,7 +1298,10 @@ function makePlayer(d, v, box) {
   f.title = `${v.site}: “${v.title}”, by ${v.uploader}, in YouTube's player`;
   f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
   f.referrerPolicy = 'strict-origin-when-cross-origin';  // YouTube refuses to play for a page that sends no address
-  box.replaceChildren(f);
+  f.style.opacity = '0';  // transparent until it plays: SAM's track shows meanwhile; nothing is ever drawn over the player
+  const wait = box.querySelector('.clip-wait');
+  if (wait) wait.remove();
+  box.append(f);
   const rec = {v, box, player: null, ready: false, ours: 0, want: 0, lastSeek: 0,
     timer: setTimeout(() => { if (!rec.ready) boxFail(d, v, box, "YouTube's player did not answer."); }, 15000)};
   try {
@@ -1245,9 +1310,14 @@ function makePlayer(d, v, box) {
         if (state.data !== d || !clip.players.has(v.clip)) return;
         clearTimeout(rec.timer);
         rec.ready = true;
-        try {  // a video whose start falls later stays cued at its first second
+        try {  // into the running replay at its second; a video whose start is still to come stays cued
           rec.player.mute();
-          if (v.start_s >= 0) { rec.want = performance.now(); rec.player.seekTo(v.start_s, true); rec.player.playVideo(); }
+          const at = v.start_s + (state.t === null ? 0 : state.t);
+          if (state.playing && at >= 0) {
+            rec.want = rec.lastSeek = performance.now();
+            rec.player.seekTo(at, true);
+            rec.player.playVideo();
+          }
         } catch (e) { /* follow() tries again */ }
       },
       onStateChange: e => onPlayerState(d, rec, e),
@@ -1258,18 +1328,11 @@ function makePlayer(d, v, box) {
   return rec;
 }
 
-function begin(d) {  // the first video plays: the replay starts from 0, and follow() keeps the others in step
-  clearTimeout(clip.wait);
-  if (!clip.starting || state.data !== d) return;
-  clip.starting = false;
-  if (state.playing) {  // already running (the autoplay, or a press while the players loaded): its clock starts over
-    started = performance.now();
-    state.t = 0;
-    follow();
-    return;
-  }
-  state.t = null;
-  play();
+function reveal(rec) {  // the video plays: it shows, and SAM's track behind it steps aside
+  rec.shown = true;
+  const f = rec.box.querySelector('iframe'), cv = rec.box.querySelector('canvas.sam');
+  if (f) f.style.opacity = '1';
+  if (cv) cv.style.visibility = 'hidden';
 }
 
 function onPlayerState(d, rec, e) {
@@ -1277,9 +1340,9 @@ function onPlayerState(d, rec, e) {
   const S = YT.PlayerState;
   if (e.data === S.PLAYING) {
     hint('');
+    reveal(rec);
     const asked = rec.want && performance.now() - rec.want < 20000;  // a play the page asked for, perhaps come late
     rec.want = 0;
-    if (clip.starting) return begin(d);
     if (state.playing) return;  // follow() keeps it in step
     if (asked) {  // the replay is no longer running: the late video waits
       rec.ours = performance.now();
@@ -1292,7 +1355,8 @@ function onPlayerState(d, rec, e) {
   } else if (e.data === S.PAUSED) {
     const ours = rec.ours && performance.now() - rec.ours < 3000;  // the page paused it: hidden, or the replay paused
     rec.ours = 0;
-    if (!ours && state.playing) stop(false);  // the reader paused this player: everything pauses
+    // the reader paused this player: everything pauses (a player that has not shown yet cannot have been paused by a reader)
+    if (!ours && rec.shown && state.playing) stop(false);
   }
 }
 
@@ -1341,19 +1405,26 @@ function boxFail(d, v, box, why) {
     clip.players.delete(v.clip);
   }
   const html = `${esc(why)} ${external(`${v.url}&t=${Math.max(0, Math.floor(v.start_s))}s`, `Watch it on YouTube from ${clock(Math.max(0, v.start_s))}`)}.`;
-  if (clip.wall) { if (box.isConnected) box.innerHTML = `<div class="tile-note"><span>${html}</span></div>`; }
-  else if (box.isConnected) box.outerHTML = `<p class="clip-fail" role="status">${html}</p>`;
-  if (clip.starting && !clip.players.size) begin(d);  // none left: the replay runs on its own
+  if (clip.wall) {  // the tile keeps drawing SAM's track, with the reason and the link along its foot
+    if (box.isConnected) {
+      const f = box.querySelector('iframe'), cv = box.querySelector('canvas.sam');
+      if (f) f.remove();
+      if (cv) cv.style.visibility = '';
+      clip.sams.filter(x => x.cv === cv).forEach(x => { x.label = "SAM 3.1's track"; x.top = true; drawSam(x); });
+      const strip = box.querySelector('.tile-strip') || box.appendChild(document.createElement('p'));
+      strip.className = 'tile-strip';
+      strip.innerHTML = html;
+    }
+  } else if (box.isConnected) box.outerHTML = `<p class="clip-fail" role="status">${html}</p>`;
 }
 
 function dropClip() {
-  clearTimeout(clip.wait);
   for (const rec of clip.players.values()) {
     clearTimeout(rec.timer);
     try { if (rec.player && rec.player.destroy) rec.player.destroy(); } catch (e) { /* already gone */ }
   }
   clip.players.clear();
-  clip.starting = false;
+  clip.sams = [];
   if (clip.observer) clip.observer.disconnect();
   clip.observer = null;
   clip.visible = true;
@@ -1397,6 +1468,7 @@ function play() {
     readout();
     redraw();
     wallSees();
+    drawSams();
     if (!state.playing) return;
     if (state.t < dur) raf = requestAnimationFrame(tick);
     else setTimeout(() => stop(true), 900);
@@ -1412,6 +1484,7 @@ function stop(finished) {
   if (finished) state.t = null;
   follow();
   wallSees();
+  drawSams();
   $('#play').textContent = state.t === null ? 'Replay' : 'Resume';
   readout();
   placeHud();
@@ -1491,7 +1564,7 @@ async function show(id) {
     map.jumpTo(view);
     // the replay runs once, when the map has drawn the case; a case switch before then cancels it
     if (autoplay && d.solution) {
-      map.once('idle', () => { if (state.data === d && state.t === null && !state.playing && !clip.starting && !clip.players.size) play(); });
+      map.once('idle', () => { if (state.data === d && state.t === null && !state.playing && !clip.players.size) play(); });
     }
   } else map.flyTo({...view, duration: 2200, essential: true});
   firstView = false;

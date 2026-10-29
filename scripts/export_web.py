@@ -2,7 +2,8 @@
 
 Only derived numbers and credits leave the machine: camera sites rounded to about 100 m, each line of sight as the point
 where it passes closest to the solved path, the solutions the agent tried, the Monte Carlo lines, the agent log and report,
-and published values (labelled; the agent never sees them). No video, frame or pixel track is exported. For the
+and published values (labelled; the agent never sees them). No video or frame is exported, and no pixel track: for the
+witness videos, SAM's track goes out as shares of the frame, which the viewer draws while a video loads. For the
 witness videos the viewer can play (those whose uploaders allow embedding), the export names each uploader's YouTube video,
 its title and credit, and the upload's seconds that tie it to the replay; the viewer loads them in YouTube's player only
 when a reader presses play.
@@ -139,6 +140,16 @@ def widest_glow_t(rows):
     return max(boxed, key=lambda r: (r['box'][2] - r['box'][0]) * (r['box'][3] - r['box'][1]))['t'] if boxed else None
 
 
+def sam_track(rows, w0, frame_px, most=160):
+    """SAM's track of the fireball as the viewer draws it while a video loads, or where a video cannot be shown: per row,
+    the upload's second, the centroid as a share of the frame's width and height, and the side of a square as large as
+    SAM's box, as a share of the width (how far the glow spreads). Numbers measured from the video, no pixel of it."""
+    w, h = frame_px
+    rows = rows[::max(1, -(-len(rows) // most))]
+    return [[round(w0 + r['t'], 3), round(r['centroid'][0] / w, 4), round(r['centroid'][1] / h, 4),
+             round(((r['box'][2] - r['box'][0]) * (r['box'][3] - r['box'][1])) ** 0.5 / w, 4) if r.get('box') else 0] for r in rows]
+
+
 def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
     """The witness videos the viewer can play with the replay, or None when the case has none: every clip whose credits
     record that its uploader allows embedding, FIRST before the rest, then the oriented ones, then the others, in the
@@ -150,8 +161,9 @@ def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
     fireball has its largest area is set to glow_replay_s, the mean of that instant on the replay's clock over the oriented
     cameras whose tracks run to their end (glow_from, by site), Kamensk-Uralskiy's among them even though its video cannot
     be shown. Nothing measures how far off this puts the other videos: the largest box can mark another moment in them. fireball_s are the
-    seconds where SAM followed the fireball; camera_moves is Muse Spark's reading. linked lists the solution's cameras
-    whose uploaders do not allow embedding, as links to YouTube at the second their own clock reads 0."""
+    seconds where SAM followed the fireball; camera_moves is Muse Spark's reading; track is SAM's track as sam_track
+    gives it, with frame_px. linked lists the solution's cameras whose uploaders do not allow embedding, as links to YouTube
+    at the second their own clock reads 0, with their tracks too."""
     creds = creds if creds is not None else credits(case)
     first = FIRST.get(case.id)
     clips = {str(ev['catalog_no']): ev for ev in case.event['clips'] if ev.get('source') and ev.get('window_s')}
@@ -170,9 +182,11 @@ def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
         allowed, oriented = (c.get('embed') or {}).get('allowed'), clip in shift
         if allowed is False and clip in final:
             at = int(np.floor(ev['window_s'][0] + shift[clip]))
-            ou = UPLOADER.match(c['credit'])
+            ou, rows = UPLOADER.match(c['credit']), sam_rows(case, clip)
             linked.append({'site': ev['site'], 'url': f"https://www.youtube.com/watch?v={youtube_id(c['source'])}&t={at}s",
-                           'at_s': at, 'uploader': ou and ou[1], 'channel': ou and ou[2]})
+                           'at_s': at, 'uploader': ou and ou[1], 'channel': ou and ou[2], 'uploaded': ou and ou[3],
+                           'start_s': round(float(ev['window_s'][0] + shift[clip]), 3), 'frame_px': ev.get('frame_px'),
+                           'track': sam_track(rows, ev['window_s'][0], ev['frame_px']) if ev.get('frame_px') and rows else None})
         if allowed is not True:
             continue
         w0, w1 = ev['window_s']
@@ -196,6 +210,7 @@ def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
                       'trimmed_s': [w0, w1], 'start_s': round(float(start), 3), 'end_s': round(float(max(w1, start + dur + 1)), 1),
                       'fireball_s': [round(float(w0 + times.min()), 2), round(float(w0 + times.max()), 2)],
                       'camera_moves': json.loads(reading.read_text()).get('camera_moves') if reading.exists() else None,
+                      'frame_px': ev.get('frame_px'), 'track': sam_track(rows, w0, ev['frame_px']) if ev.get('frame_px') else None,
                       'left_out': drop and {'step': drop['step'], 'criterion': drop['result'].get('criterion'),
                                             'pairs': [{'site': names.get(k, k), 'q_deg': r['q_deg_with_it']} for k, r in
                                                       ((drop['result'].get('measured') or {}).get('near_parallel_with') or {}).items()]}})

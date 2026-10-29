@@ -16,7 +16,7 @@ _spec.loader.exec_module(ex)
 CASE = 'chelyabinsk-2013'
 WEB = ROOT / 'web' / 'data'
 KEYS = {'clip', 'site', 'camera', 'status', 'oriented', 'aligned', 'youtube_id', 'url', 'title', 'uploader', 'channel',
-        'uploaded', 'trimmed_s', 'start_s', 'end_s', 'fireball_s', 'camera_moves', 'left_out'}
+        'uploaded', 'trimmed_s', 'start_s', 'end_s', 'fireball_s', 'camera_moves', 'left_out', 'frame_px', 'track'}
 
 
 @pytest.fixture(scope='module')
@@ -83,6 +83,16 @@ def test_a_video_aligned_by_glow_puts_its_widest_glow_where_the_oriented_cameras
         glow = v['trimmed_s'][0] + ex.widest_glow_t(ex.sam_rows(case, v['clip']))
         assert glow - v['start_s'] == pytest.approx(fresh['glow_replay_s'], abs=0.01)
         assert v['end_s'] >= v['start_s'] + solved[3]  # room for the whole replay
+
+
+def test_tracks_are_shares_of_the_frame_on_the_uploads_clock(fresh):
+    for v in fresh['shown'] + fresh['linked']:
+        track = v['track']
+        assert 20 <= len(track) <= 160
+        assert all(0 <= x <= 1 and 0 <= y <= 1 and 0 <= r <= 1 for _, x, y, r in track)  # no pixel leaves the machine
+        assert [p[0] for p in track] == sorted(p[0] for p in track)
+        if 'fireball_s' in v:  # SAM's first and last points are where the video's fireball seconds come from
+            assert track[0][0] == pytest.approx(v['fireball_s'][0], abs=0.006)
 
 
 def test_credits_and_links(fresh):

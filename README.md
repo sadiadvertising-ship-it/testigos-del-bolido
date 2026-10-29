@@ -351,9 +351,11 @@ the camera stays out of the repository. The demo video shows cards drawn from th
 The 3D viewer can play seven of the Chelyabinsk videos, as their uploaders' YouTube videos in YouTube's own player
 (youtube-nocookie.com, run by YouTube's IFrame API script from www.youtube.com, which can set youtube.com cookies),
 which their uploaders allow (checked on 29 October 2026): the page loads nothing from YouTube until a reader presses
-play, and it keeps no frame or sound. Kamensk-Uralskiy's uploader does not allow embedding, so the viewer only links to
-that video, and it links to the Medellín post on X without loading anything from X. The README's GIF (`?panel=0`) and
-the demo video (`?video=1`) show no witness footage: the videos are off in both, unless `&clip=1` is added in video mode.
+play, and it keeps no frame or sound. Until a video plays, and in Kamensk-Uralskiy's place, a tile draws SAM's track of
+the fireball from the measurements: its position as a share of the frame and the size of SAM's box. Kamensk-Uralskiy's
+uploader does not allow embedding, so the viewer only links to that video, and it links to the Medellín post on X
+without loading anything from X. The README's GIF (`?panel=0`) and the demo video (`?video=1`) show no witness footage:
+the videos are off in both, unless `&clip=1` is added in video mode.
 
 Chelyabinsk videos, by YouTube uploader: Aleksandr Ivanov (Kamensk-Uralskiy), Никита Зенкович (Korkino), Alexander
 Voronov (Tyumen), MrKuzaman (Beloretsk), 🫐 голубика🫐 (Chebarkul), Мясников Сергей (Yekaterinburg), Сергей Давлеткулов

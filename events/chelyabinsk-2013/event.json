@@ -15,6 +15,7 @@
         52,
         70
       ],
+      "frame_px": [1280, 720],
       "file_fps": 30.0,
       "lens": "normal",
       "landmarks_seen": "church with dome, street lamps, road",
@@ -31,6 +32,7 @@
         11,
         23
       ],
+      "frame_px": [1280, 720],
       "file_fps": 30.0,
       "catalog_fps": 25.0,
       "lens": "normal",
@@ -48,6 +50,7 @@
         5,
         20
       ],
+      "frame_px": [1280, 720],
       "file_fps": 29.97,
       "lens": "normal",
       "landmarks_seen": "road axis, traffic lights, street lamps; fireball low on the horizon",
@@ -64,6 +67,7 @@
         0,
         22
       ],
+      "frame_px": [1280, 720],
       "file_fps": 30.0,
       "lens": "normal",
       "landmarks_seen": "utility poles, traffic light, tree line; fireball overexposed near the top",
@@ -80,6 +84,7 @@
         13,
         33
       ],
+      "frame_px": [1280, 720],
       "file_fps": 30.0,
       "lens": "wide, strong distortion",
       "landmarks_seen": "power-line pylon on the horizon, mast",
@@ -96,6 +101,7 @@
         10,
         17
       ],
+      "frame_px": [960, 720],
       "file_fps": 60.0,
       "catalog_fps": 30.0,
       "lens": "circular fisheye",
@@ -113,6 +119,7 @@
         9,
         17.6
       ],
+      "frame_px": [872, 708],
       "file_fps": 30.0,
       "crop": [
         872,
@@ -135,6 +142,7 @@
         1.0,
         9.0
       ],
+      "frame_px": [480, 360],
       "file_fps": 29.97,
       "lens": "wide, strong vignetting; YouTube copy is 480x360",
       "landmarks_seen": "garage alley (vanishing point), end building, a near pole; horizon hidden",
