@@ -1,7 +1,7 @@
-// The Chelyabinsk replay from the 3D viewer as the README's looping GIF, docs/replay.gif. It shows the map only: the
-// side panel is hidden (the viewer's ?panel=0 mode), and with it the window that plays a witness video in YouTube's player;
-// clip=0 keeps that window off too, and the script stops if anything from YouTube is on the page, so the GIF holds no
-// witness frame.
+// The Chelyabinsk replay from the 3D viewer as the README's looping GIF, docs/replay.gif. It shows the map only: ?panel=0
+// hides the side panel and the map key and turns the witness videos off (no poster, player or wall: clipOn in
+// web/app.js), clip=0 turns them off too, the 880x495 window is below what the wall needs, and the script stops if
+// anything from YouTube is on the page, so the GIF holds no witness frame.
 //
 // Serve web/ first, then run from anywhere:
 //   python3 -m http.server -d web 8000

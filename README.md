@@ -19,21 +19,25 @@ The Chelyabinsk validation case in the viewer, recorded by scripts/capture_repla
 fitted line flown at the fitted speed, in real time, not how long a camera saw the fireball (Kamensk-Uralskiy tracked it
 for 13.7 s). As the white point descends from 89 km to 11 km, each camera's lines of sight appear: blue from
 Kamensk-Uralskiy and green from Korkino, the two cameras of the solution, and grey dashed from Tyumen, which the agent
-left out because its planes cross Kamensk-Uralskiy's at 7.5°. The cameras that were never oriented show as hollow dots.
-The last instant holds for 0.9 s; then the still view shows the agent's white path beside the dashed yellow path of CBET
-3423, the published solution, for 1.5 s, and for 1.5 s more with the 500 Monte Carlo lines as a pale blue band.
+left out because its planes cross Kamensk-Uralskiy's at 7.5°. The cameras not oriented show as hollow dots. The last
+instant holds for 0.9 s; then the still view shows the agent's white path beside the dashed yellow path of CBET 3423,
+the published solution, for 1.5 s, and for 1.5 s more with the 500 Monte Carlo lines as a pale blue band.
 
 In the viewer, the side panel opens with the witness videos whose uploaders allow them on other sites, each its
-uploader's own video in YouTube's player, which loads only when you press play. On a wide screen one press plays all
-seven together, in a wall above the map, with the 3D replay; on a phone they play one at a time. Korkino's and Tyumen's
-videos run by their own clocks, so each camera's lines of sight grow on the map as it sees the fireball: Korkino is one
-of the two cameras of the fit, and Tyumen, which the agent left out of the fit (its planes cross Kamensk-Uralskiy's at
-7.5°), is a check on it: its 223 lines of sight miss the fitted path by 0.45° (median; see Tyumen, held out, below). The
-five others, from Beloretsk, Chebarkul, Yekaterinburg, Magnitogorsk and Plast, come from cameras that were never
-oriented: they add nothing to the path, and each is aligned by eye on its glow, the instant SAM's box around the
-fireball is widest, set to 7.0 s into the replay as in Kamensk-Uralskiy's and Tyumen's videos, good to about a second
-(`witness_videos` in `scripts/export_web.py`). Kamensk-Uralskiy's uploader does not allow the video on other sites, so
-the viewer links to it. The GIF above and the demo video leave the videos out.
+uploader's own video in YouTube's player, which loads only when you press play. In a browser window at least 1100 px
+wide and 800 px tall (or 1840 px wide and 600 px tall), one press plays all seven together, in a wall above the map,
+with the 3D replay; in a smaller window or on a phone they play one at a time. Korkino's and Tyumen's videos run by
+their own clocks, beside each camera's lines of sight, which appear on the map as the replay's point reaches them; the
+replay flies the fitted line at one speed and the fireball slowed, so toward the end the lines run ahead of the videos
+(Tyumen's last by about 2 s). Korkino is one of the two cameras of the fit, and Tyumen, which the agent left out of the
+fit (its planes cross Kamensk-Uralskiy's at 7.5°), is a check on it: its 223 lines of sight miss the fitted path by
+0.45° (median; see Tyumen, held out, below). The five others, from Beloretsk, Chebarkul, Yekaterinburg, Magnitogorsk and
+Plast, come from cameras that are not oriented: they add nothing to the path, and their clocks are not tied to it, so
+each is lined up on the instant SAM's box around the fireball is largest, put 7.0 s into the replay, between where that
+instant falls in Kamensk-Uralskiy's video (6.8 s) and Tyumen's (7.3 s). In those two the largest box is the fireball's
+longest streak; in Beloretsk and Chebarkul it is a glare that may be the major flare, lower down, so these five can be a
+second or more off (`witness_videos` in `scripts/export_web.py`). Kamensk-Uralskiy's uploader does not allow the video
+on other sites, so the viewer links to it. The GIF above and the demo video leave the videos out.
 
 ```mermaid
 flowchart TD

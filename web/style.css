@@ -145,9 +145,11 @@ details[open] summary { margin-bottom: 8px; }
 /* The wall: the witness videos above the map, four to a row; each player at least 200 px tall, with nothing over it. */
 body.wall #panel { display: none; }
 body.wall #hud { left: 50%; }
-#wall { position: fixed; top: 12px; left: 12px; right: 12px; }
+#wall { position: fixed; top: 12px; left: 12px; right: 12px; background: var(--bg); border-radius: 12px; }
 #wall .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 #wall.one-row .tiles { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+#wall.one-row .tile-head { flex-wrap: wrap; row-gap: 1px; }  /* eight to a row: the uploader on a line of its own */
+#wall.one-row .tile-head .by { flex-basis: 100%; padding-left: calc(14px * var(--k)); }
 #wall .tile { padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; transition: border-color 0.2s; }
 #wall .tile.sees { border-color: var(--accent); }
 #wall .tile-head {
@@ -158,7 +160,8 @@ body.wall #hud { left: 50%; }
 #wall .tile-head b { margin-right: 4px; color: var(--ink-2); font-weight: 600; }
 #wall .tile-head b a { color: inherit; text-decoration: none; }
 #wall .tile.sees .tile-head b { color: var(--ink); }
-#wall .tile-head .by { margin-left: auto; padding-left: 8px; overflow: hidden; text-overflow: ellipsis; }
+#wall .tile-head .role { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+#wall .tile-head .by { flex: 0 1 auto; min-width: 3.5em; padding-left: 8px; overflow: hidden; text-overflow: ellipsis; }
 #wall .tile-box { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; background: #000; }
 #wall .tile-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 #wall .tile-note {
@@ -166,7 +169,7 @@ body.wall #hud { left: 50%; }
   background: var(--surface); color: var(--ink-2); font-size: calc(12.5px * var(--k));
 }
 #wall .bar {
-  display: flex; align-items: flex-start; gap: 14px; margin-top: 8px; padding: 7px 10px 7px 12px; background: var(--panel);
+  display: flex; align-items: flex-start; gap: 14px; margin-top: 8px; padding: 7px 10px 7px 12px; background: var(--surface);
   border: 1px solid var(--line); border-radius: 10px; color: var(--ink-2); font-size: calc(12px * var(--k)); line-height: 1.45;
 }
 #wall .bar p { margin: 0; }

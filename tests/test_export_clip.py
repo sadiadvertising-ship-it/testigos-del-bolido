@@ -76,7 +76,8 @@ def test_a_video_aligned_by_glow_puts_its_widest_glow_where_the_oriented_cameras
     for k in ('2', '48'):  # the oriented cameras whose tracks run to their end
         rows = ex.sam_rows(case, k)
         glows.append(ex.widest_glow_t(rows) - ex.own_clock(sol, s0, case._stations([k])[0])[3])
-    assert fresh['glow_from'] == ['Kamensk-Uralskiy', 'Tyumen']
+    assert list(fresh['glow_from']) == ['Kamensk-Uralskiy', 'Tyumen']
+    assert list(fresh['glow_from'].values()) == pytest.approx(glows, abs=0.006)
     assert fresh['glow_replay_s'] == pytest.approx(sum(glows) / 2, abs=0.006)
     for v in (v for v in fresh['shown'] if v['aligned'] == 'glow'):
         glow = v['trimmed_s'][0] + ex.widest_glow_t(ex.sam_rows(case, v['clip']))

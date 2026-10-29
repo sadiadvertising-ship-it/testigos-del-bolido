@@ -1,7 +1,8 @@
-"""Still frames for the demo video: the SAM 3.1 track of the fireball drawn over a frame of each witness video, with its
-credit. Frames come from the trimmed clips in out/sam/ and go to out/demo/; neither is committed. Each frame is cut to
-the sky and skyline above the track's lowest point, which keeps streets, cars and their plates out of the picture;
-a person still checks every frame before it is shown.
+"""Still frames of each witness video with the SAM 3.1 track of the fireball drawn over it, with its credit, for checking
+the tracks by eye; the demo video does not use them (it shows the cards of scripts/track_cards.py and
+scripts/title_cards.py, drawn from the measurements). Frames come from the trimmed clips in out/sam/ and go to out/demo/;
+neither is committed. Each frame is cut to the sky and skyline above the track's lowest point, which keeps streets, cars
+and their plates out of the picture.
 Usage: .venv/bin/python scripts/demo_frames.py [clip numbers, default every tracked Chelyabinsk clip]
 """
 import json

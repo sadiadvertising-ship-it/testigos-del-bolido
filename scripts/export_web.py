@@ -133,7 +133,8 @@ def sam_rows(case, clip):
 
 
 def widest_glow_t(rows):
-    """The trimmed clip's second where SAM's box around the fireball is largest: where its glow spreads widest."""
+    """The trimmed clip's second where SAM's box around the fireball has its largest area (in the oriented cameras' videos,
+    the fireball's longest streak, just before the box turns round)."""
     boxed = [r for r in rows if r.get('box')]
     return max(boxed, key=lambda r: (r['box'][2] - r['box'][0]) * (r['box'][3] - r['box'][1]))['t'] if boxed else None
 
@@ -145,9 +146,10 @@ def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
     replay's zero (it can be negative: the video then starts later), and end_s leaves room for the whole replay.
     An oriented camera's video is aligned by its own clock (aligned 'clock'): the trimmed clip starts at window_s[0] of
     the upload, and the camera's clock is shifted as in each station's track. A camera that was never oriented has no
-    clock on the path, so its video is aligned by its glow (aligned 'glow'): the second where SAM's box around the
-    fireball is widest is set to glow_replay_s, the mean of that instant over the oriented cameras whose tracks run to
-    their end (glow_from), Kamensk-Uralskiy's among them even though its video cannot be shown. fireball_s are the
+    clock on the path, so its video is lined up on SAM's box (aligned 'glow'): the second where SAM's box around the
+    fireball has its largest area is set to glow_replay_s, the mean of that instant on the replay's clock over the oriented
+    cameras whose tracks run to their end (glow_from, by site), Kamensk-Uralskiy's among them even though its video cannot
+    be shown. Nothing measures how far off this puts the other videos: the largest box can mark another moment in them. fireball_s are the
     seconds where SAM followed the fireball; camera_moves is Muse Spark's reading. linked lists the solution's cameras
     whose uploaders do not allow embedding, as links to YouTube at the second their own clock reads 0."""
     creds = creds if creds is not None else credits(case)
@@ -201,7 +203,7 @@ def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
         return None
     shown.sort(key=lambda x: (x['clip'] != first, not x['oriented']))  # stable: the case's order within each group
     return {'first': shown[0]['clip'], 'shown': shown, 'linked': linked,
-            'glow_replay_s': glow_at and round(glow_at, 2), 'glow_from': sorted(glows)}
+            'glow_replay_s': glow_at and round(glow_at, 2), 'glow_from': {k: round(float(t), 2) for k, t in sorted(glows.items())}}
 
 
 def drop_reason(result, names):

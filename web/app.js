@@ -60,8 +60,8 @@ const video = params.get('video') === '1';  // ?video=1: larger type and a wider
 const autoplay = params.get('replay') !== '0' && !matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.body.classList.toggle('bare', bare);
 document.body.classList.toggle('video', video);
-// The witness videos' window (d.videos): off in ?panel=0 (the README's GIF) and, unless &clip=1, in ?video=1 (the demo's
-// screen recording), so neither carries witness footage; ?clip=0 turns it off anywhere.
+// The witness videos (d.videos), in the panel or in the wall: off in ?panel=0 (the README's GIF) and, unless &clip=1, in
+// ?video=1 (the demo's screen recording), so neither carries witness footage; ?clip=0 turns them off anywhere.
 const clipOn = !bare && (video ? params.get('clip') === '1' : params.get('clip') !== '0');
 const narrow = matchMedia('(max-width: 760px)');
 const short = matchMedia('(max-width: 760px) and (max-height: 500px)');  // a phone on its side: the sheet takes 65%
@@ -981,7 +981,8 @@ function stageKey() {  // the key lists only what the current stage shows
 // pausing the replay pauses them. Pausing a player pauses the replay; pressing play in a player while the replay is
 // stopped starts the replay from that player's instant.
 
-const clip = {players: new Map(), pick: null, wall: false, starting: false, loop: 0, wait: 0, observer: null, visible: true};
+const clip = {players: new Map(), pick: null, wall: false, mode: null, starting: false, loop: 0, wait: 0, observer: null,
+  visible: true, keyOpen: null, refit: 0};
 const CLIP_ERRORS = {100: 'The video is no longer on YouTube, or it is private.', 101: 'Its uploader no longer allows it to play on other sites.',
   150: 'Its uploader no longer allows it to play on other sites.', 153: "YouTube's player needs this page's address, and the browser did not send it."};
 const clock = (x, d = 0) => `${Math.floor(x / 60)}:${d ? (x % 60).toFixed(d).padStart(d + 3, '0') : String(Math.floor(x % 60)).padStart(2, '0')}`;  // 0:06, 0:18.8
@@ -991,11 +992,12 @@ const external = (url, text) => `<a href="${esc(url)}" target="_blank" rel="noop
 const videos = d => (d && d.videos && d.videos.shown) || [];
 const picked = () => videos(state.data).find(v => v.clip === clip.pick) || null;
 const flight = d => d.solution.times[d.solution.times.length - 1];
-// The wall needs four players of YouTube's 200 px minimum in a row, two rows, and room for the map below them.
-const wallFits = () => !narrow.matches && innerWidth >= 1100 && innerHeight >= 720;
+// The wall needs players of YouTube's 200 px minimum, eight in a row from 1840 px wide, else four in two rows, and room
+// for the map below them.
+const wallFits = () => !narrow.matches && innerWidth >= 1100 && innerHeight >= (innerWidth >= 1840 ? 600 : 800);
 
 function role(d, v) {  // a camera's part in the solution, in a few words
-  return v.status === 'used' ? 'in the fit' : v.status === 'left out' ? 'left out of the fit' : v.oriented ? 'oriented' : 'not oriented, ≈ aligned';
+  return v.status === 'used' ? 'in the fit' : v.status === 'left out' ? 'left out' : v.oriented ? 'oriented' : '≈ not oriented';
 }
 
 function swatch(d, id) {  // the camera's colour on the map: the fit's cameras in theirs, a dropped one dashed, the rest hollow
@@ -1020,14 +1022,15 @@ function clipText(d, v) {  // what one video shows, and whose it is
       that clock puts at the top of the path; ${sam}. The fireball slowed and the replay flies the fitted line at one speed, so
       toward the end the replay's dot runs ahead of the video.`;
   } else {
+    const refs = Object.entries(g.glow_from || {}).map(([site, at]) => `${esc(site)}'s (${fmt(at, 1)} s)`);
     what = `This camera was not oriented${v.camera_moves ? ' (Muse Spark reported that it moves)' : ''}, so it adds nothing to the
-      path, and its own clock is not known. Its video is aligned by eye on its glow: the instant SAM's box around the fireball is
-      widest is set to ${fmt(g.glow_replay_s, 1)} s into the replay, where it falls in ${esc(list(g.glow_from || []))}'s videos, good to
-      about a second. ${sam}.`;
+      path, and its own clock is not known. Its video is lined up on the instant SAM's box around the fireball is largest, put at
+      ${fmt(g.glow_replay_s, 1)} s into the replay, between where that instant falls in ${list(refs)} videos; in this video the
+      largest box may mark another moment, so it can be a second or more off. ${sam}.`;
   }
   return `<p class="note">${where} ${what}</p>
     <p class="clip-credit">${external(v.url, `“${esc(v.title)}”`)}, uploaded by ${esc(v.uploader)} (${esc(v.channel)}) on
-    ${esc(v.uploaded)} (UTC), plays in YouTube's player; nothing of it is stored here.</p>`;
+    ${esc(v.uploaded)} (UTC), plays in YouTube's player; no frame or sound of it is stored here.</p>`;
 }
 
 const linkedText = d => (d.videos.linked || []).map(l => `<p class="clip-credit">${esc(l.site)}, one of the
@@ -1045,13 +1048,15 @@ function drawClip(d) {
   clip.pick = d.videos.first;
   const kept = recall(), open = kept === null || kept === '1';
   const head = `<summary><span class="dot dashed"></span>Witness videos · the fireball from ${count(list.length)} places</summary>`;
-  if (wallFits()) {  // a wide screen: one press plays them all together, above the map
+  clip.mode = wallFits() ? 'wall' : 'one';
+  if (clip.mode === 'wall') {  // a large window: one press plays them all together, above the map
     el.innerHTML = `<details${open ? ' open' : ''}>${head}
       ${poster(`Play the ${count(list.length)} videos together with the replay`, `The map makes room for them. YouTube's player loads
         when you press play.`)}
-      <p class="note">${list.filter(v => v.oriented).map(v => esc(v.site)).join(' and ')} run by their own clocks, so their lines of
-      sight grow on the map as each camera sees the fireball; the ${count(list.filter(v => !v.oriented).length)} others come from
-      cameras that were never oriented and are aligned by eye, to about a second.</p>
+      <p class="note">${list.filter(v => v.oriented).map(v => esc(v.site)).join(' and ')} run by their own clocks, beside their lines of
+      sight on the map, which appear as the replay's point reaches them and run ahead of the videos toward the end, as the
+      fireball slowed. The ${count(list.filter(v => !v.oriented).length)} others come from cameras not oriented: they add nothing to the
+      path, and each is lined up on SAM's largest box around the fireball, which can be a second or more off.</p>
       ${linkedText(d)}</details>`;
     el.querySelector('.clip-poster').addEventListener('click', () => enterWall(d));
   } else {  // a phone: one at a time, in the panel
@@ -1059,13 +1064,14 @@ function drawClip(d) {
     const oriented = list.filter(v => v.oriented), others = list.filter(v => !v.oriented);
     el.innerHTML = `<details${open ? ' open' : ''}>${head}
       <div class="clip-views" role="group" aria-label="Witness videos">${oriented.length ? `<span>By their own clocks</span>${oriented.map(chip).join('')}` : ''}
-        ${others.length ? `<span>Not oriented, aligned by eye</span>${others.map(chip).join('')}` : ''}</div>
+        ${others.length ? `<span>Not oriented, lined up on SAM's box</span>${others.map(chip).join('')}` : ''}</div>
       ${linkedText(d)}
       ${poster('Play the video with the replay', `The fireball shows from ${clock(picked().fireball_s[0])}. YouTube's player loads when you
         press play.`)}
       <p class="clip-hint" role="status"></p>
       <div class="clip-text">${clipText(d, picked())}</div>
-      <p class="note">On a wider screen all ${count(list.length)} play together.</p></details>`;
+      <p class="note">In a window at least 1100 by 800 px (full screen helps), or 1840 px wide, all ${count(list.length)} play
+      together above the map.</p></details>`;
     el.querySelectorAll('.clip-views button').forEach(b => b.addEventListener('click', () => pickClip(d, b.dataset.clip)));
     bindPoster(d);
   }
@@ -1104,34 +1110,39 @@ function pickClip(d, id) {
 // The wall: the panel steps aside, the videos line up above the map, four to a row, with Kamensk-Uralskiy's place kept.
 function enterWall(d) {
   if (clip.wall || state.data !== d) return;
+  if (!wallFits()) { drawClip(d); return; }  // the window shrank since the card was drawn: one at a time
   clip.wall = true;
   const vids = videos(d), byRole = v => (d.solution.clips.includes(v.clip) ? 0 : v.oriented ? 1 : 2);
   const tiles = [...(d.videos.linked || []).map(l => ({linked: l, rank: 0, id: (d.stations.find(x => x.site === l.site) || {}).id})),
     ...vids.map(v => ({v, rank: byRole(v), id: v.clip}))].sort((a, b) => a.rank - b.rank);
   const tile = x => x.linked
-    ? `<div class="tile" data-site="${esc(x.linked.site)}"><p class="tile-head">${swatch(d, x.id)}<b>${esc(x.linked.site)}</b> · in the fit</p>
+    ? `<div class="tile" data-site="${esc(x.linked.site)}"><p class="tile-head">${swatch(d, x.id)}<b>${esc(x.linked.site)}</b><span class="role">· in the fit</span><span
+        class="by" title="Uploaded by ${esc(x.linked.uploader)} (${esc(x.linked.channel)})">${esc(x.linked.uploader)}</span></p>
         <div class="tile-box"><div class="tile-note"><span>Its uploader does not allow the video on other sites.</span>
         ${external(x.linked.url, `Watch it on YouTube from ${clock(x.linked.at_s)}`)}</div></div></div>`
-    : `<div class="tile" data-clip="${esc(x.v.clip)}"><p class="tile-head">${swatch(d, x.v.clip)}<b>${external(x.v.url, esc(x.v.site))}</b> ·
-        ${role(d, x.v)}<span class="by" title="“${esc(x.v.title)}”, uploaded by ${esc(x.v.uploader)} (${esc(x.v.channel)}) on ${esc(x.v.uploaded)} (UTC)">${esc(x.v.uploader)}</span></p>
+    : `<div class="tile" data-clip="${esc(x.v.clip)}"><p class="tile-head">${swatch(d, x.v.clip)}<b>${external(x.v.url, esc(x.v.site))}</b><span
+        class="role">· ${role(d, x.v)}</span><span class="by" title="“${esc(x.v.title)}”, uploaded by ${esc(x.v.uploader)} (${esc(x.v.channel)}) on ${esc(x.v.uploaded)} (UTC)">${esc(x.v.uploader)}</span></p>
         <div class="tile-box"></div></div>`;
   const g = d.videos, glowed = vids.filter(v => !v.oriented);
+  const refs = Object.entries(g.glow_from || {}).map(([site, at]) => `${esc(site)}'s ${fmt(at, 1)} s`);
   const wall = document.createElement('div');
   wall.id = 'wall';
   wall.setAttribute('aria-label', 'Witness videos with the replay');
   const cap = x => x.charAt(0).toUpperCase() + x.slice(1);
   wall.className = innerWidth >= 1840 ? 'one-row' : '';
   wall.innerHTML = `<div class="tiles">${tiles.map(tile).join('')}</div>
-    <div class="bar"><p>${cap(count(vids.length))} witness videos and the replay, in step. ${vids.filter(v => v.oriented).map(v => esc(v.site)).join(' and ')}
-      run by their own clocks, so their lines of sight grow on the map as each camera sees the fireball; the ${count(glowed.length)} marked ≈
-      were never oriented, add nothing to the path, and are aligned by eye on their glow (SAM's widest box, set to
-      ${fmt(g.glow_replay_s, 1)} s as in ${esc(list(g.glow_from || []))}'s videos), to about a second. Each is its uploader's
-      video in YouTube's player; nothing of them is stored here. <span class="wall-hint" role="status"></span></p>
+    <div class="bar"><p>${cap(count(vids.length))} witness videos with the replay. ${vids.filter(v => v.oriented).map(v => esc(v.site)).join(' and ')}
+      run by their own clocks; their lines of sight appear as the replay's point reaches them and run ahead of the videos toward the
+      end, as the fireball slowed. The ${count(glowed.length)} marked ≈ come from cameras not oriented: they add nothing to the path, and
+      each is lined up on SAM's largest box around the fireball (${fmt(g.glow_replay_s, 1)} s, between ${list(refs)}), which can be a
+      second or more off. Each is its uploader's video in YouTube's player; no frame or sound of them is stored here.
+      <span class="wall-hint" role="status"></span></p>
       <button type="button" class="wall-close">Close</button></div>`;
   document.body.append(wall);
   document.body.classList.add('wall');
   wall.querySelector('.wall-close').addEventListener('click', () => exitWall(true));
   const key = $('#legend details');
+  clip.keyOpen = key ? key.open : null;
   if (key) key.open = false;
   placeHud();
   fitWall(d);
@@ -1174,6 +1185,8 @@ function exitWall(restore) {
   const wall = $('#wall');
   if (wall) wall.remove();
   document.body.classList.remove('wall');
+  const key = $('#legend details');
+  if (key && clip.keyOpen !== null) key.open = clip.keyOpen;
   placeHud();
   const d = state.data;
   if (restore && d) map.easeTo({...d.view, zoom: d.view.zoom - (video && !document.body.classList.contains('bare') ? 0.2 : 0),
@@ -1201,6 +1214,7 @@ async function startPlayers(d, list, boxes) {
   boxes.forEach(b => { if (b) b.innerHTML = '<p class="clip-wait">Loading YouTube\'s player…</p>'; });
   try { await loadYouTube(); } catch (e) {
     boxes.forEach((b, i) => b && b.isConnected && boxFail(d, list[i], b, "YouTube's player could not load here."));
+    if (state.data === d && !state.playing) { state.t = null; play(); }  // the replay runs on its own
     return;
   }
   if (state.data !== d || !boxes.some(b => b && b.isConnected)) return;
@@ -1223,7 +1237,7 @@ function makePlayer(d, v, box) {
   f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
   f.referrerPolicy = 'strict-origin-when-cross-origin';  // YouTube refuses to play for a page that sends no address
   box.replaceChildren(f);
-  const rec = {v, box, player: null, ready: false, ours: false, lastSeek: 0, asked: 0,
+  const rec = {v, box, player: null, ready: false, ours: 0, want: 0, lastSeek: 0,
     timer: setTimeout(() => { if (!rec.ready) boxFail(d, v, box, "YouTube's player did not answer."); }, 15000)};
   try {
     rec.player = new YT.Player(f, {events: {
@@ -1231,11 +1245,9 @@ function makePlayer(d, v, box) {
         if (state.data !== d || !clip.players.has(v.clip)) return;
         clearTimeout(rec.timer);
         rec.ready = true;
-        try {  // cued at the replay's start: a video whose start falls later waits at its first second
+        try {  // a video whose start falls later stays cued at its first second
           rec.player.mute();
-          rec.asked = performance.now();
-          rec.player.seekTo(Math.max(0, v.start_s), true);
-          if (v.start_s >= 0) rec.player.playVideo(); else { rec.ours = true; rec.player.pauseVideo(); }
+          if (v.start_s >= 0) { rec.want = performance.now(); rec.player.seekTo(v.start_s, true); rec.player.playVideo(); }
         } catch (e) { /* follow() tries again */ }
       },
       onStateChange: e => onPlayerState(d, rec, e),
@@ -1250,6 +1262,12 @@ function begin(d) {  // the first video plays: the replay starts from 0, and fol
   clearTimeout(clip.wait);
   if (!clip.starting || state.data !== d) return;
   clip.starting = false;
+  if (state.playing) {  // already running (the autoplay, or a press while the players loaded): its clock starts over
+    started = performance.now();
+    state.t = 0;
+    follow();
+    return;
+  }
   state.t = null;
   play();
 }
@@ -1259,10 +1277,12 @@ function onPlayerState(d, rec, e) {
   const S = YT.PlayerState;
   if (e.data === S.PLAYING) {
     hint('');
+    const asked = rec.want && performance.now() - rec.want < 20000;  // a play the page asked for, perhaps come late
+    rec.want = 0;
     if (clip.starting) return begin(d);
     if (state.playing) return;  // follow() keeps it in step
-    if (performance.now() - rec.asked < 30000) {  // a play the page asked for, come late: the replay is not running now
-      rec.ours = true;
+    if (asked) {  // the replay is no longer running: the late video waits
+      rec.ours = performance.now();
       try { rec.player.pauseVideo(); } catch (err) { /* gone */ }
       return;
     }
@@ -1270,8 +1290,9 @@ function onPlayerState(d, rec, e) {
     try { t = rec.player.getCurrentTime() - rec.v.start_s; } catch (err) { return; }
     if (t >= 0 && t < flight(d)) { state.t = t; play(); }
   } else if (e.data === S.PAUSED) {
-    if (rec.ours) rec.ours = false;  // ours: hidden, waiting for its start, or the replay paused
-    else if (state.playing) stop(false);  // the reader paused this player: everything pauses
+    const ours = rec.ours && performance.now() - rec.ours < 3000;  // the page paused it: hidden, or the replay paused
+    rec.ours = 0;
+    if (!ours && state.playing) stop(false);  // the reader paused this player: everything pauses
   }
 }
 
@@ -1289,12 +1310,12 @@ function follow() {
       const last = Math.min(rec.v.end_s, p.getDuration() || Infinity) - 0.3;  // not past its end: an ended video would start over
       const on = state.playing && shown && at >= 0 && at < last;
       if (!on) {
-        if (s === S.PLAYING || s === S.BUFFERING) { rec.ours = true; p.pauseVideo(); }
+        if (s === S.PLAYING || s === S.BUFFERING) { rec.ours = performance.now(); p.pauseVideo(); }
         if (!state.playing && state.t === null && Math.abs(p.getCurrentTime() - Math.max(0, rec.v.start_s)) > 0.5) p.seekTo(Math.max(0, rec.v.start_s), true);
         continue;
       }
-      if (Math.abs(p.getCurrentTime() - at) > 0.5 && now - rec.lastSeek > 1500) { rec.asked = now; p.seekTo(at, true); rec.lastSeek = now; }
-      if (s !== S.PLAYING && s !== S.BUFFERING) { rec.asked = now; p.playVideo(); }
+      if (Math.abs(p.getCurrentTime() - at) > 0.5 && now - rec.lastSeek > 1500) { rec.want = now; p.seekTo(at, true); rec.lastSeek = now; }
+      if (s !== S.PLAYING && s !== S.BUFFERING) { rec.want = now; p.playVideo(); }
     } catch (e) { /* the replay never depends on a player */ }
   }
 }
@@ -1414,7 +1435,19 @@ function placeHud() {
   s.maxWidth = `${innerWidth - 12 - from}px`;
   s.bottom = `${innerHeight - key.top + 10}px`;
 }
-addEventListener('resize', () => { if (clip.wall && !wallFits()) exitWall(true); placeHud(); });
+addEventListener('resize', () => {
+  if (clip.wall && !wallFits()) exitWall(true);
+  placeHud();
+  clearTimeout(clip.refit);
+  clip.refit = setTimeout(() => {
+    const d = state.data;
+    if (!d || !d.videos) return;
+    if (clip.wall) {
+      $('#wall').className = innerWidth >= 1840 ? 'one-row' : '';
+      fitWall(d);
+    } else if (!clip.players.size && clip.mode && clip.mode !== (wallFits() ? 'wall' : 'one')) drawClip(d);
+  }, 200);
+});
 
 // ---- cases -----------------------------------------------------------------------------------------------------------
 
@@ -1457,7 +1490,9 @@ async function show(id) {
   if (firstView) {
     map.jumpTo(view);
     // the replay runs once, when the map has drawn the case; a case switch before then cancels it
-    if (autoplay && d.solution) map.once('idle', () => { if (state.data === d && state.t === null && !state.playing) play(); });
+    if (autoplay && d.solution) {
+      map.once('idle', () => { if (state.data === d && state.t === null && !state.playing && !clip.starting && !clip.players.size) play(); });
+    }
   } else map.flyTo({...view, duration: 2200, essential: true});
   firstView = false;
   redraw();
