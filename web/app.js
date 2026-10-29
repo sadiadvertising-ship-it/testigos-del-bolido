@@ -62,7 +62,10 @@ document.body.classList.toggle('bare', bare);
 document.body.classList.toggle('video', video);
 // The witness videos (d.videos), in the panel or in the wall: off in ?panel=0 (the README's GIF) and, unless &clip=1, in
 // ?video=1 (the demo's screen recording), so neither carries witness footage; ?clip=0 turns them off anywhere.
-const clipOn = !bare && (video ? params.get('clip') === '1' : params.get('clip') !== '0');
+// ?clip=tracks opens the wall with SAM's tracks only and loads nothing from YouTube: for recordings (the demo video, a clip
+// for X), which then carry no frame of any witness video.
+const tracksOnly = params.get('clip') === 'tracks';
+const clipOn = !bare && (video ? params.get('clip') === '1' || tracksOnly : params.get('clip') !== '0');
 const narrow = matchMedia('(max-width: 760px)');
 const short = matchMedia('(max-width: 760px) and (max-height: 500px)');  // a phone on its side: the sheet takes 65%
 const padding = () => (document.body.classList.contains('wall') ? {top: ($('#wall') ? $('#wall').getBoundingClientRect().bottom : 0) + 10, bottom: 0, left: 0, right: 0}
@@ -994,7 +997,10 @@ const picked = () => videos(state.data).find(v => v.clip === clip.pick) || null;
 const flight = d => d.solution.times[d.solution.times.length - 1];
 // The wall needs players of YouTube's 200 px minimum, eight in a row from 1840 px wide, else four in two rows, and room
 // for the map below them.
-const wallFits = () => !narrow.matches && innerWidth >= 1100 && innerHeight >= (innerWidth >= 1840 ? 620 : 840);
+// SAM's tracks alone have no minimum size, so their wall takes one row from 1200 px wide.
+const oneRow = () => innerWidth >= (tracksOnly ? 1200 : 1840);
+const wallFits = () => !narrow.matches && innerWidth >= 1100
+  && innerHeight >= (oneRow() ? (tracksOnly ? 520 : 620) : (tracksOnly ? 760 : 840));
 
 function role(d, v) {  // a camera's part in the solution, in a few words
   return v.status === 'used' ? 'in the fit' : v.status === 'left out' ? 'left out' : v.oriented ? 'oriented' : '≈ not oriented';
@@ -1168,23 +1174,33 @@ function enterWall(d) {
   const tiles = [...(d.videos.linked || []).map(l => ({linked: l, rank: 0, id: (d.stations.find(x => x.site === l.site) || {}).id})),
     ...vids.map(v => ({v, rank: byRole(v), id: v.clip}))].sort((a, b) => a.rank - b.rank);
   const tile = x => x.linked
-    ? `<div class="tile" data-site="${esc(x.linked.site)}"><p class="tile-head">${swatch(d, x.id)}<b>${esc(x.linked.site)}</b><span class="role">· in the fit</span></p>
-        <div class="tile-box"><p class="tile-strip">Its uploader does not allow the video on other sites.</p></div>
-        <p class="tile-credit">Video by ${esc(x.linked.uploader)} (${esc(x.linked.channel)}), ${esc(x.linked.uploaded)} ·
-        ${external(x.linked.url, `watch it on YouTube from ${clock(x.linked.at_s)}`)}</p></div>`
+    ? `<div class="tile" data-site="${esc(x.linked.site)}"><p class="tile-head">${swatch(d, x.id)}<b>${esc(x.linked.site)}</b><span class="role"><span class="sep">· </span>in the fit</span></p>
+        <div class="tile-box">${tracksOnly ? '' : '<p class="tile-strip">Its uploader does not allow the video on other sites.</p>'}</div>
+        <p class="tile-credit">${esc(x.linked.uploader)} (${esc(x.linked.channel)}), ${esc(x.linked.uploaded)} ·
+        ${external(x.linked.url, `its video on YouTube, from ${clock(x.linked.at_s)}`)}</p></div>`
     : `<div class="tile" data-clip="${esc(x.v.clip)}"><p class="tile-head">${swatch(d, x.v.clip)}<b>${esc(x.v.site)}</b><span
-        class="role">· ${role(d, x.v)}</span></p>
+        class="role"><span class="sep">· </span>${role(d, x.v)}</span></p>
         <div class="tile-box"></div>
-        <p class="tile-credit" title="“${esc(x.v.title)}”, uploaded by ${esc(x.v.uploader)} (${esc(x.v.channel)}) on ${esc(x.v.uploaded)} (UTC)">${external(x.v.url,
-        `“${esc(x.v.title)}”`)} · ${esc(x.v.uploader)}, ${esc(x.v.uploaded)}</p></div>`;
+        <p class="tile-credit" title="“${esc(x.v.title)}”, uploaded by ${esc(x.v.uploader)} (${esc(x.v.channel)}) on ${esc(x.v.uploaded)} (UTC)">${esc(x.v.uploader)},
+        ${esc(x.v.uploaded)} · ${external(x.v.url, `“${esc(x.v.title)}”`)}</p></div>`;
   const g = d.videos, glowed = vids.filter(v => !v.oriented);
   const refs = Object.entries(g.glow_from || {}).map(([site, at]) => `${esc(site)}'s ${fmt(at, 1)} s`);
   const wall = document.createElement('div');
   wall.id = 'wall';
   wall.setAttribute('aria-label', 'Witness videos with the replay');
   const cap = x => x.charAt(0).toUpperCase() + x.slice(1);
-  wall.className = innerWidth >= 1840 ? 'one-row' : '';
-  wall.innerHTML = `<div class="tiles">${tiles.map(tile).join('')}</div>
+  wall.className = [oneRow() ? 'one-row' : '', tracksOnly ? 'tracks' : ''].join(' ').trim();
+  const oriented = [...(d.videos.linked || []).map(l => l.site), ...vids.filter(v => v.oriented).map(v => v.site)];
+  wall.innerHTML = tracksOnly ? `<div class="tiles">${tiles.map(tile).join('')}</div>
+    <div class="bar"><details><summary>${cap(count(tiles.length))} witness cameras with the replay, each drawn from what SAM 3.1 measured
+      in its video: no frame of any video is shown. ≈ marks a camera not oriented, which adds nothing to the path.
+      <span class="more">How they line up</span></summary>
+      <p>${esc(list(oriented))} run by their own clocks; their lines of sight appear as the replay's point reaches them and run ahead of
+      the tracks toward the end, as the fireball slowed. The ${count(glowed.length)} marked ≈ are each lined up on SAM's largest box around
+      the fireball (${fmt(g.glow_replay_s, 1)} s, between ${list(refs)}), which can be a second or more off. The videos belong to their
+      uploaders, credited under each track.</p></details>
+      <button type="button" class="wall-close">Close</button></div>`
+    : `<div class="tiles">${tiles.map(tile).join('')}</div>
     <div class="bar"><details><summary>${cap(count(vids.length))} witness videos with the replay; ≈ marks a camera not oriented, which adds
       nothing to the path. Until a video plays, its tile draws SAM's track. <span class="more">How they line up</span></summary>
       <p>${vids.filter(v => v.oriented).map(v => esc(v.site)).join(' and ')} run by their own clocks; their lines of sight appear as the
@@ -1197,7 +1213,7 @@ function enterWall(d) {
   document.body.classList.add('wall');
   (d.videos.linked || []).forEach(l => {  // the camera whose video cannot be shown: its track, always
     const box = wall.querySelector(`.tile[data-site="${CSS.escape(l.site)}"] .tile-box`);
-    if (box && l.track) { samCanvas(box, l, "SAM 3.1's track of its video"); clip.sams[clip.sams.length - 1].top = true; drawSams(); }
+    if (box && l.track) { samCanvas(box, l, "SAM 3.1's track of its video"); clip.sams[clip.sams.length - 1].top = !tracksOnly; drawSams(); }
   });
   wall.querySelector('.wall-close').addEventListener('click', () => exitWall(true));
   const key = $('#legend details');
@@ -1205,6 +1221,11 @@ function enterWall(d) {
   if (key) key.open = false;
   placeHud();
   fitWall(d);
+  if (tracksOnly) {  // no player: each tile draws its track, and the replay runs as it would without the wall
+    vids.forEach(v => { const box = wall.querySelector(`.tile[data-clip="${CSS.escape(v.clip)}"] .tile-box`); if (box && v.track) samCanvas(box, v, "SAM 3.1's track"); });
+    drawSams();
+    return;
+  }
   drawSams();
   startPlayers(d, vids, vids.map(v => wall.querySelector(`.tile[data-clip="${CSS.escape(v.clip)}"] .tile-box`)));
 }
@@ -1516,7 +1537,7 @@ addEventListener('resize', () => {
     const d = state.data;
     if (!d || !d.videos) return;
     if (clip.wall) {
-      $('#wall').className = innerWidth >= 1840 ? 'one-row' : '';
+      $('#wall').className = [oneRow() ? 'one-row' : '', tracksOnly ? 'tracks' : ''].join(' ').trim();
       fitWall(d);
     } else if (!clip.players.size && clip.mode && clip.mode !== (wallFits() ? 'wall' : 'one')) drawClip(d);
   }, 200);
@@ -1569,6 +1590,7 @@ async function show(id) {
   } else map.flyTo({...view, duration: 2200, essential: true});
   firstView = false;
   redraw();
+  if (tracksOnly && clip.mode === 'wall') enterWall(d);
 }
 
 map.on('moveend', () => {  // after a pan, zoom, turn or resize the labels find their spots again

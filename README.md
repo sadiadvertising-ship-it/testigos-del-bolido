@@ -355,7 +355,9 @@ play, and it keeps no frame or sound. Until a video plays, and in Kamensk-Uralsk
 the fireball from the measurements: its position as a share of the frame and the size of SAM's box. Kamensk-Uralskiy's
 uploader does not allow embedding, so the viewer only links to that video, and it links to the Medellín post on X
 without loading anything from X. The README's GIF (`?panel=0`) and the demo video (`?video=1`) show no witness footage:
-the videos are off in both, unless `&clip=1` is added in video mode.
+the videos are off in both, unless `&clip=1` is added in video mode. For recordings, `?video=1&clip=tracks` opens the
+wall with SAM's tracks only: the eight cameras drawn from the measurements beside the replay, with each video's credit,
+and nothing loaded from YouTube.
 
 Chelyabinsk videos, by YouTube uploader: Aleksandr Ivanov (Kamensk-Uralskiy), Никита Зенкович (Korkino), Alexander
 Voronov (Tyumen), MrKuzaman (Beloretsk), 🫐 голубика🫐 (Chebarkul), Мясников Сергей (Yekaterinburg), Сергей Давлеткулов

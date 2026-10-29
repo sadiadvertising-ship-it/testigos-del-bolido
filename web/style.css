@@ -163,6 +163,12 @@ body.wall #hud { left: 50%; }
 #wall .tile.sees .tile-head b { color: var(--ink); }
 #wall .tile-head .role { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 #wall .tile-box { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; background: #000; }
+#wall.tracks .tile-box { min-height: 0; }  /* SAM's tracks have no minimum size; YouTube's players do */
+/* eight to a row: the camera's part on a second line, and the credit (uploader first) on up to two */
+#wall.one-row .tile-head { flex-wrap: wrap; row-gap: 0; }
+#wall.one-row .tile-head .role { flex-basis: 100%; padding-left: calc(14px * var(--k)); }
+#wall.one-row .tile-head .sep { display: none; }
+#wall.one-row .tile-credit { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 #wall .tile-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; transition: opacity 0.4s; }
 #wall .tile-strip {
   position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 5px 8px; background: rgba(3, 7, 13, 0.82);
