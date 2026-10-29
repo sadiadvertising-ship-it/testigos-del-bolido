@@ -15,8 +15,8 @@ _spec.loader.exec_module(ex)
 
 CASE = 'chelyabinsk-2013'
 WEB = ROOT / 'web' / 'data'
-KEYS = {'clip', 'site', 'camera', 'status', 'synced', 'youtube_id', 'url', 'title', 'uploader', 'channel', 'uploaded',
-        'trimmed_s', 'start_s', 'end_s', 'fireball_s', 'camera_moves', 'left_out'}
+KEYS = {'clip', 'site', 'camera', 'status', 'oriented', 'aligned', 'youtube_id', 'url', 'title', 'uploader', 'channel',
+        'uploaded', 'trimmed_s', 'start_s', 'end_s', 'fireball_s', 'camera_moves', 'left_out'}
 
 
 @pytest.fixture(scope='module')
@@ -43,8 +43,9 @@ def test_every_embeddable_video_and_only_those(fresh, solved):
     allowed = {k for k, c in creds.items() if (c.get('embed') or {}).get('allowed') is True}
     assert {v['clip'] for v in fresh['shown']} == allowed
     assert fresh['first'] == ex.FIRST[CASE] == fresh['shown'][0]['clip']
-    synced = [v['synced'] for v in fresh['shown']]
-    assert synced == sorted(synced, reverse=True)  # the videos that run with the replay come first
+    oriented = [v['oriented'] for v in fresh['shown']]
+    assert oriented == sorted(oriented, reverse=True)  # the oriented cameras' videos come first
+    assert all(v['aligned'] == ('clock' if v['oriented'] else 'glow') for v in fresh['shown'])
 
 
 def test_seconds_come_from_the_sam_tracks_and_the_trim_windows(fresh, solved):
@@ -55,20 +56,32 @@ def test_seconds_come_from_the_sam_tracks_and_the_trim_windows(fresh, solved):
         t, w = [r['t'] for r in rows], window(case, v['clip'])
         assert v['trimmed_s'] == w
         assert v['fireball_s'] == pytest.approx([w[0] + min(t), w[0] + max(t)], abs=0.006)
-        if not v['synced']:  # a video on its own plays the trimmed window
-            assert (v['start_s'], v['end_s']) == (w[0], w[1])
 
 
 def test_an_oriented_cameras_video_starts_where_its_own_clock_reads_zero(fresh, solved):
     case, sol, s0, dur = solved[:4]
     data = json.loads((WEB / f'{CASE}.json').read_text())
-    for v in (v for v in fresh['shown'] if v['synced']):
+    for v in (v for v in fresh['shown'] if v['aligned'] == 'clock'):
         shift = ex.own_clock(sol, s0, case._stations([v['clip']])[0])[3]
         assert v['start_s'] == pytest.approx(v['trimmed_s'][0] + shift, abs=5e-4)
         assert v['trimmed_s'][0] <= v['start_s'] and v['start_s'] + dur <= v['end_s']  # room for the whole replay
         # the viewer's camera clock (stations[].track) reads 0 at start_s: its first point is fireball_s[0] - start_s
         track = next(s for s in data['stations'] if s['id'] == v['clip'])['track']
         assert track[0][0] == pytest.approx(v['fireball_s'][0] - v['start_s'], abs=0.01)
+
+
+def test_a_video_aligned_by_glow_puts_its_widest_glow_where_the_oriented_cameras_have_theirs(fresh, solved):
+    case, sol, s0 = solved[:3]
+    glows = []
+    for k in ('2', '48'):  # the oriented cameras whose tracks run to their end
+        rows = ex.sam_rows(case, k)
+        glows.append(ex.widest_glow_t(rows) - ex.own_clock(sol, s0, case._stations([k])[0])[3])
+    assert fresh['glow_from'] == ['Kamensk-Uralskiy', 'Tyumen']
+    assert fresh['glow_replay_s'] == pytest.approx(sum(glows) / 2, abs=0.006)
+    for v in (v for v in fresh['shown'] if v['aligned'] == 'glow'):
+        glow = v['trimmed_s'][0] + ex.widest_glow_t(ex.sam_rows(case, v['clip']))
+        assert glow - v['start_s'] == pytest.approx(fresh['glow_replay_s'], abs=0.01)
+        assert v['end_s'] >= v['start_s'] + solved[3]  # room for the whole replay
 
 
 def test_credits_and_links(fresh):

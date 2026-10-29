@@ -65,7 +65,8 @@ document.body.classList.toggle('video', video);
 const clipOn = !bare && (video ? params.get('clip') === '1' : params.get('clip') !== '0');
 const narrow = matchMedia('(max-width: 760px)');
 const short = matchMedia('(max-width: 760px) and (max-height: 500px)');  // a phone on its side: the sheet takes 65%
-const padding = () => (document.body.classList.contains('bare') ? {top: 0, bottom: 0, left: 0, right: 0}
+const padding = () => (document.body.classList.contains('wall') ? {top: ($('#wall') ? $('#wall').getBoundingClientRect().bottom : 0) + 10, bottom: 0, left: 0, right: 0}
+  : document.body.classList.contains('bare') ? {top: 0, bottom: 0, left: 0, right: 0}
   : narrow.matches ? {top: 0, bottom: innerHeight * (short.matches ? 0.65 : 0.5), left: 0, right: 0}
     : {top: 0, bottom: 0, left: $('#panel').getBoundingClientRect().right, right: 0});
 
@@ -973,13 +974,14 @@ function stageKey() {  // the key lists only what the current stage shows
 }
 
 // ---- the witness videos -----------------------------------------------------------------------------------------------
-// The witness videos whose uploaders allow embedding play in the side panel, each its uploader's own YouTube video in
-// YouTube's player (youtube-nocookie.com); nothing loads from YouTube until a reader presses play. A video from an oriented
-// camera runs with the replay: its second is the replay's second plus start_s, both in real time; the replay follows the
-// player when it starts, stalls, seeks or pauses, and the player follows the replay's Replay, Pause and Resume. A camera
-// that was never oriented has no clock on the path, so its video plays on its own.
+// The witness videos whose uploaders allow embedding play with the replay, each its uploader's own YouTube video in YouTube's
+// player (youtube-nocookie.com); nothing loads from YouTube until a reader presses play. On a wide screen they play
+// together, in a wall above the map; on a phone, one at a time in the panel. The replay's clock leads: every 300 ms each
+// player is kept at its second start_s + t (an oriented camera's video by its own clock, the others by their glow), and
+// pausing the replay pauses them. Pausing a player pauses the replay; pressing play in a player while the replay is
+// stopped starts the replay from that player's instant.
 
-const clip = {player: null, ready: false, visible: true, observer: null, timer: 0, quiet: false, pick: null};
+const clip = {players: new Map(), pick: null, wall: false, starting: false, loop: 0, wait: 0, observer: null, visible: true};
 const CLIP_ERRORS = {100: 'The video is no longer on YouTube, or it is private.', 101: 'Its uploader no longer allows it to play on other sites.',
   150: 'Its uploader no longer allows it to play on other sites.', 153: "YouTube's player needs this page's address, and the browser did not send it."};
 const clock = (x, d = 0) => `${Math.floor(x / 60)}:${d ? (x % 60).toFixed(d).padStart(d + 3, '0') : String(Math.floor(x % 60)).padStart(2, '0')}`;  // 0:06, 0:18.8
@@ -988,99 +990,194 @@ const remember = open => { try { localStorage.setItem('testigos.clip.open', open
 const external = (url, text) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${text}</a>`;
 const videos = d => (d && d.videos && d.videos.shown) || [];
 const picked = () => videos(state.data).find(v => v.clip === clip.pick) || null;
+const flight = d => d.solution.times[d.solution.times.length - 1];
+// The wall needs four players of YouTube's 200 px minimum in a row, two rows, and room for the map below them.
+const wallFits = () => !narrow.matches && innerWidth >= 1100 && innerHeight >= 720;
+
+function role(d, v) {  // a camera's part in the solution, in a few words
+  return v.status === 'used' ? 'in the fit' : v.status === 'left out' ? 'left out of the fit' : v.oriented ? 'oriented' : 'not oriented, ≈ aligned';
+}
+
+function swatch(d, id) {  // the camera's colour on the map: the fit's cameras in theirs, a dropped one dashed, the rest hollow
+  const i = d.solution.clips.indexOf(id), st = d.stations.find(x => x.id === id);
+  return i >= 0 ? `<span class="dot" style="background:${rgb(SERIES[i])}"></span>`
+    : st && st.status === 'dropped' ? '<span class="dot dashed"></span>' : '<span class="dot hollow"></span>';
+}
 
 function clipText(d, v) {  // what one video shows, and whose it is
-  const st = d.stations.find(x => x.id === v.clip), out = v.left_out, pair = out && out.pairs[0];
+  const st = d.stations.find(x => x.id === v.clip), out = v.left_out, pair = out && out.pairs[0], g = d.videos;
   const where = /car/.test(v.camera) ? `Filmed from a ${esc(v.camera)} in ${esc(v.site)}.`
     : `Filmed by a ${esc(v.camera === 'security' ? 'security camera' : v.camera)} in ${esc(v.site)}.`;
   const sam = `SAM 3.1 follows the fireball from ${clock(v.fireball_s[0], 1)} to ${clock(v.fireball_s[1], 1)}${
     v.trimmed_s[1] - v.fireball_s[1] < 0.5 ? ', where the stretch that was measured ends' : ''}`;
   let what;
-  if (v.synced) {
-    const role = out ? `The agent left this camera out of the fit${pair ? ` (its planes cross ${esc(pair.site)}'s at ${fmt(pair.q_deg, 1)}°)` : ''},
+  if (v.aligned === 'clock') {
+    const part = out ? `The agent left this camera out of the fit${pair ? ` (its planes cross ${esc(pair.site)}'s at ${fmt(pair.q_deg, 1)}°)` : ''},
       so it is a check on the fit: its lines of sight miss the fitted path by ${fmt(st.miss_deg, 2)}° RMS.`
       : v.status === 'used' ? `It is one of the ${count(d.solution.clips.length)} cameras of the fit; its lines of sight miss the fitted
       path by ${fmt(st.miss_deg, 2)}° RMS.` : '';
-    what = `${role} Play runs the replay from ${clock(v.start_s)}, the instant this camera's own clock puts at the top of the path;
-      ${sam}. The fireball slowed and the replay flies the fitted line at one speed, so toward the end the replay's dot runs ahead
-      of the video.`;
+    what = `${part} Its video runs with the replay by its own clock: the replay's start is ${clock(v.start_s)} in the video, the instant
+      that clock puts at the top of the path; ${sam}. The fireball slowed and the replay flies the fitted line at one speed, so
+      toward the end the replay's dot runs ahead of the video.`;
   } else {
-    what = `This camera was not oriented${v.camera_moves ? ' (Muse Spark reported that it moves)' : ''}, so its video gives no
-      direction and plays on its own, not with the replay. ${sam}.`;
+    what = `This camera was not oriented${v.camera_moves ? ' (Muse Spark reported that it moves)' : ''}, so it adds nothing to the
+      path, and its own clock is not known. Its video is aligned by eye on its glow: the instant SAM's box around the fireball is
+      widest is set to ${fmt(g.glow_replay_s, 1)} s into the replay, where it falls in ${esc(list(g.glow_from || []))}'s videos, good to
+      about a second. ${sam}.`;
   }
   return `<p class="note">${where} ${what}</p>
     <p class="clip-credit">${external(v.url, `“${esc(v.title)}”`)}, uploaded by ${esc(v.uploader)} (${esc(v.channel)}) on
     ${esc(v.uploaded)} (UTC), plays in YouTube's player; nothing of it is stored here.</p>`;
 }
 
-const poster = v => `<div class="clip-frame"><button type="button" class="clip-poster"><span class="clip-play" aria-hidden="true"></span>
-  <span>${v.synced ? 'Play the video with the replay' : `Play the video from ${esc(v.site)}`}</span>
-  <small>The fireball shows from ${clock(v.fireball_s[0])}. YouTube's player loads when you press play.</small></button></div>`;
+const linkedText = d => (d.videos.linked || []).map(l => `<p class="clip-credit">${esc(l.site)}, one of the
+  ${count(d.solution.clips.length)} cameras of the fit, is not here: its uploader does not allow the video on other sites.
+  ${external(l.url, `Watch it on YouTube from ${clock(l.at_s)}`)}.</p>`).join('');
+
+const poster = (label, note) => `<div class="clip-frame"><button type="button" class="clip-poster"><span class="clip-play" aria-hidden="true"></span>
+  <span>${label}</span><small>${note}</small></button></div>`;
 
 function drawClip(d) {
   dropClip();
+  if (clip.wall) exitWall(false);
   const el = $('#clip'), list = videos(d);
   if (!clipOn || !list.length) { el.innerHTML = ''; return; }
   clip.pick = d.videos.first;
   const kept = recall(), open = kept === null || kept === '1';
-  const chip = v => `<button type="button" data-clip="${esc(v.clip)}" aria-pressed="${v.clip === clip.pick}">${esc(v.site)}</button>`;
-  const withReplay = list.filter(v => v.synced), alone = list.filter(v => !v.synced);
-  el.innerHTML = `<details${open ? ' open' : ''}><summary><span class="dot dashed"></span>Witness videos · the fireball from
-    ${count(list.length)} places</summary>
-    <div class="clip-views" role="group" aria-label="Witness videos">${withReplay.length ? `<span>With the replay</span>${withReplay.map(chip).join('')}` : ''}
-      ${alone.length ? `<span>Other views, not oriented</span>${alone.map(chip).join('')}` : ''}</div>
-    ${(d.videos.linked || []).map(l => `<p class="clip-credit">${esc(l.site)}, one of the ${count(d.solution.clips.length)} cameras of
-      the fit, is not here: its uploader does not allow the video on other sites. ${external(l.url, `Watch it on YouTube from
-      ${clock(l.at_s)}`)}.</p>`).join('')}
-    ${poster(picked())}
-    <p class="clip-hint" role="status"></p>
-    <div class="clip-text">${clipText(d, picked())}</div></details>`;
-  const details = el.querySelector('details');
-  details.addEventListener('toggle', () => {
-    remember(details.open);
-    if (!details.open) quietClip(); else rejoinClip();
-  });
-  el.querySelectorAll('.clip-views button').forEach(b => b.addEventListener('click', () => pickClip(d, b.dataset.clip)));
-  bindPoster(d);
+  const head = `<summary><span class="dot dashed"></span>Witness videos · the fireball from ${count(list.length)} places</summary>`;
+  if (wallFits()) {  // a wide screen: one press plays them all together, above the map
+    el.innerHTML = `<details${open ? ' open' : ''}>${head}
+      ${poster(`Play the ${count(list.length)} videos together with the replay`, `The map makes room for them. YouTube's player loads
+        when you press play.`)}
+      <p class="note">${list.filter(v => v.oriented).map(v => esc(v.site)).join(' and ')} run by their own clocks, so their lines of
+      sight grow on the map as each camera sees the fireball; the ${count(list.filter(v => !v.oriented).length)} others come from
+      cameras that were never oriented and are aligned by eye, to about a second.</p>
+      ${linkedText(d)}</details>`;
+    el.querySelector('.clip-poster').addEventListener('click', () => enterWall(d));
+  } else {  // a phone: one at a time, in the panel
+    const chip = v => `<button type="button" data-clip="${esc(v.clip)}" aria-pressed="${v.clip === clip.pick}">${esc(v.site)}</button>`;
+    const oriented = list.filter(v => v.oriented), others = list.filter(v => !v.oriented);
+    el.innerHTML = `<details${open ? ' open' : ''}>${head}
+      <div class="clip-views" role="group" aria-label="Witness videos">${oriented.length ? `<span>By their own clocks</span>${oriented.map(chip).join('')}` : ''}
+        ${others.length ? `<span>Not oriented, aligned by eye</span>${others.map(chip).join('')}` : ''}</div>
+      ${linkedText(d)}
+      ${poster('Play the video with the replay', `The fireball shows from ${clock(picked().fireball_s[0])}. YouTube's player loads when you
+        press play.`)}
+      <p class="clip-hint" role="status"></p>
+      <div class="clip-text">${clipText(d, picked())}</div>
+      <p class="note">On a wider screen all ${count(list.length)} play together.</p></details>`;
+    el.querySelectorAll('.clip-views button').forEach(b => b.addEventListener('click', () => pickClip(d, b.dataset.clip)));
+    bindPoster(d);
+  }
+  el.querySelector('details').addEventListener('toggle', e => { remember(e.target.open); follow(); });
 }
 
-function bindPoster(d) {  // the poster's press, and the check that half the player is in view (YouTube asks for it)
+function bindPoster(d) {  // the phone's poster, and the check that half the player is in view (YouTube asks for it)
   const frame = $('#clip .clip-frame');
   if (!frame) return;
   const b = frame.querySelector('.clip-poster');
-  if (b) b.addEventListener('click', () => startClip(d));
+  if (b) b.addEventListener('click', () => startPlayers(d, [picked()], [frame]));
   if (clip.observer) clip.observer.disconnect();
   if ('IntersectionObserver' in window) {
-    clip.observer = new IntersectionObserver(es => { clip.visible = es[0].intersectionRatio >= 0.5; }, {threshold: [0, 0.5, 1]});
+    clip.observer = new IntersectionObserver(es => { clip.visible = es[0].intersectionRatio >= 0.5; follow(); }, {threshold: [0, 0.5, 1]});
     clip.observer.observe(frame);
   }
 }
 
-// Another view: with a player running, it loads the new video (a video that runs with the replay restarts it once it plays);
-// before the first press, or after a failure, it shows that video's poster.
+// Another view on a phone: its text, and its poster, or straight into its video when one is already playing.
 function pickClip(d, id) {
   if (state.data !== d || id === clip.pick) return;
+  const going = clip.players.size > 0;
+  dropClip();
   clip.pick = id;
   const v = picked();
   $('#clip').querySelectorAll('.clip-views button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.clip === id)));
   $('#clip .clip-text').innerHTML = clipText(d, v);
   hint('');
-  if (clip.player && clip.ready) {
-    if (state.playing || state.t !== null) stop(true);
-    try {
-      clip.player.mute();  // muted before the load, so the new video may start without a press of its own
-      clip.player.loadVideoById({videoId: v.youtube_id, startSeconds: v.start_s, endSeconds: v.end_s});
-    } catch (e) { clipFail(d, "YouTube's player could not play it here."); }
-    setTimeout(() => {  // a load that stays unstarted or cued gets one push
-      try { if (clip.pick === id && [-1, 5].includes(clip.player.getPlayerState())) clip.player.playVideo(); } catch (e) { /* gone */ }
-    }, 2000);
-    return;
-  }
-  dropClip();
-  clip.pick = id;
   const old = $('#clip .clip-frame') || $('#clip .clip-fail');
-  if (old) old.outerHTML = poster(v);
+  if (old) old.outerHTML = poster('Play the video with the replay', `The fireball shows from ${clock(v.fireball_s[0])}. YouTube's player
+    loads when you press play.`);
   bindPoster(d);
+  if (going) startPlayers(d, [v], [$('#clip .clip-frame')]);
+}
+
+// The wall: the panel steps aside, the videos line up above the map, four to a row, with Kamensk-Uralskiy's place kept.
+function enterWall(d) {
+  if (clip.wall || state.data !== d) return;
+  clip.wall = true;
+  const vids = videos(d), byRole = v => (d.solution.clips.includes(v.clip) ? 0 : v.oriented ? 1 : 2);
+  const tiles = [...(d.videos.linked || []).map(l => ({linked: l, rank: 0, id: (d.stations.find(x => x.site === l.site) || {}).id})),
+    ...vids.map(v => ({v, rank: byRole(v), id: v.clip}))].sort((a, b) => a.rank - b.rank);
+  const tile = x => x.linked
+    ? `<div class="tile" data-site="${esc(x.linked.site)}"><p class="tile-head">${swatch(d, x.id)}<b>${esc(x.linked.site)}</b> · in the fit</p>
+        <div class="tile-box"><div class="tile-note"><span>Its uploader does not allow the video on other sites.</span>
+        ${external(x.linked.url, `Watch it on YouTube from ${clock(x.linked.at_s)}`)}</div></div></div>`
+    : `<div class="tile" data-clip="${esc(x.v.clip)}"><p class="tile-head">${swatch(d, x.v.clip)}<b>${external(x.v.url, esc(x.v.site))}</b> ·
+        ${role(d, x.v)}<span class="by" title="“${esc(x.v.title)}”, uploaded by ${esc(x.v.uploader)} (${esc(x.v.channel)}) on ${esc(x.v.uploaded)} (UTC)">${esc(x.v.uploader)}</span></p>
+        <div class="tile-box"></div></div>`;
+  const g = d.videos, glowed = vids.filter(v => !v.oriented);
+  const wall = document.createElement('div');
+  wall.id = 'wall';
+  wall.setAttribute('aria-label', 'Witness videos with the replay');
+  const cap = x => x.charAt(0).toUpperCase() + x.slice(1);
+  wall.className = innerWidth >= 1840 ? 'one-row' : '';
+  wall.innerHTML = `<div class="tiles">${tiles.map(tile).join('')}</div>
+    <div class="bar"><p>${cap(count(vids.length))} witness videos and the replay, in step. ${vids.filter(v => v.oriented).map(v => esc(v.site)).join(' and ')}
+      run by their own clocks, so their lines of sight grow on the map as each camera sees the fireball; the ${count(glowed.length)} marked ≈
+      were never oriented, add nothing to the path, and are aligned by eye on their glow (SAM's widest box, set to
+      ${fmt(g.glow_replay_s, 1)} s as in ${esc(list(g.glow_from || []))}'s videos), to about a second. Each is its uploader's
+      video in YouTube's player; nothing of them is stored here. <span class="wall-hint" role="status"></span></p>
+      <button type="button" class="wall-close">Close</button></div>`;
+  document.body.append(wall);
+  document.body.classList.add('wall');
+  wall.querySelector('.wall-close').addEventListener('click', () => exitWall(true));
+  const key = $('#legend details');
+  if (key) key.open = false;
+  placeHud();
+  fitWall(d);
+  startPlayers(d, vids, vids.map(v => wall.querySelector(`.tile[data-clip="${CSS.escape(v.clip)}"] .tile-box`)));
+}
+
+// Fit the path (with its heights) and the cameras of the fit to the map left below the wall: fit their box, then measure
+// where deck.gl will draw them and zoom and pan until they fill the space. A camera left out of the fit may stay outside:
+// its lines of sight come in from the edge.
+function fitWall(d) {
+  const area = {x0: 40, x1: innerWidth - 40, y0: $('#wall').getBoundingClientRect().bottom + 24, y1: innerHeight - 76};
+  const pts = [...d.solution.path.map(p => [p[0], p[1], p[2]]),
+    ...d.stations.filter(x => d.solution.clips.includes(x.id)).map(x => [...x.lonlat, 0])];
+  const ground = pts.reduce((b, p) => b.extend([p[0], p[1]]), new maplibregl.LngLatBounds([pts[0][0], pts[0][1]], [pts[0][0], pts[0][1]]));
+  map.setPadding({top: 0, bottom: 0, left: 0, right: 0});
+  map.fitBounds(ground, {padding: {top: area.y0, bottom: innerHeight - area.y1, left: area.x0, right: innerWidth - area.x1},
+    bearing: d.view.bearing, pitch: 40, duration: 0});
+  const box = () => {  // where the points will be drawn, in the map's current camera
+    const c = map.getCenter(), vp = new deck.WebMercatorViewport({width: innerWidth, height: innerHeight, longitude: c.lng,
+      latitude: c.lat, zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing()});
+    const xy = pts.map(p => vp.project(p));
+    return [Math.min(...xy.map(q => q[0])), Math.max(...xy.map(q => q[0])), Math.min(...xy.map(q => q[1])), Math.max(...xy.map(q => q[1]))];
+  };
+  for (let i = 0; i < 6; i++) {
+    let [x0, x1, y0, y1] = box();
+    map.panBy([(x0 + x1) / 2 - (area.x0 + area.x1) / 2, (y0 + y1) / 2 - (area.y0 + area.y1) / 2], {duration: 0});
+    [x0, x1, y0, y1] = box();
+    const zoom = Math.log2(Math.min((area.x1 - area.x0) / (x1 - x0), (area.y1 - area.y0) / (y1 - y0))) - 0.03;
+    if (Math.abs(zoom) < 0.02) break;
+    map.setZoom(map.getZoom() + zoom);
+  }
+  const [x0, x1, y0, y1] = box();
+  map.panBy([(x0 + x1) / 2 - (area.x0 + area.x1) / 2, (y0 + y1) / 2 - (area.y0 + area.y1) / 2], {duration: 0});
+}
+
+function exitWall(restore) {
+  if (!clip.wall) return;
+  dropClip();
+  clip.wall = false;
+  const wall = $('#wall');
+  if (wall) wall.remove();
+  document.body.classList.remove('wall');
+  placeHud();
+  const d = state.data;
+  if (restore && d) map.easeTo({...d.view, zoom: d.view.zoom - (video && !document.body.classList.contains('bare') ? 0.2 : 0),
+    padding: padding(), duration: 900, essential: true});
 }
 
 let youTube = null;
@@ -1098,121 +1195,151 @@ function loadYouTube() {  // YouTube's IFrame API, once, with a time limit
   return youTube;
 }
 
-async function startClip(d) {
-  const frame = $('#clip .clip-frame'), v = picked();
-  if (!frame || !v || clip.player) return;
-  frame.innerHTML = '<p class="clip-wait">Loading YouTube\'s player…</p>';
-  try { await loadYouTube(); } catch (e) { return frame.isConnected && clipFail(d, "YouTube's player could not load here."); }
-  if (state.data !== d || !frame.isConnected) return;
-  const f = document.createElement('iframe');
-  const q = new URLSearchParams({enablejsapi: 1, origin: location.origin, start: Math.floor(v.start_s), end: Math.ceil(v.end_s),
-    mute: 1, playsinline: 1, rel: 0});
-  f.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.youtube_id)}?${q}`;
-  f.title = `Witness videos in YouTube's player`;
-  f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-  f.referrerPolicy = 'strict-origin-when-cross-origin';  // YouTube refuses to play for a page that sends no address
-  frame.replaceChildren(f);
-  clip.timer = setTimeout(() => { if (!clip.ready) clipFail(d, "YouTube's player did not answer."); }, 15000);
-  try {
-    clip.player = new YT.Player(f, {events: {
-      onReady: () => {
-        if (state.data !== d) return;
-        clearTimeout(clip.timer);
-        clip.ready = true;
-        // One press runs the video, and a video that runs with the replay takes the replay along from the replay's paused
-        // instant or from the start: the video starts first and the replay follows once the video plays (onClipState), so a
-        // slow start does not leave the replay ahead. A video on its own leaves the map in its still view.
-        const w = picked(), from = w.synced && !state.playing && state.t !== null ? state.t : 0, was = state.playing;
-        state.t = null;
-        if (was) stop(false); else $('#play').textContent = 'Replay';
-        readout();
-        redraw();
-        try { clip.player.mute(); clip.player.seekTo(w.start_s + from, true); clip.player.playVideo(); } catch (e) { /* the HUD still works */ }
-      },
-      onStateChange: e => onClipState(d, e),
-      onError: e => clipFail(d, CLIP_ERRORS[e.data] || "YouTube's player could not play it here."),
-      onAutoplayBlocked: () => hint(picked() && picked().synced ? 'Press play in the video; the replay will follow.' : 'Press play in the video.'),
-    }});
-  } catch (e) { clipFail(d, "YouTube's player could not load here."); }
-}
-
-// The replay drives a video that runs with it: Replay and Resume seek it to start_s + t and play it; Pause, the end, a
-// collapsed card or a hidden panel pause any video.
-function syncClip(on, from = 0) {
-  const p = clip.player, v = picked();
-  if (!p || !clip.ready || !v) return;
-  try {
-    if (!on) {
-      const s = p.getPlayerState(), S = YT.PlayerState;
-      if (s !== S.PAUSED && s !== S.ENDED && s !== S.CUED) p.pauseVideo();
-      return;
-    }
-    if (!v.synced || !clip.visible || !$('#clip details').open) return;
-    const want = v.start_s + from;
-    if (Math.abs(p.getCurrentTime() - want) > 0.3) p.seekTo(want, true);
-    p.playVideo();
-  } catch (e) { /* the replay never depends on the player */ }
-}
-
-// The player drives the replay, for a video that runs with it: when the video starts, stalls or seeks, the replay takes
-// the video's time; when the reader plays or pauses inside the player, the replay follows. At the fragment's end the
-// player goes back to its start.
-function onClipState(d, e) {
-  if (state.data !== d || !clip.ready) return;
-  const p = clip.player, v = picked(), S = YT.PlayerState, dur = d.solution.times[d.solution.times.length - 1];
-  if (!v) return;
-  if (e.data === S.PLAYING) { hint(''); clip.quiet = false; }
-  if (e.data === S.ENDED) {
-    try { p.cueVideoById({videoId: v.youtube_id, startSeconds: v.start_s, endSeconds: v.end_s}); } catch (err) { /* stays ended */ }
+// Start the players for these videos in these boxes; the replay starts from 0 once the first of them plays.
+async function startPlayers(d, list, boxes) {
+  if (!list.length || clip.players.size) return;
+  boxes.forEach(b => { if (b) b.innerHTML = '<p class="clip-wait">Loading YouTube\'s player…</p>'; });
+  try { await loadYouTube(); } catch (e) {
+    boxes.forEach((b, i) => b && b.isConnected && boxFail(d, list[i], b, "YouTube's player could not load here."));
     return;
   }
-  if (e.data === S.PAUSED && clip.quiet) { clip.quiet = false; return; }  // paused to hide the player: the replay goes on
-  if (!v.synced) return;
-  let t;
-  try { t = p.getCurrentTime() - v.start_s; } catch (err) { return; }
-  if (e.data === S.PLAYING) {
-    if (state.playing) {
-      if (t < -1 || t >= dur) stop(false);
-      else if (Math.abs(t - state.t) > 0.4) started = performance.now() - Math.max(0, t) * 1000;
-    } else if (t >= -1 && t < dur) { state.t = Math.max(0, t); play(); }
-  } else if (e.data === S.PAUSED && state.playing) stop(false);
+  if (state.data !== d || !boxes.some(b => b && b.isConnected)) return;
+  if (state.playing) stop(false);
+  state.t = null;
+  $('#play').textContent = 'Replay';
+  readout();
+  redraw();
+  clip.starting = true;
+  clip.wait = setTimeout(() => begin(d), 8000);  // a slow player does not hold the others back for long
+  list.forEach((v, i) => { if (boxes[i] && boxes[i].isConnected) clip.players.set(v.clip, makePlayer(d, v, boxes[i])); });
 }
 
-function clipFail(d, why) {
+function makePlayer(d, v, box) {
+  const f = document.createElement('iframe');
+  const q = new URLSearchParams({enablejsapi: 1, origin: location.origin, start: Math.max(0, Math.floor(v.start_s)),
+    end: Math.ceil(v.end_s), mute: 1, playsinline: 1, rel: 0});
+  f.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.youtube_id)}?${q}`;
+  f.title = `${v.site}: “${v.title}”, by ${v.uploader}, in YouTube's player`;
+  f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+  f.referrerPolicy = 'strict-origin-when-cross-origin';  // YouTube refuses to play for a page that sends no address
+  box.replaceChildren(f);
+  const rec = {v, box, player: null, ready: false, ours: false, lastSeek: 0, asked: 0,
+    timer: setTimeout(() => { if (!rec.ready) boxFail(d, v, box, "YouTube's player did not answer."); }, 15000)};
+  try {
+    rec.player = new YT.Player(f, {events: {
+      onReady: () => {
+        if (state.data !== d || !clip.players.has(v.clip)) return;
+        clearTimeout(rec.timer);
+        rec.ready = true;
+        try {  // cued at the replay's start: a video whose start falls later waits at its first second
+          rec.player.mute();
+          rec.asked = performance.now();
+          rec.player.seekTo(Math.max(0, v.start_s), true);
+          if (v.start_s >= 0) rec.player.playVideo(); else { rec.ours = true; rec.player.pauseVideo(); }
+        } catch (e) { /* follow() tries again */ }
+      },
+      onStateChange: e => onPlayerState(d, rec, e),
+      onError: e => boxFail(d, v, box, CLIP_ERRORS[e.data] || "YouTube's player could not play it here."),
+      onAutoplayBlocked: () => hint('Press play in the video; the replay will follow.'),
+    }});
+  } catch (e) { boxFail(d, v, box, "YouTube's player could not load here."); }
+  return rec;
+}
+
+function begin(d) {  // the first video plays: the replay starts from 0, and follow() keeps the others in step
+  clearTimeout(clip.wait);
+  if (!clip.starting || state.data !== d) return;
+  clip.starting = false;
+  state.t = null;
+  play();
+}
+
+function onPlayerState(d, rec, e) {
+  if (state.data !== d || !clip.players.has(rec.v.clip)) return;
+  const S = YT.PlayerState;
+  if (e.data === S.PLAYING) {
+    hint('');
+    if (clip.starting) return begin(d);
+    if (state.playing) return;  // follow() keeps it in step
+    if (performance.now() - rec.asked < 30000) {  // a play the page asked for, come late: the replay is not running now
+      rec.ours = true;
+      try { rec.player.pauseVideo(); } catch (err) { /* gone */ }
+      return;
+    }
+    let t;  // the reader pressed play in this player: the replay starts from its instant
+    try { t = rec.player.getCurrentTime() - rec.v.start_s; } catch (err) { return; }
+    if (t >= 0 && t < flight(d)) { state.t = t; play(); }
+  } else if (e.data === S.PAUSED) {
+    if (rec.ours) rec.ours = false;  // ours: hidden, waiting for its start, or the replay paused
+    else if (state.playing) stop(false);  // the reader paused this player: everything pauses
+  }
+}
+
+// Keep every player at its second on the replay's clock: playing while the replay plays and its start has come, paused
+// otherwise; a player more than half a second off is moved, at most every 1.5 s.
+function follow() {
+  const d = state.data;
+  if (!d || !d.solution || !clip.players.size) return;
+  const t = state.t === null ? 0 : state.t, now = performance.now();
+  const shown = clip.wall || (clip.visible && !!($('#clip details') || {}).open && !document.body.classList.contains('bare'));
+  for (const rec of clip.players.values()) {
+    if (!rec.ready) continue;
+    try {
+      const p = rec.player, S = YT.PlayerState, s = p.getPlayerState(), at = rec.v.start_s + t;
+      const last = Math.min(rec.v.end_s, p.getDuration() || Infinity) - 0.3;  // not past its end: an ended video would start over
+      const on = state.playing && shown && at >= 0 && at < last;
+      if (!on) {
+        if (s === S.PLAYING || s === S.BUFFERING) { rec.ours = true; p.pauseVideo(); }
+        if (!state.playing && state.t === null && Math.abs(p.getCurrentTime() - Math.max(0, rec.v.start_s)) > 0.5) p.seekTo(Math.max(0, rec.v.start_s), true);
+        continue;
+      }
+      if (Math.abs(p.getCurrentTime() - at) > 0.5 && now - rec.lastSeek > 1500) { rec.asked = now; p.seekTo(at, true); rec.lastSeek = now; }
+      if (s !== S.PLAYING && s !== S.BUFFERING) { rec.asked = now; p.playVideo(); }
+    } catch (e) { /* the replay never depends on a player */ }
+  }
+}
+
+// In the wall, a camera's tile lights up while that camera sees the fireball (its SAM track, on the replay's clock).
+function wallSees() {
+  const d = state.data;
+  if (!clip.wall || !d) return;
+  const t = state.t;
+  $('#wall').querySelectorAll('.tile').forEach(el => {
+    const v = videos(d).find(x => x.clip === el.dataset.clip), st = !v && d.stations.find(x => x.site === el.dataset.site);
+    const span = v ? [v.fireball_s[0] - v.start_s, v.fireball_s[1] - v.start_s] : st && st.rays ? [st.rays[0][0], st.rays[st.rays.length - 1][0]] : null;
+    el.classList.toggle('sees', t !== null && !!span && t >= span[0] && t <= span[1]);
+  });
+}
+
+function boxFail(d, v, box, why) {
   if (state.data !== d) return;
-  const v = picked(), frame = $('#clip .clip-frame');
-  dropClip();
-  clip.pick = v && v.clip;
-  if (frame && v) frame.outerHTML = `<p class="clip-fail" role="status">${esc(why)} ${external(`${v.url}&t=${Math.floor(v.start_s)}s`,
-    `Watch it on YouTube from ${clock(v.start_s)}`)}.</p>`;
+  const rec = clip.players.get(v.clip);
+  if (rec) {
+    clearTimeout(rec.timer);
+    try { if (rec.player && rec.player.destroy) rec.player.destroy(); } catch (e) { /* already gone */ }
+    clip.players.delete(v.clip);
+  }
+  const html = `${esc(why)} ${external(`${v.url}&t=${Math.max(0, Math.floor(v.start_s))}s`, `Watch it on YouTube from ${clock(Math.max(0, v.start_s))}`)}.`;
+  if (clip.wall) { if (box.isConnected) box.innerHTML = `<div class="tile-note"><span>${html}</span></div>`; }
+  else if (box.isConnected) box.outerHTML = `<p class="clip-fail" role="status">${html}</p>`;
+  if (clip.starting && !clip.players.size) begin(d);  // none left: the replay runs on its own
 }
 
 function dropClip() {
-  clearTimeout(clip.timer);
+  clearTimeout(clip.wait);
+  for (const rec of clip.players.values()) {
+    clearTimeout(rec.timer);
+    try { if (rec.player && rec.player.destroy) rec.player.destroy(); } catch (e) { /* already gone */ }
+  }
+  clip.players.clear();
+  clip.starting = false;
   if (clip.observer) clip.observer.disconnect();
-  try { if (clip.player && clip.player.destroy) clip.player.destroy(); } catch (e) { /* already gone */ }
-  Object.assign(clip, {player: null, ready: false, visible: true, observer: null, timer: 0, quiet: false});
-}
-
-// Hide the player without stopping the replay (the card collapsed, or the panel hidden with h): its PAUSED event is
-// marked as ours, so it does not stop the replay; the next PLAYING clears the mark.
-function quietClip() {
-  if (!clip.player || !clip.ready) return;
-  try {
-    const s = clip.player.getPlayerState(), S = YT.PlayerState;
-    if (s === S.PAUSED || s === S.ENDED || s === S.CUED) return;
-  } catch (e) { return; }
-  clip.quiet = true;
-  syncClip(false);
-}
-
-// When the player shows again, a video that runs with the replay joins it, once the page has measured that it is in view.
-function rejoinClip() {
-  setTimeout(() => { if (state.playing) syncClip(true, state.t); }, 200);
+  clip.observer = null;
+  clip.visible = true;
 }
 
 function hint(text) {
-  const el = $('#clip .clip-hint');
+  const el = $('#wall .wall-hint') || $('#clip .clip-hint');
   if (el) el.textContent = text;
 }
 
@@ -1234,23 +1361,21 @@ function play() {
   if (!d || !d.solution) return;
   if (state.playing) return stop(false);
   const dur = d.solution.times[d.solution.times.length - 1];
-  let from = state.t !== null && state.t < dur ? state.t : 0;
-  try {  // the reader may have moved the paused player: resume from there
-    const w = picked();
-    if (w && w.synced && clip.ready && state.t !== null && clip.player.getPlayerState() === YT.PlayerState.PAUSED) {
-      const v = clip.player.getCurrentTime() - w.start_s;
-      if (v >= 0 && v < dur && Math.abs(v - from) > 0.3) from = v;
-    }
-  } catch (e) { /* the replay never depends on the player */ }
+  const from = state.t !== null && state.t < dur ? state.t : 0;
   state.playing = true;
   $('#play').textContent = 'Pause';
   started = performance.now() - from * 1000;
-  syncClip(true, from);
-  map.easeTo({bearing: map.getBearing() + 16 * (1 - from / dur), duration: (dur - from) * 1000 + 1200, easing: k => k});
+  state.t = from;
+  clearInterval(clip.loop);
+  clip.loop = setInterval(follow, 300);
+  follow();
+  // the map turns slowly while the replay runs; in the wall it stays still, so the path stays in the space below the videos
+  if (!clip.wall) map.easeTo({bearing: map.getBearing() + 16 * (1 - from / dur), duration: (dur - from) * 1000 + 1200, easing: k => k});
   const tick = now => {
     state.t = Math.min((now - started) / 1000, dur);
     readout();
     redraw();
+    wallSees();
     if (!state.playing) return;
     if (state.t < dur) raf = requestAnimationFrame(tick);
     else setTimeout(() => stop(true), 900);
@@ -1262,8 +1387,10 @@ function stop(finished) {
   cancelAnimationFrame(raf);
   if (state.playing) map.stop();
   state.playing = false;
-  syncClip(false);
+  clearInterval(clip.loop);
   if (finished) state.t = null;
+  follow();
+  wallSees();
   $('#play').textContent = state.t === null ? 'Replay' : 'Resume';
   readout();
   placeHud();
@@ -1276,7 +1403,7 @@ function stop(finished) {
 function placeHud() {
   const hud = $('#hud'), s = hud.style, text = $('#readout');
   s.left = s.bottom = s.maxWidth = '';
-  if (hud.hidden || narrow.matches || document.body.classList.contains('bare')) return;
+  if (hud.hidden || narrow.matches || document.body.classList.contains('bare') || document.body.classList.contains('wall')) return;
   const from = $('#panel').getBoundingClientRect().right + 12, key = $('#legend').getBoundingClientRect();
   const to = key.width ? key.left - 12 : innerWidth - 12, middle = (from + innerWidth - 12) / 2;
   s.maxWidth = `${to - from}px`;
@@ -1287,7 +1414,7 @@ function placeHud() {
   s.maxWidth = `${innerWidth - 12 - from}px`;
   s.bottom = `${innerHeight - key.top + 10}px`;
 }
-addEventListener('resize', placeHud);
+addEventListener('resize', () => { if (clip.wall && !wallFits()) exitWall(true); placeHud(); });
 
 // ---- cases -----------------------------------------------------------------------------------------------------------
 
@@ -1347,6 +1474,7 @@ map.on('moveend', () => {  // after a pan, zoom, turn or resize the labels find 
 
 addEventListener('keydown', e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (clip.wall && e.key === 'Escape') { exitWall(true); return; }
   if (video && (/^[0-3]$/.test(e.key) || e.key === 'Escape')) {
     state.stage = e.key === 'Escape' ? 0 : Number(e.key);
     stageKey();
@@ -1356,10 +1484,9 @@ addEventListener('keydown', e => {
   }
   if (e.target.closest('input, textarea, button, summary, a')) return;
   if (e.code === 'Space') { e.preventDefault(); play(); }
-  if (e.key === 'h') {
+  if (e.key === 'h' && !clip.wall) {
     document.body.classList.toggle('bare');
-    // the panel, and the player in it, are hidden; the replay goes on, and the video joins it again when the panel returns
-    if (document.body.classList.contains('bare')) quietClip(); else rejoinClip();
+    follow();  // the panel, and the player in it, are hidden: the video waits, the replay goes on
     placeHud();
     map.easeTo({padding: padding(), duration: 600});
   }

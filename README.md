@@ -24,14 +24,16 @@ The last instant holds for 0.9 s; then the still view shows the agent's white pa
 3423, the published solution, for 1.5 s, and for 1.5 s more with the 500 Monte Carlo lines as a pale blue band.
 
 In the viewer, the side panel opens with the witness videos whose uploaders allow them on other sites, each its
-uploader's own video in YouTube's player, which loads only when you press play. Two come from cameras that could be
-oriented and run with the 3D replay from the same instant, so the footage plays beside the path fitted from
-Kamensk-Uralskiy and Korkino: Tyumen's dashcam, which the window opens with, and Korkino's. Tyumen is the camera the
-agent left out of the fit (its planes cross Kamensk-Uralskiy's at 7.5°), which also makes it a check on the fit: its 223
-lines of sight miss the fitted path by 0.45° (median; see Tyumen, held out, below). Five more, from Beloretsk,
-Chebarkul, Yekaterinburg, Magnitogorsk and Plast, come from cameras that were never oriented, so they play on their own.
-Kamensk-Uralskiy's uploader does not allow the video on other sites, so the viewer links to it. The GIF above and the
-demo video leave the window out.
+uploader's own video in YouTube's player, which loads only when you press play. On a wide screen one press plays all
+seven together, in a wall above the map, with the 3D replay; on a phone they play one at a time. Korkino's and Tyumen's
+videos run by their own clocks, so each camera's lines of sight grow on the map as it sees the fireball: Korkino is one
+of the two cameras of the fit, and Tyumen, which the agent left out of the fit (its planes cross Kamensk-Uralskiy's at
+7.5°), is a check on it: its 223 lines of sight miss the fitted path by 0.45° (median; see Tyumen, held out, below). The
+five others, from Beloretsk, Chebarkul, Yekaterinburg, Magnitogorsk and Plast, come from cameras that were never
+oriented: they add nothing to the path, and each is aligned by eye on its glow, the instant SAM's box around the
+fireball is widest, set to 7.0 s into the replay as in Kamensk-Uralskiy's and Tyumen's videos, good to about a second
+(`witness_videos` in `scripts/export_web.py`). Kamensk-Uralskiy's uploader does not allow the video on other sites, so
+the viewer links to it. The GIF above and the demo video leave the videos out.
 
 ```mermaid
 flowchart TD
@@ -347,7 +349,7 @@ The 3D viewer can play seven of the Chelyabinsk videos, as their uploaders' YouT
 which their uploaders allow (checked on 29 October 2026): the page loads nothing from YouTube until a reader presses
 play, and it keeps no frame or sound. Kamensk-Uralskiy's uploader does not allow embedding, so the viewer only links to
 that video, and it links to the Medellín post on X without loading anything from X. The README's GIF (`?panel=0`) and
-the demo video (`?video=1`) show no witness footage: the window is off in both, unless `&clip=1` is added in video mode.
+the demo video (`?video=1`) show no witness footage: the videos are off in both, unless `&clip=1` is added in video mode.
 
 Chelyabinsk videos, by YouTube uploader: Aleksandr Ivanov (Kamensk-Uralskiy), Никита Зенкович (Korkino), Alexander
 Voronov (Tyumen), MrKuzaman (Beloretsk), 🫐 голубика🫐 (Chebarkul), Мясников Сергей (Yekaterinburg), Сергей Давлеткулов

@@ -126,49 +126,72 @@ def credits(case):
     return {c['clip']: c for c in json.loads(f.read_text())} if f.exists() else {}
 
 
+def sam_rows(case, clip):
+    """The solver's rows of a clip's SAM track (a centroid, not a repeated frame), on the trimmed clip's clock."""
+    rows = json.loads((ROOT / 'out' / 'sam' / f'{case.key(clip)}.json').read_text())['rows']
+    return [r for r in rows if r['centroid'] is not None and not r['dup']]
+
+
+def widest_glow_t(rows):
+    """The trimmed clip's second where SAM's box around the fireball is largest: where its glow spreads widest."""
+    boxed = [r for r in rows if r.get('box')]
+    return max(boxed, key=lambda r: (r['box'][2] - r['box'][0]) * (r['box'][3] - r['box'][1]))['t'] if boxed else None
+
+
 def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
-    """The witness videos the viewer can play, or None when the case has none: every clip whose credits record that its
-    uploader allows embedding, the oriented ones first (FIRST before the rest), then the others in the case's order. Only
-    ids, seconds and credits leave the machine. For an oriented camera the video runs with the replay: start_s is the
-    upload's second that lines up with the replay's zero (the trimmed clip starts at window_s[0] of the upload, and the
-    camera's own clock is shifted as in each station's track), and end_s leaves room for the whole replay. A camera that
-    was never oriented has no clock on the path, so its video plays on its own, over the trimmed window. fireball_s are the
+    """The witness videos the viewer can play with the replay, or None when the case has none: every clip whose credits
+    record that its uploader allows embedding, FIRST before the rest, then the oriented ones, then the others, in the
+    case's order. Only ids, seconds and credits leave the machine. start_s is the upload's second that lines up with the
+    replay's zero (it can be negative: the video then starts later), and end_s leaves room for the whole replay.
+    An oriented camera's video is aligned by its own clock (aligned 'clock'): the trimmed clip starts at window_s[0] of
+    the upload, and the camera's clock is shifted as in each station's track. A camera that was never oriented has no
+    clock on the path, so its video is aligned by its glow (aligned 'glow'): the second where SAM's box around the
+    fireball is widest is set to glow_replay_s, the mean of that instant over the oriented cameras whose tracks run to
+    their end (glow_from), Kamensk-Uralskiy's among them even though its video cannot be shown. fireball_s are the
     seconds where SAM followed the fireball; camera_moves is Muse Spark's reading. linked lists the solution's cameras
     whose uploaders do not allow embedding, as links to YouTube at the second their own clock reads 0."""
     creds = creds if creds is not None else credits(case)
     first = FIRST.get(case.id)
+    clips = {str(ev['catalog_no']): ev for ev in case.event['clips'] if ev.get('source') and ev.get('window_s')}
+    shift = {k: own_clock(sol, s0, case._stations([k])[0])[3] for k in clips if case.calibration(k)['calibrated']}
+    glows = {}
+    for k in shift:  # where each oriented camera sees the widest glow, on the replay's clock
+        rows, (w0, w1) = sam_rows(case, k), clips[k]['window_s']
+        if rows and max(r['t'] for r in rows) < (w1 - w0) - 0.5 and widest_glow_t(rows) is not None:
+            glows[clips[k]['site']] = widest_glow_t(rows) - shift[k]
+    glow_at = float(np.mean(list(glows.values()))) if glows else None
     shown, linked = [], []
-    for ev in case.event['clips']:
-        clip, c = str(ev['catalog_no']), creds.get(str(ev['catalog_no']))
-        if not c or not ev.get('source') or c['source'] != ev['source']:
+    for clip, ev in clips.items():
+        c = creds.get(clip)
+        if not c or c['source'] != ev['source']:
             continue
-        allowed = (c.get('embed') or {}).get('allowed')
-        oriented = case.calibration(clip)['calibrated']
+        allowed, oriented = (c.get('embed') or {}).get('allowed'), clip in shift
         if allowed is False and clip in final:
-            at = int(np.floor(ev['window_s'][0] + own_clock(sol, s0, case._stations([clip])[0])[3]))
+            at = int(np.floor(ev['window_s'][0] + shift[clip]))
             ou = UPLOADER.match(c['credit'])
             linked.append({'site': ev['site'], 'url': f"https://www.youtube.com/watch?v={youtube_id(c['source'])}&t={at}s",
                            'at_s': at, 'uploader': ou and ou[1], 'channel': ou and ou[2]})
         if allowed is not True:
             continue
         w0, w1 = ev['window_s']
+        rows = sam_rows(case, clip)
+        times = np.array([r['t'] for r in rows])
         if oriented:
-            st = case._stations([clip])[0]
-            times, start = st.times, w0 + own_clock(sol, s0, st)[3]
-            end = max(w1, start + dur + 1)
-        else:  # the solver's rows of SAM's track (a centroid, not a repeated frame), on the trimmed clip's clock
-            rows = json.loads((ROOT / 'out' / 'sam' / f'{case.key(clip)}.json').read_text())['rows']
-            times = np.array([r['t'] for r in rows if r['centroid'] is not None and not r['dup']])
-            start, end = w0, w1
+            start = w0 + shift[clip]
+        elif glow_at is not None and widest_glow_t(rows) is not None:
+            start = w0 + widest_glow_t(rows) - glow_at
+        else:
+            continue
         up = UPLOADER.match(c['credit'])
         drop = next((x for x in log if x['action'] == 'drop_clip' and x.get('clip') == clip and x['result'].get('accepted', True)
                      and 'error' not in x['result']), None) if oriented and clip not in final else None
         reading = case.dir / 'witness' / f'{clip}.json'
         shown.append({'clip': clip, 'site': ev['site'], 'camera': ev['camera'],
                       'status': 'used' if clip in final else 'left out' if drop else 'oriented' if oriented else 'not oriented',
-                      'synced': bool(oriented), 'youtube_id': youtube_id(c['source']), 'url': c['source'], 'title': c.get('title'),
+                      'oriented': oriented, 'aligned': 'clock' if oriented else 'glow',
+                      'youtube_id': youtube_id(c['source']), 'url': c['source'], 'title': c.get('title'),
                       'uploader': up and up[1], 'channel': up and up[2], 'uploaded': up and up[3],
-                      'trimmed_s': [w0, w1], 'start_s': round(float(start), 3), 'end_s': round(float(end), 1),
+                      'trimmed_s': [w0, w1], 'start_s': round(float(start), 3), 'end_s': round(float(max(w1, start + dur + 1)), 1),
                       'fireball_s': [round(float(w0 + times.min()), 2), round(float(w0 + times.max()), 2)],
                       'camera_moves': json.loads(reading.read_text()).get('camera_moves') if reading.exists() else None,
                       'left_out': drop and {'step': drop['step'], 'criterion': drop['result'].get('criterion'),
@@ -176,8 +199,9 @@ def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
                                                       ((drop['result'].get('measured') or {}).get('near_parallel_with') or {}).items()]}})
     if not shown:
         return None
-    shown.sort(key=lambda x: (x['clip'] != first, not x['synced']))  # stable: the case's order within each group
-    return {'first': shown[0]['clip'], 'shown': shown, 'linked': linked}
+    shown.sort(key=lambda x: (x['clip'] != first, not x['oriented']))  # stable: the case's order within each group
+    return {'first': shown[0]['clip'], 'shown': shown, 'linked': linked,
+            'glow_replay_s': glow_at and round(glow_at, 2), 'glow_from': sorted(glows)}
 
 
 def drop_reason(result, names):

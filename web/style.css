@@ -141,6 +141,41 @@ details[open] summary { margin-bottom: 8px; }
 .clip-hint:empty { display: none; }
 .clip-fail { color: var(--ink-2); font-size: calc(13px * var(--k)); }
 .clip-credit { color: var(--ink-3); font-size: calc(12px * var(--k)); }
+
+/* The wall: the witness videos above the map, four to a row; each player at least 200 px tall, with nothing over it. */
+body.wall #panel { display: none; }
+body.wall #hud { left: 50%; }
+#wall { position: fixed; top: 12px; left: 12px; right: 12px; }
+#wall .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+#wall.one-row .tiles { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+#wall .tile { padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; transition: border-color 0.2s; }
+#wall .tile.sees { border-color: var(--accent); }
+#wall .tile-head {
+  display: flex; align-items: center; gap: 2px; margin: 0 2px 5px; overflow: hidden; white-space: nowrap;
+  color: var(--ink-3); font-size: calc(12px * var(--k));
+}
+#wall .tile-head .dot { flex: none; }
+#wall .tile-head b { margin-right: 4px; color: var(--ink-2); font-weight: 600; }
+#wall .tile-head b a { color: inherit; text-decoration: none; }
+#wall .tile.sees .tile-head b { color: var(--ink); }
+#wall .tile-head .by { margin-left: auto; padding-left: 8px; overflow: hidden; text-overflow: ellipsis; }
+#wall .tile-box { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; background: #000; }
+#wall .tile-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+#wall .tile-note {
+  position: absolute; inset: 0; display: grid; place-content: center; gap: 6px; padding: 12px; text-align: center;
+  background: var(--surface); color: var(--ink-2); font-size: calc(12.5px * var(--k));
+}
+#wall .bar {
+  display: flex; align-items: flex-start; gap: 14px; margin-top: 8px; padding: 7px 10px 7px 12px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 10px; color: var(--ink-2); font-size: calc(12px * var(--k)); line-height: 1.45;
+}
+#wall .bar p { margin: 0; }
+#wall .wall-hint { margin-left: 6px; color: var(--accent); }
+#wall .wall-close {
+  flex: none; font: 600 calc(12.5px * var(--k)) var(--sans); color: var(--ink); background: var(--raise); border: 1px solid var(--line);
+  border-radius: 999px; padding: 5px 14px; cursor: pointer;
+}
+#wall .wall-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: calc(12px * var(--k)); }
 footer p { margin-bottom: 6px; }
 
