@@ -5,7 +5,12 @@
   "source": "https://www.youtube.com/watch?v=kFlpCT3v12E",
   "credit": "YouTube uploader Aleksandr Ivanov (@aleksandrivanov3409), uploaded 2013-02-18",
   "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading)",
-  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published"
+  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published",
+  "embed": {
+   "allowed": false,
+   "checked": "2026-10-29",
+   "how": "YouTube oEmbed answered 401: the uploader disabled embedding"
+  }
  },
  {
   "clip": "14",
@@ -19,9 +24,15 @@
   "clip": "48",
   "site": "Tyumen",
   "source": "https://www.youtube.com/watch?v=1ZdYf2vM5LA",
+  "title": "Метеорит или НЛО в Челябинске, вид из Тюмени",
   "credit": "YouTube uploader Alexander Voronov (@EastSide287), uploaded 2013-02-15",
-  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading)",
-  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published"
+  "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading); the 3D viewer plays the uploader's own video in YouTube's player (youtube-nocookie.com), which the uploader's embedding setting allows, and loads it only when a reader presses play",
+  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published",
+  "embed": {
+   "allowed": true,
+   "checked": "2026-10-29",
+   "how": "YouTube oEmbed answered 200"
+  }
  },
  {
   "clip": "15",
@@ -61,7 +72,12 @@
   "source": "https://www.youtube.com/watch?v=odKjwrjIM-k",
   "credit": "YouTube uploader Никита Зенкович (@НикитаЗенкович), uploaded 2013-02-15",
   "permission": "not requested: public video, catalogued by Borovička et al. 2016; this repository publishes no frame and no audio of it, only numbers and text measured from it (the SAM pixel track, the annotated pixels where the camera was oriented, and Muse Spark's structured reading)",
-  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published"
+  "position_source": "Ondřejov catalogue (Borovička et al. 2016, A&A), as published",
+  "embed": {
+   "allowed": true,
+   "checked": "2026-10-29",
+   "how": "YouTube oEmbed answered 200"
+  }
  },
  {
   "clip": "1",

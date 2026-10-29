@@ -1,6 +1,7 @@
 // The Chelyabinsk replay from the 3D viewer as the README's looping GIF, docs/replay.gif. It shows the map only: the
-// side panel is hidden (the viewer's ?panel=0 mode), and no witness frame is in it, since the viewer draws directions
-// and times, not video.
+// side panel is hidden (the viewer's ?panel=0 mode), and with it the window that plays a witness video in YouTube's player;
+// clip=0 keeps that window off too, and the script stops if anything from YouTube is on the page, so the GIF holds no
+// witness frame.
 //
 // Serve web/ first, then run from anywhere:
 //   python3 -m http.server -d web 8000
@@ -27,7 +28,7 @@ const opt = Object.fromEntries(process.argv.slice(2).map(a => {
   return [k, v.length ? v.join('=') : true];
 }));
 // replay=0: the viewer would otherwise start its own replay on load, whose clock would override the one set here
-const url = new URL('?panel=0&replay=0#chelyabinsk-2013', opt.url || 'http://127.0.0.1:8000/').href;
+const url = new URL('?panel=0&replay=0&clip=0#chelyabinsk-2013', opt.url || 'http://127.0.0.1:8000/').href;
 const out = resolve(opt.out || join(ROOT, 'docs', 'replay.gif'));
 // 880 CSS pixels is about the width GitHub gives a README image; twice the pixels keeps the lines sharp on dense screens.
 const W = +(opt.width || 880), H = +(opt.height || 495), SCALE = +(opt.scale || 2), FPS = +(opt.fps || 10);
@@ -82,6 +83,7 @@ try {
       if (performance.now() - t0 > 60000) throw new Error('the viewer did not load the case');
       await new Promise(r => setTimeout(r, 100));
     }
+    if (document.querySelector('iframe, script[src*="youtube"]')) throw new Error('witness footage on the page');
     const css = document.createElement('style');  // the HUD keeps its readout, centred; no buttons to press in a GIF
     css.textContent = '.maplibregl-ctrl-top-right, #play { display: none; } #hud { left: 50%; padding: 7px 16px; }'
       + ' #readout { min-width: 11em; text-align: center; }';

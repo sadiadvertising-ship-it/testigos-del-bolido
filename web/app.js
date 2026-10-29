@@ -60,6 +60,9 @@ const video = params.get('video') === '1';  // ?video=1: larger type and a wider
 const autoplay = params.get('replay') !== '0' && !matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.body.classList.toggle('bare', bare);
 document.body.classList.toggle('video', video);
+// The witness video's window (d.clip): off in ?panel=0 (the README's GIF) and, unless &clip=1, in ?video=1 (the demo's
+// screen recording), so neither carries witness footage; ?clip=0 turns it off anywhere.
+const clipOn = !bare && (video ? params.get('clip') === '1' : params.get('clip') !== '0');
 const narrow = matchMedia('(max-width: 760px)');
 const padding = () => (document.body.classList.contains('bare') ? {top: 0, bottom: 0, left: 0, right: 0}
   : narrow.matches ? {top: 0, bottom: innerHeight * 0.5, left: 0, right: 0}
@@ -733,7 +736,8 @@ function leadOpen(d) {
     satellite recorded a ${fmt(g.duration_s, 2)} s flash at <span class="num">${latlon(g.lonlat)}</span>, ${nearest.km} km from
     ${esc(nearest.city)}.</p>
     <p>NASA's analysts classified it as a ${esc(g.classification.toLowerCase())}${g.confidence ? `, with ${esc(g.confidence)} confidence` : ''}${lightning ? `
-    and ${lightning}` : ''}.${filmed ? ` The one video analysed so far was filmed in ${esc(filmed.site)}${town ? `, ${town.km} km away` : ''}: a
+    and ${lightning}` : ''}.${filmed ? ` The one video analysed so far was filmed in ${esc(filmed.site)}${town ? `, ${town.km} km away` : ''}${filmed.post
+    ? ` (${external(filmed.post.url, 'the post on X')})` : ''}: a
     handheld phone video that replays the moment in cuts. Muse judged it usable, but nothing in view can be located on a map and
     the filming spot is unknown, so the code cannot orient it.` : ''}${later ? ` ${esc(later.what)}, posted on ${esc(later.where)}
     by ${esc(later.by)} on ${isoDay(later.on)}, have not been analysed yet.` : ''} With fewer than two oriented cameras there is no
@@ -752,7 +756,7 @@ function compareOpen(d) {
   const rows = d.towns.filter(t => t.sees_it_high).slice(0, 9).map(t => `<tr><td>${esc(t.city)}</td><td class="r num">${t.km}</td>
     <td class="r">${abbr(t.look_az_deg)} <span class="num">${Math.round(t.look_az_deg)}°</span></td>
     <td class="r num">${span(t.el_at_40km_deg, t.el_at_80km_deg, 0)}°</td></tr>`).join('');
-  const seen = d.witness.map(w => `<li><b>${esc(w.site)}</b>: ${esc(w.status)}</li>`).join('');
+  const seen = d.witness.map(w => `<li><b>${esc(w.site)}</b>: ${esc(w.status)}${w.post ? `; ${external(w.post.url, esc(w.post.credit))}` : ''}</li>`).join('');
   return `<h2>Where a video would close the case</h2>
     <table><thead><tr><th>Town</th><th class="r">km away</th><th class="r">Look toward</th><th class="r">Up in the sky</th></tr></thead><tbody>${rows}</tbody></table>
     <p class="note" style="margin-top:8px">Height above the horizon if the flash was ${between(...skyKm(d), 0)} km up; the satellite
@@ -967,6 +971,156 @@ function stageKey() {  // the key lists only what the current stage shows
   $('#legend').querySelectorAll('[data-stage]').forEach(el => { el.hidden = !shows(Number(el.dataset.stage)); });
 }
 
+// ---- the witness video ------------------------------------------------------------------------------------------------
+// One witness video can play beside the replay: its uploader's own YouTube video in YouTube's player (youtube-nocookie.com),
+// which the uploader allows (the export reads credits.json). Nothing loads from YouTube until a reader presses play. The
+// video's second is the replay's second plus start_s, both in real time; the replay follows the player when it starts,
+// stalls, seeks or pauses, and the player follows the replay's Replay, Pause and Resume.
+
+const clip = {player: null, ready: false, visible: true, observer: null, timer: 0};
+const CLIP_ERRORS = {100: 'The video is no longer on YouTube, or it is private.', 101: 'Its uploader no longer allows it to play on other sites.',
+  150: 'Its uploader no longer allows it to play on other sites.', 153: "YouTube's player needs this page's address, and the browser did not send it."};
+const clock = (x, d = 0) => `${Math.floor(x / 60)}:${d ? (x % 60).toFixed(d).padStart(d + 3, '0') : String(Math.floor(x % 60)).padStart(2, '0')}`;  // 0:06, 0:18.8
+const recall = () => { try { return localStorage.getItem('testigos.clip.open'); } catch (e) { return null; } };
+const remember = open => { try { localStorage.setItem('testigos.clip.open', open ? '1' : '0'); } catch (e) { /* not kept */ } };
+const external = (url, text) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+
+function drawClip(d) {
+  dropClip();
+  const el = $('#clip'), c = d.clip;
+  if (!clipOn || !c || !c.youtube_id) { el.innerHTML = ''; return; }
+  const st = d.stations.find(x => x.id === c.clip), out = c.left_out, pair = out && out.pairs[0];
+  const kept = recall(), open = kept === null || kept === '1';
+  const why = out ? `The agent left this camera out of the fit${pair ? ` (its planes cross ${esc(pair.site)}'s at ${fmt(pair.q_deg, 1)}°)` : ''},
+    so it is the check: its lines of sight miss the fitted path by ${fmt(st.miss_deg, 2)}°.` : '';
+  const others = (c.linked || []).map(l => `${esc(l.site)}'s uploader does not allow the video on other sites:
+    ${external(l.url, `watch it on YouTube from ${clock(l.at_s)}`)}.`).join(' ');
+  el.innerHTML = `<details${open ? ' open' : ''}><summary><span class="dot dashed"></span>A witness video · filmed in ${esc(c.site)}${out
+    ? ', left out of the fit' : ''}</summary>
+    <div class="clip-frame"><button type="button" class="clip-poster"><span class="clip-play" aria-hidden="true"></span>
+      <span>Play the video with the replay</span>
+      <small>The fireball crosses it from ${clock(c.fireball_s[0])} to ${clock(c.fireball_s[1])}. YouTube's player loads when you press
+      play.</small></button></div>
+    <p class="clip-hint" role="status"></p>
+    <p class="note">Filmed from a ${esc(c.camera)} in ${esc(c.site)}. ${why} Play runs the replay from ${clock(c.start_s)}, the instant
+    this camera's own clock puts at the top of the path; SAM 3.1 picks the fireball up at ${clock(c.fireball_s[0], 1)}. The fireball
+    slowed and the replay flies the fitted line at one speed, so at the camera's last sight of it (${clock(c.fireball_s[1], 1)}) the
+    replay's dot is ${fmt(c.ahead_at_last_s, 1)} s ahead.</p>
+    <p class="clip-credit">${external(c.url, `“${esc(c.title)}”`)}, uploaded by ${esc(c.uploader)} (${esc(c.channel)}) on
+    ${esc(c.uploaded)}, plays in YouTube's player; nothing of it is stored here. ${others}</p></details>`;
+  const details = el.querySelector('details');
+  details.addEventListener('toggle', () => { remember(details.open); if (!details.open) syncClip(false); });
+  el.querySelector('.clip-poster').addEventListener('click', () => startClip(d));
+  if ('IntersectionObserver' in window) {  // YouTube asks that scripted playback start only while half the player shows
+    clip.observer = new IntersectionObserver(es => { clip.visible = es[0].intersectionRatio >= 0.5; }, {threshold: [0, 0.5, 1]});
+    clip.observer.observe(el.querySelector('.clip-frame'));
+  }
+}
+
+let youTube = null;
+function loadYouTube() {  // YouTube's IFrame API, once, with a time limit
+  if (window.YT && window.YT.Player) return Promise.resolve();
+  if (!youTube) {
+    youTube = new Promise((ok, fail) => {
+      const s = document.createElement('script'), late = setTimeout(() => fail(new Error('timeout')), 15000);
+      s.src = 'https://www.youtube.com/iframe_api';
+      s.onerror = () => { clearTimeout(late); fail(new Error('blocked')); };
+      window.onYouTubeIframeAPIReady = () => { clearTimeout(late); ok(); };
+      document.head.append(s);
+    }).catch(e => { youTube = null; throw e; });
+  }
+  return youTube;
+}
+
+async function startClip(d) {
+  const c = d.clip, frame = $('#clip .clip-frame');
+  if (!frame || clip.player) return;
+  frame.innerHTML = '<p class="clip-wait">Loading YouTube\'s player…</p>';
+  try { await loadYouTube(); } catch (e) { return clipFail(d, "YouTube's player could not load here."); }
+  if (state.data !== d) return;
+  const f = document.createElement('iframe');
+  const q = new URLSearchParams({enablejsapi: 1, origin: location.origin, start: Math.floor(c.start_s), end: Math.ceil(c.end_s),
+    mute: 1, playsinline: 1, rel: 0});
+  f.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(c.youtube_id)}?${q}`;
+  f.title = `${c.title}, by ${c.uploader}, in YouTube's player`;
+  f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+  f.referrerPolicy = 'strict-origin-when-cross-origin';  // YouTube refuses to play for a page that sends no address
+  frame.replaceChildren(f);
+  clip.timer = setTimeout(() => { if (!clip.ready) clipFail(d, "YouTube's player did not answer."); }, 15000);
+  try {
+    clip.player = new YT.Player(f, {events: {
+      onReady: () => {
+        if (state.data !== d) return;
+        clearTimeout(clip.timer);
+        clip.ready = true;
+        // One press runs both, from the replay's paused instant or from the start. The video starts first; the replay
+        // follows once the video actually plays (onClipState), so a slow start does not leave the replay ahead.
+        const from = !state.playing && state.t !== null ? state.t : 0;
+        if (state.playing) stop(false);
+        state.t = null;
+        readout();
+        redraw();
+        try { clip.player.mute(); clip.player.seekTo(c.start_s + from, true); clip.player.playVideo(); } catch (e) { /* the HUD still works */ }
+      },
+      onStateChange: e => onClipState(d, e),
+      onError: e => clipFail(d, CLIP_ERRORS[e.data] || "YouTube's player could not play it here."),
+      onAutoplayBlocked: () => hint('Press play in the video; the replay will follow.'),
+    }});
+  } catch (e) { clipFail(d, "YouTube's player could not load here."); }
+}
+
+// The replay drives the player: Replay and Resume seek the video to start_s + t and play it, Pause and the end pause it.
+function syncClip(on, from = 0) {
+  const p = clip.player, c = state.data && state.data.clip;
+  if (!p || !clip.ready || !c) return;
+  try {
+    if (!on) { if (p.getPlayerState() === YT.PlayerState.PLAYING) p.pauseVideo(); return; }
+    if (!clip.visible || !$('#clip details').open) return;
+    const want = c.start_s + from;
+    if (Math.abs(p.getCurrentTime() - want) > 0.3) p.seekTo(want, true);
+    p.playVideo();
+  } catch (e) { /* the replay never depends on the player */ }
+}
+
+// The player drives the replay: when it starts, stalls or seeks, the replay takes the video's time; when the reader plays
+// or pauses inside the player, the replay follows; at the fragment's end the player goes back to its start.
+function onClipState(d, e) {
+  if (state.data !== d || !clip.ready) return;
+  const p = clip.player, c = d.clip, S = YT.PlayerState, dur = d.solution.times[d.solution.times.length - 1];
+  let t;
+  try { t = p.getCurrentTime() - c.start_s; } catch (err) { return; }
+  if (e.data === S.PLAYING) {
+    hint('');
+    if (state.playing) {
+      if (t < -1 || t >= dur) stop(false);
+      else if (Math.abs(t - state.t) > 0.4) started = performance.now() - Math.max(0, t) * 1000;
+    } else if (t >= -1 && t < dur) { state.t = Math.max(0, t); play(); }
+  } else if (e.data === S.PAUSED && state.playing) stop(false);
+  else if (e.data === S.ENDED) {
+    try { p.cueVideoById({videoId: c.youtube_id, startSeconds: c.start_s, endSeconds: c.end_s}); } catch (err) { /* stays ended */ }
+  }
+}
+
+function clipFail(d, why) {
+  if (state.data !== d) return;
+  const c = d.clip, frame = $('#clip .clip-frame');
+  dropClip();
+  if (frame) frame.outerHTML = `<p class="clip-fail" role="status">${esc(why)} ${external(`${c.url}&t=${Math.floor(c.start_s)}s`,
+    `Watch it on YouTube from ${clock(c.start_s)}`)}.</p>`;
+}
+
+function dropClip() {
+  clearTimeout(clip.timer);
+  if (clip.observer) clip.observer.disconnect();
+  try { if (clip.player && clip.player.destroy) clip.player.destroy(); } catch (e) { /* already gone */ }
+  Object.assign(clip, {player: null, ready: false, visible: true, observer: null, timer: 0});
+}
+
+function hint(text) {
+  const el = $('#clip .clip-hint');
+  if (el) el.textContent = text;
+}
+
 // ---- replay ----------------------------------------------------------------------------------------------------------
 
 let raf = 0, started = 0;
@@ -989,6 +1143,7 @@ function play() {
   state.playing = true;
   $('#play').textContent = 'Pause';
   started = performance.now() - from * 1000;
+  syncClip(true, from);
   map.easeTo({bearing: map.getBearing() + 16 * (1 - from / dur), duration: (dur - from) * 1000 + 1200, easing: k => k});
   const tick = now => {
     state.t = Math.min((now - started) / 1000, dur);
@@ -1005,6 +1160,7 @@ function stop(finished) {
   cancelAnimationFrame(raf);
   if (state.playing) map.stop();
   state.playing = false;
+  syncClip(false);
   if (finished) state.t = null;
   $('#play').textContent = state.t === null ? 'Replay' : 'Resume';
   readout();
@@ -1043,6 +1199,7 @@ async function show(id) {
   const d = cache[known.id] || (cache[known.id] = await (await fetch(`data/${known.id}.json`)).json());
   state.data = d;
   document.querySelectorAll('#cases button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === known.id)));
+  drawClip(d);
   $('#lead').innerHTML = d.solution ? leadSolved(d) : leadOpen(d);
   $('#compare').innerHTML = d.solution ? compareSolved(d) : compareOpen(d);
   if (d.solution) drawChart($('#chart'), d); else $('#chart').innerHTML = '';
@@ -1095,9 +1252,14 @@ addEventListener('keydown', e => {
     namesUnderLabels();
     return;
   }
-  if (e.target.closest('input, textarea, button')) return;
+  if (e.target.closest('input, textarea, button, summary, a')) return;
   if (e.code === 'Space') { e.preventDefault(); play(); }
-  if (e.key === 'h') { document.body.classList.toggle('bare'); placeHud(); map.easeTo({padding: padding(), duration: 600}); }
+  if (e.key === 'h') {
+    document.body.classList.toggle('bare');
+    if (document.body.classList.contains('bare')) syncClip(false);  // the panel, and the player in it, are hidden
+    placeHud();
+    map.easeTo({padding: padding(), duration: 600});
+  }
 });
 
 (async function init() {

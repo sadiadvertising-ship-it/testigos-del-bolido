@@ -23,6 +23,13 @@ left out because its planes cross Kamensk-Uralskiy's at 7.5°. The cameras that 
 The last instant holds for 0.9 s; then the still view shows the agent's white path beside the dashed yellow path of CBET
 3423, the published solution, for 1.5 s, and for 1.5 s more with the 500 Monte Carlo lines as a pale blue band.
 
+In the viewer, the side panel opens with one of the witness videos the agent measured, Tyumen's dashcam: its uploader's
+own video in YouTube's player, which loads only when you press play. One press runs the 3D replay with it from the same
+instant, so the footage and the path it became play side by side. Tyumen is the camera the agent left out of the fit
+(its planes cross Kamensk-Uralskiy's at 7.5°), which also makes it the check: its lines of sight miss the fitted path by
+0.43° RMS. Kamensk-Uralskiy's uploader does not allow the video on other sites, so the viewer links to it. The GIF above
+and the demo video leave the window out.
+
 ```mermaid
 flowchart TD
     model["Muse Spark 1.3 picks<br>a tool and says why"]
@@ -322,14 +329,21 @@ Running the agent itself needs a Meta Model API key: copy `.env.example` to `.en
 ## Data, credits and privacy
 
 The witness videos are not in this repository, and neither are their frames. `events/<id>/credits.json` names each
-video's source, uploader, permission status and where its camera position comes from. No frame and no audio is
-published: only numbers and text measured from the videos (SAM's pixel tracks, the annotated line and landmark pixels,
+video's source, uploader, permission status, whether its uploader allows embedding, and where its camera position comes
+from. This repository publishes no frame and no audio: only numbers and text measured from the videos (SAM's pixel tracks, the annotated line and landmark pixels,
 and Muse's structured readings). Muse's readings keep no transcript of what the witnesses say; three short transcripts
 were in commits f88a059 to 54d2875 and remain in the history. The Chelyabinsk camera positions are the Ondřejov
 catalogue's as published (cars on public roads and security cameras), and the viewer rounds them to about 100 m. For
 new witnesses, the filming spot is published rounded to about 100 m, and the exact spot used to orient the camera
 stays out of the repository. The demo video shows cards drawn from the measurements (`scripts/track_cards.py`,
 `scripts/title_cards.py`), not frames of the witness videos.
+
+The 3D viewer can play one video, Tyumen's, as its uploader's YouTube video in YouTube's own player
+(youtube-nocookie.com), which its uploader allows (checked on 29 October 2026): the page loads nothing from YouTube
+until a reader presses play, and it keeps no frame or sound. Kamensk-Uralskiy's uploader does not allow embedding, so
+the viewer only links to that video, and it links to the Medellín post on X without loading anything from X. The
+README's GIF (`?panel=0`) and the demo video (`?video=1`) show no witness footage: the window is off in both, unless
+`&clip=1` is added in video mode.
 
 Chelyabinsk videos, by YouTube uploader: Aleksandr Ivanov (Kamensk-Uralskiy), Никита Зенкович (Korkino), Alexander
 Voronov (Tyumen), MrKuzaman (Beloretsk), 🫐 голубика🫐 (Chebarkul), Мясников Сергей (Yekaterinburg), Сергей Давлеткулов

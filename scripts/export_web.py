@@ -1,8 +1,10 @@
 """Export each case to web/data/<event>.json for the static 3D viewer.
 
-Only derived numbers leave the machine: camera sites rounded to about 100 m, each line of sight as the point where it
-passes closest to the solved path, the solutions the agent tried, the Monte Carlo lines, the agent log and report, and
-published values (labelled; the agent never sees them). No video, frame or pixel track is exported.
+Only derived numbers and credits leave the machine: camera sites rounded to about 100 m, each line of sight as the point
+where it passes closest to the solved path, the solutions the agent tried, the Monte Carlo lines, the agent log and report,
+and published values (labelled; the agent never sees them). No video, frame or pixel track is exported. For the one
+witness video the viewer can play (SHOWN), the export names the uploader's YouTube video, its title and credit, and the
+upload's seconds that tie it to the replay; the viewer loads it in YouTube's player only when a reader presses play.
 Usage: .venv/bin/python scripts/export_web.py
 """
 import datetime as dt
@@ -50,6 +52,10 @@ SPEEDS = dict(zip(('escape_kms', 'orbital_kms'), map(float, re.search(
 # 30,000 to 40,000 ft).
 CITIES = (('Bogotá', 4.60971, -74.08175), ('Medellín', 6.25020, -75.56758))
 CRUISE_KM = 10
+# The witness video the viewer can play beside the replay, per case: Kamensk-Uralskiy's uploader does not allow embedding,
+# so Tyumen's. It is shown only while the case's credits record that its uploader allows embedding (YouTube's oEmbed).
+SHOWN = {'chelyabinsk-2013': '48'}
+UPLOADER = re.compile(r'YouTube uploader (.+) \((@[^)]+)\), uploaded (\d{4}-\d\d-\d\d)')
 
 
 def site(lat, lon):
@@ -94,6 +100,69 @@ def miss_deg(sol, st):
     n = np.cross(sol.point - st.origin, sol.direction)
     n /= np.linalg.norm(n)
     return float(np.degrees(np.sqrt(np.mean(np.arcsin(np.clip(st.rays @ n, -1, 1)) ** 2))))
+
+
+def own_clock(sol, s0, st):
+    """A camera's own clock against the solved line: where each line of sight passes closest to it (near, and s along the
+    line), the straight fit s = k0 t + k1 over the solver's speed window, before the deceleration (this camera's speed and
+    clock offset), and the shift that makes the camera read 0 at the first point of the path."""
+    near = [nearest(sol, st.origin, r) for r in st.rays]
+    s = np.array([n[0] for n in near])
+    early = st.times <= st.times.min() + SPEED_WINDOW * np.ptp(st.times)
+    k = np.polyfit(st.times[early], s[early], 1)
+    return near, s, k, (s0 - k[1]) / k[0]
+
+
+def youtube_id(url):
+    m = re.search(r'[?&]v=([\w-]{11})', url or '')
+    return m and m[1]
+
+
+def credits(case):
+    """The case's credits.json by clip: source, credit, permission and whether the uploader allows embedding."""
+    f = case.dir / 'credits.json'
+    return {c['clip']: c for c in json.loads(f.read_text())} if f.exists() else {}
+
+
+def witness_video(case, sol, s0, v, final, log, names, creds=None):
+    """The witness video the viewer can play beside the replay (SHOWN), or None when the case has none, or its credits do
+    not record that the uploader allows embedding. Only ids, seconds and credits: start_s is the upload's second that
+    lines up with the replay's zero (the trimmed clip starts at window_s[0] of the upload, and the camera's own clock is
+    shifted as in each station's track), fireball_s the seconds where SAM followed the fireball, and ahead_at_last_s how
+    far the replay's dot runs ahead at the camera's last sight of it (the replay flies the fitted line at one speed; the
+    fireball slowed). linked lists the solution's cameras whose uploaders do not allow embedding, as links to YouTube at
+    the second their own clock reads 0."""
+    clip, creds = SHOWN.get(case.id), creds if creds is not None else credits(case)
+    c = creds.get(clip) if clip else None
+    ev = next((x for x in case.event['clips'] if str(x['catalog_no']) == clip), None)
+    if not c or not ev or (c.get('embed') or {}).get('allowed') is not True or c['source'] != ev['source']:
+        return None
+    st = case._stations([clip])[0]
+    _, s, _, shift = own_clock(sol, s0, st)
+    w0, w1 = ev['window_s']
+    last = int(np.argmax(st.times))
+    up = UPLOADER.match(c['credit'])
+    drop = next((x for x in log if x['action'] == 'drop_clip' and x.get('clip') == clip and x['result'].get('accepted', True)
+                 and 'error' not in x['result']), None)
+    linked = []
+    for other in final:
+        o = creds.get(other)
+        if other == clip or not o or (o.get('embed') or {}).get('allowed') is not False:
+            continue
+        oe = next(x for x in case.event['clips'] if str(x['catalog_no']) == other)
+        at = int(np.floor(oe['window_s'][0] + own_clock(sol, s0, case._stations([other])[0])[3]))
+        ou = UPLOADER.match(o['credit'])
+        linked.append({'site': oe['site'], 'url': f"https://www.youtube.com/watch?v={youtube_id(o['source'])}&t={at}s", 'at_s': at,
+                       'uploader': ou and ou[1], 'channel': ou and ou[2]})
+    return {'clip': clip, 'site': ev['site'], 'camera': ev['camera'], 'youtube_id': youtube_id(c['source']), 'url': c['source'],
+            'title': c.get('title'), 'uploader': up and up[1], 'channel': up and up[2], 'uploaded': up and up[3],
+            'trimmed_s': [w0, w1], 'start_s': round(float(w0 + shift), 3), 'end_s': w1,
+            'fireball_s': [round(float(w0 + st.times.min()), 2), round(float(w0 + st.times.max()), 2)],
+            'ahead_at_last_s': round(float((st.times[last] - shift) - (s[last] - s0) / v), 1),
+            'left_out': drop and {'step': drop['step'], 'criterion': drop['result'].get('criterion'),
+                                  'pairs': [{'site': names.get(k, k), 'q_deg': r['q_deg_with_it']} for k, r in
+                                            ((drop['result'].get('measured') or {}).get('near_parallel_with') or {}).items()]},
+            'linked': linked}
 
 
 def drop_reason(result, names):
@@ -202,11 +271,8 @@ def chelyabinsk():
                'reason': dropped.get(clip) if left_out else None}
         if calibrated:
             st = case._stations([clip])[0]
-            near = [nearest(sol, st.origin, r) for r in st.rays]
-            s = np.array([n[0] for n in near])
-            early = st.times <= st.times.min() + SPEED_WINDOW * np.ptp(st.times)  # the solver's speed window, before the deceleration
-            k = np.polyfit(st.times[early], s[early], 1)  # s = k0 t + k1: this camera's own speed and clock offset
-            tau = st.times - (s0 - k[1]) / k[0]  # its clock shifted so that every camera reads 0 at the first point
+            near, s, k, shift = own_clock(sol, s0, st)
+            tau = st.times - shift  # its clock shifted so that every camera reads 0 at the first point
             pick = np.unique(np.linspace(0, len(s) - 1, 16).round().astype(int))
             row.update(lonlat=site(st.pos[0], st.pos[1]), height_m=round(st.pos[2], -1),
                        rays=[[round(float((s[i] - s0) / v), 2)] + geo(st.origin + near[i][1] * st.rays[i]) for i in pick],
@@ -254,6 +320,8 @@ def chelyabinsk():
         'catalogue': catalogue(case),
         'calibration_history': f'{history.relative_to(ROOT)}/' if history.is_dir() else None,
         'stations': stations,
+        # the witness video the viewer can play beside the replay (the uploader's YouTube video, loaded only on a press)
+        'clip': witness_video(case, sol, s0, v, final, log, names),
         'tried': tried,
         # the stretch the cameras saw beside the distance between two cities, the flare's height on our line beside a
         # cruising airliner, and the speeds the verdict tells apart
@@ -335,6 +403,7 @@ def colombia():
     rows = json.loads((case.dir / 'city-geometry.json').read_text())
     # the heights the town geometry assumes for the flash, from its columns (el_at_40km_deg and el_at_80km_deg)
     heights = sorted({int(m[1]) for m in (re.fullmatch(r'el_at_(\d+)km_deg', k) for k in rows[0]) if m})
+    creds = credits(case)
     towns = []
     for r in rows:
         if r['city'] not in TOWNS:
@@ -360,6 +429,7 @@ def colombia():
         'sky': {'high_deg': list(SKY_DEG), 'heights_km': heights},
         'towns': towns,
         'witness': [{'site': 'Medellín', 'lonlat': [TOWNS['Medellín'][1], TOWNS['Medellín'][0]], 'video': True,
+                     'post': creds.get('medellin') and {'url': creds['medellin']['source'], 'credit': creds['medellin']['credit']},
                      'status': 'a handheld phone video with cuts, read by Muse; nothing in view can be located on a map and the '
                                'filming spot is unknown, so the code cannot orient it' + medellin_track(case)},
                     {'site': 'Bucaramanga', 'lonlat': [TOWNS['Bucaramanga'][1], TOWNS['Bucaramanga'][0]], 'video': False,

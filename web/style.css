@@ -51,7 +51,7 @@ b { font-weight: 600; }
 }
 #cases button small { display: block; color: var(--ink-3); font-weight: 400; font-size: calc(12px * var(--k)); }
 #cases button[aria-pressed="true"] { background: var(--raise); color: var(--ink); }
-#cases button:focus-visible, #play:focus-visible, .steps li:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#cases button:focus-visible, #play:focus-visible, .steps li:focus-visible, .clip-poster:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 table { width: 100%; border-collapse: collapse; font-size: calc(13px * var(--k)); }
 th, td { padding: 6px 6px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
@@ -110,6 +110,27 @@ details summary { cursor: pointer; color: var(--ink-2); font-size: calc(13px * v
 details[open] summary { margin-bottom: 8px; }
 .report { font-size: calc(13px * var(--k)); color: var(--ink-2); }
 .report strong { color: var(--ink); font-weight: 600; }
+/* The witness video: YouTube's player at least 200 px tall, with nothing drawn over it; the poster is the page's own button. */
+#clip summary { color: var(--ink); font-weight: 500; }
+.clip-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; margin: 0 0 8px; background: #000; }
+.clip-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.clip-poster {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 12px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--ink);
+  font: 600 calc(14px * var(--k))/1.35 var(--sans); text-align: center; cursor: pointer;
+}
+.clip-poster:hover { background: var(--raise); }
+.clip-poster small { max-width: 30em; color: var(--ink-2); font-weight: 400; font-size: calc(12px * var(--k)); }
+.clip-play { position: relative; width: calc(44px * var(--k)); height: calc(44px * var(--k)); border-radius: 50%; background: var(--accent); }
+.clip-play::after {
+  content: ''; position: absolute; left: 54%; top: 50%; transform: translate(-50%, -50%); border-style: solid;
+  border-width: calc(8px * var(--k)) 0 calc(8px * var(--k)) calc(13px * var(--k)); border-color: transparent transparent transparent #06101e;
+}
+.clip-wait { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--ink-2); font-size: calc(13px * var(--k)); }
+.clip-hint { color: var(--accent); font-size: calc(12.5px * var(--k)); }
+.clip-hint:empty { display: none; }
+.clip-fail { color: var(--ink-2); font-size: calc(13px * var(--k)); }
+.clip-credit { color: var(--ink-3); font-size: calc(12px * var(--k)); }
 footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: calc(12px * var(--k)); }
 footer p { margin-bottom: 6px; }
 
