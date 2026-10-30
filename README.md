@@ -377,8 +377,9 @@ uploaders' YouTube players; no frame of them is stored in the repository.
 The 3D viewer can play seven of the Chelyabinsk videos, as their uploaders' YouTube videos in YouTube's own player
 (youtube-nocookie.com, run by YouTube's IFrame API script from www.youtube.com, which can set youtube.com cookies),
 which their uploaders allow (checked on 29 October 2026): the page loads nothing from YouTube until a reader presses
-play, and it keeps no frame or sound. Until a video plays, and in Kamensk-Uralskiy's place, a tile draws SAM's track of
-the fireball from the measurements: its position as a share of the frame and the size of SAM's box. Kamensk-Uralskiy's
+play, and it keeps no frame or sound. Below each video, in the wall and one at a time alike, and in Kamensk-Uralskiy's
+place, the viewer draws SAM's track of the fireball from the measurements: its position as a share of the frame and the
+size of SAM's box. Kamensk-Uralskiy's
 uploader does not allow embedding, so the viewer only links to that video, and it links to the Medellín post on X
 without loading anything from X. The README's GIF (`?panel=0`) shows no witness footage, and in video mode
 (`?video=1`) the videos are off unless `&clip=1` is added. For recordings, `?video=1&clip=wall` opens the wall at once,

@@ -1155,14 +1155,23 @@ function drawClip(d) {
       ${linkedText(d)}
       ${poster('Play the video with the replay', `The fireball shows from ${clock(picked().fireball_s[0])}. YouTube's player loads when you
         press play.`)}
+      <div class="clip-track"></div>
       <p class="clip-hint" role="status"></p>
       <div class="clip-text">${clipText(d, picked())}</div>
       <p class="note">With the page at least 1100 by 970 px (full screen helps), or 1840 by 760 px, all ${count(vids.length)} play
       together above the map, each above the fireball as the AI traced it.</p></details>`;
     el.querySelectorAll('.clip-views button').forEach(b => b.addEventListener('click', () => pickClip(d, b.dataset.clip)));
     bindPoster(d);
+    panelTrack(picked());
   }
   el.querySelector('details').addEventListener('toggle', e => { remember(e.target.open); follow(); });
+}
+
+function panelTrack(v) {  // one video at a time: SAM's track of it, below the video
+  const box = $('#clip .clip-track');
+  if (!box) return;
+  box.innerHTML = '';
+  if (v && v.track) samCanvas(box, v, TRACED);
 }
 
 function bindPoster(d) {  // the phone's poster, and the check that half the player is in view (YouTube asks for it)
@@ -1191,6 +1200,7 @@ function pickClip(d, id) {
   if (old) old.outerHTML = poster('Play the video with the replay', `The fireball shows from ${clock(v.fireball_s[0])}. YouTube's player
     loads when you press play.`);
   bindPoster(d);
+  panelTrack(v);
   if (going) startPlayers(d, [v], [$('#clip .clip-frame')]);
 }
 
@@ -1323,15 +1333,13 @@ function loadYouTube() {  // YouTube's IFrame API, once, with a time limit
 }
 
 // Start the players for these videos in these boxes. The replay starts from 0 at once: until a video is ready, its box
-// draws SAM's track at the replay's pace (in the wall, where the track is drawn below, it says the video is loading), and
-// each video joins in step when it plays (follow()).
+// says the video is loading (SAM's track runs below it at the replay's pace), and each video joins in step when it plays
+// (follow()).
 async function startPlayers(d, list, boxes) {
   if (!list.length || clip.players.size) return;
   boxes.forEach((b, i) => {
     if (!b) return;
-    b.innerHTML = '';
-    if (list[i].track && !clip.wall) samCanvas(b, list[i], `${TRACED}, while the video loads`);
-    else b.innerHTML = '<p class="clip-wait">Loading the video…</p>';
+    b.innerHTML = '<p class="clip-wait">Loading the video…</p>';
   });
   if (state.playing) stop(false);
   state.t = null;
@@ -1367,9 +1375,7 @@ function makePlayer(d, v, box) {
   f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
   f.referrerPolicy = 'strict-origin-when-cross-origin';  // YouTube refuses to play for a page that sends no address
   f.style.opacity = '0';  // transparent until it plays: SAM's track, or a line saying it loads, shows meanwhile; nothing is ever drawn over the player
-  const wait = box.querySelector('.clip-wait');
-  if (wait && !clip.wall) wait.remove();  // in the wall it stays under the transparent player until the video plays
-  box.append(f);
+  box.append(f);  // the line saying it loads stays under the transparent player until the video plays
   const rec = {v, box, player: null, ready: false, ours: 0, want: 0, lastSeek: 0,
     timer: setTimeout(() => { if (!rec.ready) boxFail(d, v, box, "YouTube's player did not answer."); }, 15000)};
   try {
