@@ -1,0 +1,116 @@
+{
+ "fit_cameras": [
+  "2",
+  "10"
+ ],
+ "fit_speed_kms": 19.65,
+ "note": "Witnesses held out of the fit: how well does the Kamensk + Korkino path explain cameras that did not shape it?\n\nTyumen, which the agent leaves out of the fit, writes validation/chelyabinsk-2013/holdout-tyumen.json (TYUMEN below).\nThe cameras oriented after the signed run (validation/chelyabinsk-2013/after-run/cameras.json) write\nvalidation/chelyabinsk-2013/holdout-after-run.json: the same numbers, the RMS angle between the rays and the plane through\nthe camera and the line (the viewer's miss), how each camera's planes cross the fit's cameras', and, for a camera judged\noriented, what the solver gives with it and how its miss changes with Korkino's field of view. Their annotators worked without the fit or CBET 3423 in view, so for those the\ncheck is independent of both; the rough ones show what a rough orientation does to it. No published value is used.",
+ "cameras": {
+  "81": {
+   "site": "Yekaterinburg",
+   "outcome": "oriented",
+   "rays": 207,
+   "miss_deg": {
+    "median": 0.26,
+    "p90": 0.52
+   },
+   "own_clock_speed_kms": 19.5,
+   "own_clock_speed_sigma_kms": 0.08,
+   "plane_rms_deg": 0.321,
+   "q_deg_with": {
+    "2": 7.7,
+    "10": 74.0
+   },
+   "solver_with_it": {
+    "2+10+81": {
+     "azimuth_deg": 278.81,
+     "slope_deg": 16.97,
+     "speed_kms": 19.06,
+     "q_max_deg": 74.0
+    },
+    "2+81": {
+     "azimuth_deg": 279.95,
+     "slope_deg": 17.14,
+     "speed_kms": 19.76,
+     "q_max_deg": 7.7
+    },
+    "10+81": {
+     "azimuth_deg": 282.3,
+     "slope_deg": 17.41,
+     "speed_kms": 19.51,
+     "q_max_deg": 74.0
+    }
+   },
+   "miss_if_korkino_hfov": {
+    "76.0": {
+     "azimuth_deg": 283.74,
+     "plane_rms_deg": 0.294
+    },
+    "79.5": {
+     "azimuth_deg": 282.12,
+     "plane_rms_deg": 0.321
+    },
+    "85.5": {
+     "azimuth_deg": 279.16,
+     "plane_rms_deg": 0.392
+    },
+    "91.9": {
+     "azimuth_deg": 276.42,
+     "plane_rms_deg": 0.485
+    },
+    "95.0": {
+     "azimuth_deg": 274.17,
+     "plane_rms_deg": 0.56
+    }
+   }
+  },
+  "238": {
+   "site": "Plast",
+   "outcome": "rough",
+   "rays": 63,
+   "miss_deg": {
+    "median": 1.08,
+    "p90": 1.44
+   },
+   "own_clock_speed_kms": 11.36,
+   "own_clock_speed_sigma_kms": 0.14,
+   "plane_rms_deg": 1.31,
+   "q_deg_with": {
+    "2": 26.1,
+    "10": 87.6
+   }
+  },
+  "15": {
+   "site": "Chebarkul",
+   "outcome": "rough",
+   "rays": 84,
+   "miss_deg": {
+    "median": 1.76,
+    "p90": 6.08
+   },
+   "own_clock_speed_kms": 10.06,
+   "own_clock_speed_sigma_kms": 0.47,
+   "plane_rms_deg": 2.807,
+   "q_deg_with": {
+    "2": 56.6,
+    "10": 9.8
+   }
+  },
+  "257": {
+   "site": "Magnitogorsk",
+   "outcome": "rough",
+   "rays": 132,
+   "miss_deg": {
+    "median": 1.14,
+    "p90": 1.45
+   },
+   "own_clock_speed_kms": 36.76,
+   "own_clock_speed_sigma_kms": 0.96,
+   "plane_rms_deg": 1.17,
+   "q_deg_with": {
+    "2": 10.5,
+    "10": 63.6
+   }
+  }
+ }
+}

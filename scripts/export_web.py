@@ -23,8 +23,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 import testigos.verdict  # noqa: E402
 from testigos.agent import REPORT_MODEL, Case  # noqa: E402
+from testigos.camera import Camera  # noqa: E402
 from testigos.geo import to_ecef, to_geodetic  # noqa: E402
-from testigos.solve import _closest, _fit_speed, solve  # noqa: E402
+from testigos.solve import Station, _closest, _fit_speed, solve  # noqa: E402
 
 OUT = ROOT / 'web' / 'data'
 # The share of a camera's track that the solver's speed fit uses, from its start: before the fireball slows.
@@ -133,6 +134,27 @@ def sam_rows(case, clip):
     return [r for r in rows if r['centroid'] is not None and not r['dup']]
 
 
+def after_run(case, outcome='oriented'):
+    """The cameras oriented after the signed run (validation/<case>/after-run/cameras.json, which the agent never reads) with
+    this outcome, 'oriented' or 'rough' (None for both), by clip."""
+    f = ROOT / 'validation' / case.id / 'after-run' / 'cameras.json'
+    cams = json.loads(f.read_text()) if f.exists() else {}
+    return {k.rsplit('-', 1)[1]: e for k, e in cams.items() if isinstance(e, dict) and 'camera' in e
+            and (outcome is None or e['outcome'] == outcome)}
+
+
+def station(case, clip):
+    """A camera's station: from picks.json when the agent had its orientation, else from the cameras oriented after the run
+    (with only the SAM rows from still_from_s on, when the camera stood still only from then)."""
+    if case.calibration(clip)['calibrated']:
+        return case._stations([clip])[0]
+    e = after_run(case, None)[clip]
+    c, (w, h) = e['camera'], e['image']
+    cam = Camera(w, h, yaw=c['yaw'], pitch=c['pitch'], roll=c['roll'], hfov=c['hfov'], k1=c['k1'], fisheye=e['lens'] == 'fisheye')
+    rows = [r for r in sam_rows(case, clip) if r['t'] >= e.get('still_from_s', 0)]
+    return Station(clip, tuple(e['camera_pos']), np.array([r['t'] for r in rows]), np.array([cam.unproject(r['centroid']) for r in rows]))
+
+
 def widest_glow_t(rows):
     """The trimmed clip's second where SAM's box around the fireball has its largest area (in the oriented cameras' videos,
     the fireball's longest streak, just before the box turns round)."""
@@ -152,28 +174,32 @@ def sam_track(rows, w0, frame_px, most=160):
 
 def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
     """The witness videos the viewer can play with the replay, or None when the case has none: every clip whose credits
-    record that its uploader allows embedding, FIRST before the rest, then the oriented ones, then the others, in the
-    case's order. Only ids, seconds and credits leave the machine. start_s is the upload's second that lines up with the
+    record that its uploader allows embedding, FIRST before the rest, then the oriented ones (those oriented after the run
+    last), then the others, in the case's order. Only ids, seconds and credits leave the machine. start_s is the upload's second that lines up with the
     replay's zero (it can be negative: the video then starts later), and end_s leaves room for the whole replay.
-    An oriented camera's video is aligned by its own clock (aligned 'clock'): the trimmed clip starts at window_s[0] of
-    the upload, and the camera's clock is shifted as in each station's track. A camera that was never oriented has no
-    clock on the path, so its video is lined up on SAM's box (aligned 'glow'): the second where SAM's box around the
-    fireball has its largest area is set to glow_replay_s, the mean of that instant on the replay's clock over the oriented
-    cameras whose tracks run to their end (glow_from, by site), Kamensk-Uralskiy's among them even though its video cannot
-    be shown. Nothing measures how far off this puts the other videos: the largest box can mark another moment in them. fireball_s are the
-    seconds where SAM followed the fireball; camera_moves is Muse Spark's reading; track is SAM's track as sam_track
-    gives it, with frame_px. linked lists the solution's cameras whose uploaders do not allow embedding, as links to YouTube
-    at the second their own clock reads 0, with their tracks too."""
+    An oriented camera's video is aligned by its own clock (aligned 'clock'), and so is one oriented after the run (status
+    'after run'): the trimmed clip starts at window_s[0] of the upload, and the camera's clock is shifted as in each
+    station's track. A camera that is not oriented has no clock on the path, so its video is lined up on SAM's box (aligned
+    'glow'): the second where SAM's box around the fireball has its largest area is set to glow_replay_s, the mean of that
+    instant on the replay's clock over the cameras the run had oriented whose tracks run to their end (glow_from, by site),
+    Kamensk-Uralskiy's among them even though its video cannot be shown. The cameras oriented after the run test this:
+    glow_check_s gives, by site, how far ahead of the replay their videos would run if lined up that way (the largest box
+    can mark another moment). fireball_s are the seconds where SAM followed the fireball; camera_moves is Muse Spark's
+    reading, and moves_measured what comparing the frames after the run found, where it was done; track is SAM's track as
+    sam_track gives it, with frame_px. linked lists the solution's cameras whose uploaders do not allow embedding, as links
+    to YouTube at the second their own clock reads 0, with their tracks too."""
     creds = creds if creds is not None else credits(case)
     first = FIRST.get(case.id)
     clips = {str(ev['catalog_no']): ev for ev in case.event['clips'] if ev.get('source') and ev.get('window_s')}
-    shift = {k: own_clock(sol, s0, case._stations([k])[0])[3] for k in clips if case.calibration(k)['calibrated']}
-    glows = {}
+    later, tried = after_run(case), after_run(case, None)
+    shift = {k: own_clock(sol, s0, station(case, k))[3] for k in clips if case.calibration(k)['calibrated'] or k in later}
+    glows, checks = {}, {}
     for k in shift:  # where each oriented camera sees the widest glow, on the replay's clock
         rows, (w0, w1) = sam_rows(case, k), clips[k]['window_s']
         if rows and max(r['t'] for r in rows) < (w1 - w0) - 0.5 and widest_glow_t(rows) is not None:
-            glows[clips[k]['site']] = widest_glow_t(rows) - shift[k]
+            (checks if k in later else glows)[clips[k]['site']] = widest_glow_t(rows) - shift[k]
     glow_at = float(np.mean(list(glows.values()))) if glows else None
+    checks = {site: round(float(t - glow_at), 2) for site, t in sorted(checks.items())} if glow_at is not None else {}
     shown, linked = [], []
     for clip, ev in clips.items():
         c = creds.get(clip)
@@ -200,25 +226,29 @@ def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
             continue
         up = UPLOADER.match(c['credit'])
         drop = next((x for x in log if x['action'] == 'drop_clip' and x.get('clip') == clip and x['result'].get('accepted', True)
-                     and 'error' not in x['result']), None) if oriented and clip not in final else None
+                     and 'error' not in x['result']), None) if oriented and clip not in final and clip not in later else None
         reading = case.dir / 'witness' / f'{clip}.json'
         shown.append({'clip': clip, 'site': ev['site'], 'camera': ev['camera'],
-                      'status': 'used' if clip in final else 'left out' if drop else 'oriented' if oriented else 'not oriented',
+                      'status': 'used' if clip in final else 'left out' if drop else 'after run' if clip in later
+                      else 'oriented' if oriented else 'not oriented',
                       'oriented': oriented, 'aligned': 'clock' if oriented else 'glow',
                       'youtube_id': youtube_id(c['source']), 'url': c['source'], 'title': c.get('title'),
                       'uploader': up and up[1], 'channel': up and up[2], 'uploaded': up and up[3],
                       'trimmed_s': [w0, w1], 'start_s': round(float(start), 3), 'end_s': round(float(max(w1, start + dur + 1)), 1),
                       'fireball_s': [round(float(w0 + times.min()), 2), round(float(w0 + times.max()), 2)],
                       'camera_moves': json.loads(reading.read_text()).get('camera_moves') if reading.exists() else None,
+                      'moves_measured': ((tried.get(clip) or {}).get('camera_moves') or {}).get('measured'),
                       'frame_px': ev.get('frame_px'), 'track': sam_track(rows, w0, ev['frame_px']) if ev.get('frame_px') else None,
                       'left_out': drop and {'step': drop['step'], 'criterion': drop['result'].get('criterion'),
                                             'pairs': [{'site': names.get(k, k), 'q_deg': r['q_deg_with_it']} for k, r in
                                                       ((drop['result'].get('measured') or {}).get('near_parallel_with') or {}).items()]}})
     if not shown:
         return None
-    shown.sort(key=lambda x: (x['clip'] != first, not x['oriented']))  # stable: the case's order within each group
+    # stable: the case's order within each group, the cameras oriented after the run after the run's own
+    shown.sort(key=lambda x: (x['clip'] != first, not x['oriented'], x['status'] == 'after run'))
     return {'first': shown[0]['clip'], 'shown': shown, 'linked': linked,
-            'glow_replay_s': glow_at and round(glow_at, 2), 'glow_from': {k: round(float(t), 2) for k, t in sorted(glows.items())}}
+            'glow_replay_s': glow_at and round(glow_at, 2), 'glow_from': {k: round(float(t), 2) for k, t in sorted(glows.items())},
+            'glow_check_s': checks}
 
 
 def drop_reason(result, names):
@@ -316,17 +346,21 @@ def chelyabinsk():
     sol, s0, s1 = solution(case, final)
     v = sol.speed_kms * 1000
 
-    stations = []
+    stations, later = [], after_run(case)
     for c in case.event['clips']:
         clip = str(c['catalog_no'])
         calibrated = case.calibration(clip)['calibrated']
-        # a camera that was never oriented stays 'not calibrated', even when the agent also dropped it as not oriented
+        # a camera the run did not have oriented stays 'not calibrated', even when the agent also dropped it as not oriented,
+        # unless it was oriented after the run: then it is drawn as a check on the fit, 'after run'
         left_out = calibrated and clip in dropped and clip not in final
         row = {'id': clip, 'site': c['site'], 'lonlat': site(c['lat'], c['lon']), 'camera': c['camera'], 'lens': c['lens'],
-               'status': 'used' if clip in final else 'dropped' if left_out else 'calibrated' if calibrated else 'not calibrated',
+               'status': 'used' if clip in final else 'dropped' if left_out else 'calibrated' if calibrated
+               else 'after run' if clip in later else 'not calibrated',
                'reason': dropped.get(clip) if left_out else None}
-        if calibrated:
-            st = case._stations([clip])[0]
+        if clip in later and not calibrated:
+            row['after_run'] = {'on': later[clip]['oriented_on'], 'from': later[clip]['summary']}
+        if calibrated or clip in later:
+            st = station(case, clip)
             near, s, k, shift = own_clock(sol, s0, st)
             tau = st.times - shift  # its clock shifted so that every camera reads 0 at the first point
             pick = np.unique(np.linspace(0, len(s) - 1, 16).round().astype(int))

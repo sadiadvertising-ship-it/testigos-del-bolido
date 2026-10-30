@@ -16,7 +16,8 @@ _spec.loader.exec_module(ex)
 CASE = 'chelyabinsk-2013'
 WEB = ROOT / 'web' / 'data'
 KEYS = {'clip', 'site', 'camera', 'status', 'oriented', 'aligned', 'youtube_id', 'url', 'title', 'uploader', 'channel',
-        'uploaded', 'trimmed_s', 'start_s', 'end_s', 'fireball_s', 'camera_moves', 'left_out', 'frame_px', 'track'}
+        'uploaded', 'trimmed_s', 'start_s', 'end_s', 'fireball_s', 'camera_moves', 'moves_measured', 'left_out', 'frame_px',
+        'track'}
 
 
 @pytest.fixture(scope='module')
@@ -61,10 +62,12 @@ def test_seconds_come_from_the_sam_tracks_and_the_trim_windows(fresh, solved):
 def test_an_oriented_cameras_video_starts_where_its_own_clock_reads_zero(fresh, solved):
     case, sol, s0, dur = solved[:4]
     data = json.loads((WEB / f'{CASE}.json').read_text())
-    for v in (v for v in fresh['shown'] if v['aligned'] == 'clock'):
-        shift = ex.own_clock(sol, s0, case._stations([v['clip']])[0])[3]
+    for v in (v for v in fresh['shown'] if v['aligned'] == 'clock'):  # Yekaterinburg's too, oriented after the run
+        shift = ex.own_clock(sol, s0, ex.station(case, v['clip']))[3]
         assert v['start_s'] == pytest.approx(v['trimmed_s'][0] + shift, abs=5e-4)
-        assert v['trimmed_s'][0] <= v['start_s'] and v['start_s'] + dur <= v['end_s']  # room for the whole replay
+        # the replay's zero falls at the trim window's start or just before it (Yekaterinburg's, 0.09 s), in the upload, and
+        # there is room for the whole replay
+        assert v['trimmed_s'][0] - 0.5 <= v['start_s'] and v['start_s'] + dur <= v['end_s']
         # the viewer's camera clock (stations[].track) reads 0 at start_s: its first point is fireball_s[0] - start_s
         track = next(s for s in data['stations'] if s['id'] == v['clip'])['track']
         assert track[0][0] == pytest.approx(v['fireball_s'][0] - v['start_s'], abs=0.01)
@@ -83,6 +86,11 @@ def test_a_video_aligned_by_glow_puts_its_widest_glow_where_the_oriented_cameras
         glow = v['trimmed_s'][0] + ex.widest_glow_t(ex.sam_rows(case, v['clip']))
         assert glow - v['start_s'] == pytest.approx(fresh['glow_replay_s'], abs=0.01)
         assert v['end_s'] >= v['start_s'] + solved[3]  # room for the whole replay
+    # the camera oriented after the run tests that alignment: lined up on its largest box, its video would run this far ahead
+    (yek,) = (v for v in fresh['shown'] if v['status'] == 'after run')
+    glow = yek['trimmed_s'][0] + ex.widest_glow_t(ex.sam_rows(case, yek['clip'])) - fresh['glow_replay_s']
+    assert fresh['glow_check_s'] == {'Yekaterinburg': pytest.approx(glow - yek['start_s'], abs=0.01)}
+    assert fresh['glow_check_s']['Yekaterinburg'] > 3  # far more than the second the texts allowed before
 
 
 def test_tracks_are_shares_of_the_frame_on_the_uploads_clock(fresh):
@@ -102,7 +110,11 @@ def test_credits_and_links(fresh):
     assert tyumen['status'] == 'left out' and tyumen['left_out']['criterion'] == 'near_parallel_pair'
     assert [(p['site'], p['q_deg']) for p in tyumen['left_out']['pairs']] == [('Kamensk-Uralskiy', 7.5)]
     assert next(v for v in fresh['shown'] if v['clip'] == '10')['status'] == 'used'
+    yek = next(v for v in fresh['shown'] if v['clip'] == '81')
+    assert (yek['status'], yek['oriented'], yek['aligned'], yek['left_out']) == ('after run', True, 'clock', None)
     assert {v['site'] for v in fresh['shown'] if v['camera_moves']} == {'Beloretsk', 'Chebarkul', 'Magnitogorsk'}
+    # Muse Spark's reading against the frames compared after the run: two of the three do not move
+    assert {v['site'] for v in fresh['shown'] if v['moves_measured'] is False} == {'Chebarkul', 'Magnitogorsk', 'Yekaterinburg'}
     (kamensk,) = fresh['linked']
     assert kamensk['site'] == 'Kamensk-Uralskiy' and kamensk['at_s'] == 55
     assert kamensk['url'] == 'https://www.youtube.com/watch?v=kFlpCT3v12E&t=55s'

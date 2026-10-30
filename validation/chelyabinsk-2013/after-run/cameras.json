@@ -1,0 +1,388 @@
+{
+ "note": "Cameras oriented on 29 October 2026, after the run 20261027T220006-4e3e was signed, each by an annotator (a Claude Code subagent) from the frames, OpenStreetMap and SRTM terrain only: CBET 3423, the fitted path and the files that hold them (validation/, final_solution.json, the Monte Carlo files, web/data) were out of bounds, the fireball's track was not used, and the camera was frozen before its lines of sight were compared with the path. Each was then checked against the fitted path (scripts/holdout.py, validation/chelyabinsk-2013/holdout-after-run.json). The agent never reads this folder (src/ does not read validation/), so none of it is among the signed run's inputs, and the run replays unchanged. Only Yekaterinburg's evidence was judged sufficient before the check, and only its camera is drawn in the viewer, as a check on the fit like Tyumen; scripts/stations.py refits it from lines-81.json and horizon-81.json. Plast, Chebarkul and Magnitogorsk were judged rough before the check: their camera fits are used in no solution and drawn nowhere, and only their held-out numbers and what their frames show about camera motion are quoted, as the record of the attempt. Beloretsk's car turns through the first 5 s of its trimmed clip and stands still from there to the end of SAM's track (the last 6 s of the fireball); an attempt on those still frames was not finished.",
+ "signed_run": "20261027T220006-4e3e",
+ "chelyabinsk-2013-81": {
+  "site": "Yekaterinburg",
+  "outcome": "oriented",
+  "oriented_on": "2026-10-29",
+  "how": "by an annotator (a Claude Code subagent) from the frames, OpenStreetMap and SRTM terrain only: CBET 3423, the fitted path and the files that hold them (validation/, final_solution.json, the Monte Carlo files, web/data) were out of bounds, the fireball's track was not used, and the camera was frozen before its lines of sight were compared with the path",
+  "summary": "four OpenStreetMap landmarks (a 220 kV tower, two 110 kV towers and the bearing of the fence the camera is mounted on), 36 plumb lines and the SRTM-corrected skyline, with a fisheye lens",
+  "camera_pos": [
+   56.94338,
+   60.62941,
+   278.5
+  ],
+  "camera_pos_source": "Ondrejov catalogue lat/lon as published; height = SRTM90 ground 276 m (opentopodata) + 2.5 m assumed (camera on the top of the yard fence it looks along; range tried 1.5-4.5 m). The catalogue point is 3.9 m west of the OSM fence line it is mounted on (run with the camera on the fence line listed under sensitivity).",
+  "image": [
+   1280,
+   720
+  ],
+  "lens": "fisheye",
+  "lens_note": "fisheye (equidistant r = f*theta*(1 + k1*theta^2)), principal point at the image centre; pinhole+k1 rejected (best fit: plumb 1.8 px, horizon 4.5 px, landmarks 20 px)",
+  "camera": {
+   "yaw": 182.651537,
+   "pitch": -18.190781,
+   "roll": -4.434796,
+   "hfov": 91.24848,
+   "k1": -0.104149
+  },
+  "scene": "A security camera on the top of a yard's east fence (OSM landuse way 456247783), on its outer side, looking south-southwest along the fence: a snow field on the left, a pine forest edge with the 220 kV line beyond it, the ground falling about 6 m along the fence (its far end at -1.9 deg) toward the Pyshma valley, and a far skyline 3 to 7 km away.",
+  "frames": "means of frames 0 to 114 and 0 to 70 of the trimmed clip, before the fireball (SAM's track starts at 3.9 s, frame 117)",
+  "camera_moves": {
+   "muse_spark_says": false,
+   "measured": false,
+   "how": "phase correlation of frames 0 to 599: the pylon and the mast move less than 0.05 px"
+  },
+  "landmarks": [
+   {
+    "what": "220 kV tower 829371102 (СУГРЭС-Калининская), tip",
+    "pos": [
+     56.9416365,
+     60.6313961,
+     311.0
+    ],
+    "px_x": 157.0,
+    "source": "OSM node 829371102, line way 93752573 (220 kV, 6 cables); 229 m; height 38 m assumed (double-circuit lattice); x of the earth-wire peak, rows 80-95, both passes",
+    "residual_deg": 0.665
+   },
+   {
+    "what": "110 kV tower 1139244392 (24/С-Д1;24/С-Д2), top",
+    "pos": [
+     56.9397517,
+     60.6255869,
+     284.0
+    ],
+    "px_x": 994.9,
+    "source": "OSM node 1139244392, line way 93752583 (110 kV С-Д1/С-Д2); 466 m; height 24 m assumed; pole x~995, rows 94-117",
+    "residual_deg": -0.134
+   },
+   {
+    "what": "110 kV tower 1291333128 (25/С-Д1;25/С-Д2), top",
+    "pos": [
+     56.9372691,
+     60.6273622,
+     286.0
+    ],
+    "px_x": 727.0,
+    "source": "OSM node 1291333128, line way 93752583; 692 m; height 32 m assumed; faint mast x~727, rows 93-104 (mean of frames 0-70, high-pass)",
+    "residual_deg": -0.113
+   },
+   {
+    "what": "far end of the east fence (fence bearing)",
+    "azel": [
+     188.32,
+     -1.9
+    ],
+    "px_x": 702.5,
+    "source": "OSM nodes 4525260373->4525260374 (shared edge of landuse ways 456247783 and 456295918), bearing 188.32; camera mounted on that fence; far end of the fence top x~703 at y~129 (VP 0.5 px left for a ~0.3 m offset)",
+    "residual_deg": 0.027
+   }
+  ],
+  "plumb_lines": "validation/chelyabinsk-2013/after-run/lines-81.json (36 lines, 1100 points)",
+  "horizon": "validation/chelyabinsk-2013/after-run/horizon-81.json (177 skyline pixels, each shifted to 0.15 deg with SRTM's skyline)",
+  "straight": {
+   "n": 23,
+   "points": [
+    [
+     730,
+     132
+    ],
+    [
+     754,
+     132
+    ],
+    [
+     766,
+     134
+    ],
+    [
+     778,
+     134
+    ],
+    [
+     790,
+     134
+    ],
+    [
+     802,
+     136
+    ],
+    [
+     814,
+     137
+    ],
+    [
+     826,
+     139
+    ],
+    [
+     850,
+     139
+    ],
+    [
+     874,
+     141
+    ],
+    [
+     898,
+     143
+    ],
+    [
+     910,
+     143
+    ],
+    [
+     934,
+     147
+    ],
+    [
+     982,
+     151
+    ],
+    [
+     994,
+     153
+    ],
+    [
+     1018,
+     159
+    ],
+    [
+     1030,
+     159
+    ],
+    [
+     1042,
+     160
+    ],
+    [
+     1054,
+     161
+    ],
+    [
+     1078,
+     167
+    ],
+    [
+     1090,
+     170
+    ],
+    [
+     1114,
+     174
+    ],
+    [
+     1126,
+     175
+    ]
+   ],
+   "what": "top edge of the corrugated fence, x 730-1126 (gradient peaks, mean of frames 0-70)"
+  },
+  "fit_rms_deg": {
+   "x_only": 0.305,
+   "plumb": 0.063,
+   "horizon": 0.071,
+   "straight": 0.069
+  },
+  "fit_rms_px": {
+   "x_only": 4.28,
+   "plumb": 0.88,
+   "horizon": 1.0,
+   "straight": 0.97
+  },
+  "leave_one_out": [
+   {
+    "left_out": "220 kV tower 829371102 (СУГРЭС-Калининская), tip",
+    "d_yaw": 0.14,
+    "d_pitch": 0.061,
+    "d_roll": 0.059,
+    "d_hfov": -0.345,
+    "left_out_miss_px": -11.33,
+    "left_out_miss_deg": 0.913
+   },
+   {
+    "left_out": "110 kV tower 1139244392 (24/С-Д1;24/С-Д2), top",
+    "d_yaw": -0.054,
+    "d_pitch": 0.017,
+    "d_roll": 0.017,
+    "d_hfov": -0.098,
+    "left_out_miss_px": 2.95,
+    "left_out_miss_deg": -0.224
+   },
+   {
+    "left_out": "110 kV tower 1291333128 (25/С-Д1;25/С-Д2), top",
+    "d_yaw": -0.071,
+    "d_pitch": -0.004,
+    "d_roll": -0.003,
+    "d_hfov": 0.021,
+    "left_out_miss_px": 2.55,
+    "left_out_miss_deg": -0.181
+   },
+   {
+    "left_out": "far end of the east fence (fence bearing)",
+    "d_yaw": 0.023,
+    "d_pitch": 0.002,
+    "d_roll": 0.002,
+    "d_hfov": -0.014,
+    "left_out_miss_px": -0.69,
+    "left_out_miss_deg": 0.049
+   }
+  ],
+  "sensitivity": {
+   "camera on the OSM fence line (3.9 m E)": {
+    "yaw": 182.9495,
+    "pitch": -18.1738,
+    "roll": -4.4193,
+    "hfov": 91.15
+   },
+   "on fence, 10 m N": {
+    "yaw": 183.1044,
+    "pitch": -18.0444,
+    "roll": -4.2956,
+    "hfov": 90.4131
+   },
+   "on fence, 10 m S": {
+    "yaw": 182.8717,
+    "pitch": -18.2103,
+    "roll": -4.4551,
+    "hfov": 91.3566
+   },
+   "mount 1.5 m above ground": {
+    "yaw": 182.6455,
+    "pitch": -18.1802,
+    "roll": -4.4342,
+    "hfov": 91.2759
+   },
+   "mount 4.5 m above ground": {
+    "yaw": 182.663,
+    "pitch": -18.2121,
+    "roll": -4.4362,
+    "hfov": 91.1957
+   },
+   "skyline offset -0.1 deg": {
+    "yaw": 182.6558,
+    "pitch": -18.265,
+    "roll": -4.4487,
+    "hfov": 91.1286
+   },
+   "skyline offset +0.1 deg": {
+    "yaw": 182.6472,
+    "pitch": -18.116,
+    "roll": -4.4203,
+    "hfov": 91.3654
+   },
+   "flat horizon at +0.15 (no SRTM shape)": {
+    "yaw": 182.613,
+    "pitch": -18.2776,
+    "roll": -4.4395,
+    "hfov": 91.9656
+   }
+  },
+  "checks_not_used": {
+   "35 kV tower 1291333110": "its OSM node moved 7.6 m between the 2013-02-15 snapshot and now (the whole 35 kV line shifted ~8 m), = 2.1 deg at 203 m; with the 2013 node it agrees to 0.5 deg",
+   "neighbouring 220 kV towers": "predicted just outside both frame edges, so only one pylon shows, as in the frame",
+   "skyline alone": "with no landmark, the skyline fits best at a heading of 183 deg (this camera: 182.65), and nearly as well anywhere from 176 to 184 deg",
+   "Sun": "at azimuth 111.2 deg and 1.5 deg below the horizon, it falls 200 px left of the frame: only its glow shows"
+  },
+  "frozen": "the annotator's camera file (sha256 f0bd778b) was written before it first opened final_solution.json, and it was not changed after the check"
+ },
+ "chelyabinsk-2013-238": {
+  "site": "Plast",
+  "outcome": "rough",
+  "oriented_on": "2026-10-29",
+  "how": "by an annotator (a Claude Code subagent) from the frames, OpenStreetMap and SRTM terrain only: CBET 3423, the fitted path and the files that hold them (validation/, final_solution.json, the Monte Carlo files, web/data) were out of bounds, the fireball's track was not used, and the camera was frozen before its lines of sight were compared with the path",
+  "why": "The heading rests on one chimney (OSM way 306339927, 1.1 km away) and the field of view on the bearing of a road that OSM maps only since 2019; leaving either out sends the field of view to about 90 deg. An OSM communication tower that this camera puts at x 225 is not in the frame. The camera does not move (0 px over 529 frames).",
+  "camera_pos": [
+   54.37622,
+   60.81202,
+   6.0
+  ],
+  "image": [
+   872,
+   708
+  ],
+  "lens": "pinhole with radial k1",
+  "camera": {
+   "yaw": 20.3746,
+   "pitch": -2.2356,
+   "roll": 1.7521,
+   "hfov": 49.57,
+   "k1": -0.1991
+  },
+  "crop_from_1280x720": [
+   872,
+   708,
+   201,
+   10
+  ]
+ },
+ "chelyabinsk-2013-15": {
+  "site": "Chebarkul",
+  "outcome": "rough",
+  "oriented_on": "2026-10-29",
+  "how": "by an annotator (a Claude Code subagent) from the frames, OpenStreetMap and SRTM terrain only: CBET 3423, the fitted path and the files that hold them (validation/, final_solution.json, the Monte Carlo files, web/data) were out of bounds, the fireball's track was not used, and the camera was frozen before its lines of sight were compared with the path",
+  "why": "The heading rests on one soft landmark, the far end of road 75K-277 where cars first appear at the frame's left edge. Nothing else surveyable is in view, so the field of view is not measured: the dawn glow bounds it to 77.5 to 98.7 deg, it was set at 88 deg, and across that range the heading moves from 80.4 to 91.5 deg. Where the car stood is uncertain. The frames shift by at most 1.4 px, so Muse Spark's reading that the camera moves is not borne out.",
+  "camera_pos": [
+   54.99504,
+   60.40023,
+   1.3
+  ],
+  "image": [
+   1280,
+   1080
+  ],
+  "lens": "pinhole with radial k1",
+  "camera": {
+   "yaw": 85.91,
+   "pitch": -1.354,
+   "roll": -0.803,
+   "hfov": 88.0,
+   "k1": -0.124
+  },
+  "image_note": "a virtual 1280 x 1080 frame whose top 720 rows are the video's: the plumb lines put the principal point about 180 px below the frame's centre; video pixels are used unchanged",
+  "camera_moves": {
+   "muse_spark_says": true,
+   "measured": false,
+   "how": "phase correlation over 0 to 22 s: shifts of at most 1.4 px"
+  }
+ },
+ "chelyabinsk-2013-257": {
+  "site": "Magnitogorsk",
+  "outcome": "rough",
+  "oriented_on": "2026-10-29",
+  "how": "by an annotator (a Claude Code subagent) from the frames, OpenStreetMap and SRTM terrain only: CBET 3423, the fitted path and the files that hold them (validation/, final_solution.json, the Monte Carlo files, web/data) were out of bounds, the fireball's track was not used, and the camera was frozen before its lines of sight were compared with the path",
+  "why": "The heading rests on one chimney chosen by judgement: the smoke column is taken to come from the two 180 m stacks of the steel works' oxygen-converter shop, 4.4 km away, and other stacks would move it by -5.7 or +19.9 deg. The field of view could not be measured (set at 113 deg from soft bounds; 109 to 117 deg is plausible), and the yard in the frame does not match the buildings OSM maps at the catalogue point. The frames shift by at most 0.15 px, so Muse Spark's reading that the camera moves is not borne out.",
+  "camera_pos": [
+   53.43749,
+   58.96862,
+   385.0
+  ],
+  "image": [
+   960,
+   720
+  ],
+  "lens": "fisheye",
+  "camera": {
+   "yaw": 77.1887,
+   "pitch": -25.3682,
+   "roll": 2.1737,
+   "hfov": 113.0,
+   "k1": 0.0997
+  },
+  "camera_moves": {
+   "muse_spark_says": true,
+   "measured": false,
+   "how": "phase correlation over 0 to 6.95 s: shifts of at most 0.15 px; what Muse saw are exposure changes from the flash"
+  }
+ },
+ "chelyabinsk-2013-14": {
+  "site": "Beloretsk",
+  "outcome": "not finished",
+  "why": "its car turns through the first 5 s of the trimmed clip and stands still from about 5.2 s to the end of SAM's track at 11.5 s; an annotator began orienting it from those still frames (the Ural ridges against SRTM), and the attempt stopped before a camera was frozen",
+  "camera_moves": {
+   "muse_spark_says": true,
+   "measured": "until about 5.2 s of the trimmed clip, then still",
+   "how": "phase correlation of the fence and ridge region, and a pole's column, frame by frame"
+  }
+ }
+}

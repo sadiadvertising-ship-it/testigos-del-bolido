@@ -13,31 +13,35 @@ something), and its orientation and trajectory steps have only been tested by da
 The [3D viewer](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/) goes live on 31 October, and the demo
 video's link is added here on 3 November. [![Tests](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml/badge.svg)](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml)
 
-[![Replay of the Chelyabinsk fireball on a dark 3D map. A white point flies the agent's fitted line from 89 km down to 11 km, with its time and height in a readout, while lines of sight appear: blue from Kamensk-Uralskiy, green from Korkino, and grey dashed from Tyumen, which was left out. Then the still view: the white path beside the dashed yellow path published in CBET 3423, first alone, then over a pale blue band of 500 Monte Carlo lines](docs/replay.gif)](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/)
+[![Replay of the Chelyabinsk fireball on a dark 3D map. A white point flies the agent's fitted line from 89 km down to 11 km, with its time and height in a readout, while lines of sight appear: blue from Kamensk-Uralskiy, green from Korkino, and grey dashed from Tyumen, which was left out, and from Yekaterinburg, a check oriented after the run. Then the still view: the white path beside the dashed yellow path published in CBET 3423, first alone, then over a pale blue band of 500 Monte Carlo lines](docs/replay.gif)](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/)
 
 The Chelyabinsk validation case in the viewer, recorded by scripts/capture_replay.mjs. The replay's 12.5 s are the
 fitted line flown at the fitted speed, in real time, not how long a camera saw the fireball (Kamensk-Uralskiy tracked it
 for 13.7 s). As the white point descends from 89 km to 11 km, each camera's lines of sight appear: blue from
 Kamensk-Uralskiy and green from Korkino, the two cameras of the solution, and grey dashed from Tyumen, which the agent
-left out because its planes cross Kamensk-Uralskiy's at 7.5°. The cameras not oriented show as hollow dots. The last
-instant holds for 0.9 s; then the still view shows the agent's white path beside the dashed yellow path of CBET 3423,
-the published solution, for 1.5 s, and for 1.5 s more with the 500 Monte Carlo lines as a pale blue band.
+left out because its planes cross Kamensk-Uralskiy's at 7.5°, and from Yekaterinburg, a check oriented after the run was
+signed. The cameras not oriented show as hollow dots. The last instant holds for 0.9 s; then the still view shows the
+agent's white path beside the dashed yellow path of CBET 3423, the published solution, for 1.5 s, and for 1.5 s more
+with the 500 Monte Carlo lines as a pale blue band.
 
 In the viewer, the side panel opens with the witness videos whose uploaders allow them on other sites, each its
 uploader's own video in YouTube's player, which loads only when you press play. In a browser window at least 1100 px
 wide and 800 px tall (or 1840 px wide and 600 px tall), one press plays all seven together, in a wall above the map,
-with the 3D replay; in a smaller window or on a phone they play one at a time. Korkino's and Tyumen's videos run by
-their own clocks, beside each camera's lines of sight, which appear on the map as the replay's point reaches them; the
-replay flies the fitted line at one speed and the fireball slowed, so toward the end the lines run ahead of the videos
-(Tyumen's last by about 2 s). Korkino is one of the two cameras of the fit, and Tyumen, which the agent left out of the
-fit (its planes cross Kamensk-Uralskiy's at 7.5°), is a check on it: its 223 lines of sight miss the fitted path by
-0.45° (median; see Tyumen, held out, below). The five others, from Beloretsk, Chebarkul, Yekaterinburg, Magnitogorsk and
-Plast, come from cameras that are not oriented: they add nothing to the path, and their clocks are not tied to it, so
-each is lined up on the instant SAM's box around the fireball is largest, put 7.0 s into the replay, between where that
-instant falls in Kamensk-Uralskiy's video (6.8 s) and Tyumen's (7.3 s). In those two the largest box is the fireball's
-longest streak; in Beloretsk and Chebarkul it is a glare that may be the major flare, lower down, so these five can be a
-second or more off (`witness_videos` in `scripts/export_web.py`). Kamensk-Uralskiy's uploader does not allow the video
-on other sites, so the viewer links to it. The GIF above and the demo video leave the videos out.
+with the 3D replay; in a smaller window or on a phone they play one at a time. Korkino's, Tyumen's and Yekaterinburg's
+videos run by their own clocks, beside each camera's lines of sight, which appear on the map as the replay's point
+reaches them; the replay flies the fitted line at one speed and the fireball slowed, so toward the end the lines run
+ahead of the videos (Tyumen's last by about 2 s). Korkino is one of the two cameras of the fit. Tyumen, which the agent
+left out of the fit (its planes cross Kamensk-Uralskiy's at 7.5°), is a check on it: its 223 lines of sight miss the
+fitted path by 0.45° (median). Yekaterinburg, oriented after the run was signed, is another, made without the path or
+CBET 3423 in view: its 207 miss it by 0.26° (median; both under Validation, below). The four others, from Beloretsk,
+Chebarkul, Magnitogorsk and Plast, come from cameras that are not oriented: they add nothing to the path, and their
+clocks are not tied to it, so each is lined up on the instant SAM's box around the fireball is largest, put 7.0 s into
+the replay, between where that instant falls in Kamensk-Uralskiy's video (6.8 s) and Tyumen's (7.3 s). In those two the
+largest box is the fireball's longest streak, 45 km up on the fitted line. In Yekaterinburg's, whose clock is known, it
+comes 21 km up: lined up this way, that video would run 4.0 s ahead of the replay. In Beloretsk and Chebarkul it is a
+glare that may also be lower down, so these four can be seconds off (`witness_videos` in `scripts/export_web.py`).
+Kamensk-Uralskiy's uploader does not allow the video on other sites, so the viewer links to it. The GIF above and the
+demo video leave the videos out.
 
 ```mermaid
 flowchart TD
@@ -70,11 +74,12 @@ The 3D viewer runs from this repository: `python3 -m http.server -d web 8000`, t
 2. **SAM 3.1 tracks the fireball** frame by frame from the phrase "bright light"; on the two clips where other phrases
    were tried (Beloretsk and Chebarkul), "fireball" and "meteor" returned nothing, and so did "light streak" on
    Chebarkul (`track.py`). The agent runs it itself on any clip nobody has tracked yet.
-3. **Each camera is oriented** from lines and landmarks in one frame: a camera model (pinhole with radial distortion) is
-   fitted to them and to OpenStreetMap, so every pixel becomes a direction in the sky (`camera.py`). This step is not
-   automated in the product yet. During development an AI coding assistant (Claude Code, not a Meta model) did it: two
-   independent annotation passes measured street lines and poles from intensity profiles, and the assistant matched the
-   landmarks and street bearings to OpenStreetMap. No person checked the points by hand.
+3. **Each camera is oriented** from lines and landmarks in one frame: a camera model (pinhole with radial distortion, or
+   fisheye) is fitted to them and to OpenStreetMap, so every pixel becomes a direction in the sky (`camera.py`). This step
+   is not automated in the product yet. During development an AI coding assistant (Claude Code, not a Meta model) did it:
+   two independent annotation passes measured street lines and poles from intensity profiles, and the assistant matched
+   the landmarks and street bearings to OpenStreetMap. After the run was signed it oriented one more camera,
+   Yekaterinburg's, without the published solution or the fitted path in view. No person checked the points by hand.
 4. **Planes of sight.** One camera's lines of sight to the fireball lie in a plane. Two cameras on different sides give
    two planes that cross in the trajectory, refined by least squares over every ray (`solve.py`; Ceplecha 1987,
    Borovička 1990). The speed comes from each video's own frame times.
@@ -164,10 +169,10 @@ steps). Every review is kept in the run record's history. What happened, run by 
 
 The case holds eight witness videos chosen from the Ondřejov catalogue of Chelyabinsk videos (Borovička et al. 2016),
 which also gives each camera's position: stopped cars and fixed cameras, with buildings or streets in view. Muse later
-reported camera motion in three of them (Beloretsk, Chebarkul and Magnitogorsk), and none of those three could be
-oriented, and neither could Yekaterinburg or Plast (Plast's fit was set aside after it missed CBET's plane by 9.3°).
-Two more chosen from the catalogue, Verkhnaya Pyshma and Mezhozernyi, were no longer online and are not among the
-eight. Three of the cameras could be oriented: Kamensk-Uralskiy (a stopped car),
+reported camera motion in three of them (Beloretsk, Chebarkul and Magnitogorsk). Before the run, none of those three
+could be oriented, and neither could Yekaterinburg or Plast (Plast's fit was set aside after it missed CBET's plane by
+9.3°); Yekaterinburg was oriented after it (below). Two more chosen from the catalogue, Verkhnaya Pyshma and Mezhozernyi,
+were no longer online and are not among the eight. Three of the cameras were oriented for the run: Kamensk-Uralskiy (a stopped car),
 Korkino (a standing car) and Tyumen (a car at a traffic light). The agent kept Kamensk-Uralskiy and Korkino, 173 km
 apart, whose planes cross at 66°, and left Tyumen out as the weaker of a near-parallel pair: its planes cross
 Kamensk-Uralskiy's at 7.5°.
@@ -205,11 +210,27 @@ calibration residual under 0.3°, is not graded: the internal fits pass it, and 
 not. Against the refereed speeds, a comparison added after the first graded run (a996), the fit's 19.65 km/s is within
 0.62 km/s.
 
-Three checks that do not use any published value:
+Four checks that do not use any published value:
 
 - **Tyumen, held out.** Its 223 lines of sight miss the Kamensk-Uralskiy and Korkino path by 0.45° (median; 90% within
   0.54°), and its own clock gives 19.17 ± 0.08 km/s along it (`scripts/holdout.py`). Its camera was refitted after
   it missed CBET's plane by 3.4°, so this check is independent of the fit, not of CBET.
+- **Yekaterinburg, oriented after the run.** On 29 October, after the run was signed, an annotator (a Claude Code
+  subagent) oriented Yekaterinburg's security camera from its frames, OpenStreetMap and SRTM terrain only, with CBET
+  3423, the fitted path and the files that hold them out of bounds: four OpenStreetMap landmarks (a 220 kV tower, two
+  110 kV towers and the bearing of the fence the camera is mounted on), 36 plumb lines and the skyline, through a
+  fisheye lens. The landmarks fit to 0.31° RMS, and leaving any one out moves the heading by at most 0.14°. Only then
+  were its 207 lines of sight compared with the path: they miss it by 0.26° (median; 90% within 0.52°), and its own
+  clock gives 19.50 ± 0.08 km/s along it (`scripts/holdout.py`). Unlike Tyumen's, this check is independent of CBET too,
+  but its planes cross Kamensk-Uralskiy's at 7.7°, so it mostly tests that camera's plane: had Korkino's field of view
+  been 91.9° instead of 79.5°, turning the heading by 5.7°, its miss would grow only from 0.32° to 0.48° RMS. The agent
+  has not used it: none of it is among the run's inputs, and the signed run replays unchanged
+  (`validation/chelyabinsk-2013/after-run/`). The same was tried for three more cameras, and each came out rough:
+  Plast's rests on a chimney and on a road OpenStreetMap maps only since 2019, and Chebarkul's and Magnitogorsk's on one
+  landmark each, with a field of view that could not be measured. They were judged rough before the check; along the
+  path their own clocks give 11.4, 10.1 and 36.8 km/s. Beloretsk's car turns through the first 5 s of its clip and
+  stands still for the last 6 s of the fireball; an attempt on those still frames was not finished, so it stays not
+  oriented.
 - **Why Tyumen is out.** Kamensk-Uralskiy's and Tyumen's planes cross at 7.1° in the median Monte Carlo draw and at 3.1°
   in the narrowest, and their rays can pull the fit along their shared plane (the draws that slide have a median of 6.2° between those planes,
   the others 7.7°). With all three cameras, 51 of 200 draws end
@@ -222,7 +243,8 @@ Three checks that do not use any published value:
 
 What these numbers do not say:
 
-- **The validation is blind for the agent, not for the calibration.** The camera fits were made with CBET in view.
+- **The validation is blind for the agent, not for the calibration.** The fits of the run's cameras were made with CBET
+  in view (Yekaterinburg's, made after the run, was not).
   Kamensk-Uralskiy was checked against CBET's plane as soon as it was fitted. Tyumen was recalibrated after missing
   CBET's plane by 3.4°, and Plast was left without a camera after missing by 9.3°. Korkino's field of view was settled
   while the pair was graded against CBET: a self-calibration at 91.9° turned the heading to about 276° and failed the 3°
@@ -308,7 +330,8 @@ put it at 0.89 of the frame's width, where the point matched to OpenStreetMap si
 the column compares: the marked point is the chapel's base); it read the dashcam clock as 09:20:18 at the start of the
 clip, within a few seconds of CBET's time in local hours; in Korkino it read a clock 22 minutes off,
 an example of why the method, from its first commit, uses each video's frame times and never its clock; in Tyumen it missed the power tower the
-orientation uses. Muse Spark 1.2 ran to its token cap on 4 of its 11 video reads; a retry recovered each of them, Tyumen's on the next day's run.
+orientation uses; and it reported camera motion in Chebarkul and Magnitogorsk, whose frames, compared after the run,
+move by at most 1.4 and 0.15 px, and a car moving throughout in Beloretsk, which stands still for the fireball's last 6 s. Muse Spark 1.2 ran to its token cap on 4 of its 11 video reads; a retry recovered each of them, Tyumen's on the next day's run.
 
 API spending is capped in code (`TESTIGOS_BUDGET_USD` a day, `TESTIGOS_TOTAL_BUDGET_USD` in total) and logged per call in
 `out/costs.jsonl`: US$ 2.73 for the whole project so far.
@@ -321,7 +344,7 @@ python3 -m venv .venv && .venv/bin/pip install -U pip && .venv/bin/pip install -
 .venv/bin/python -m testigos replay chelyabinsk-2013 20261027T220006-4e3e --echo   # the agent's tools again, no API key
 .venv/bin/python scripts/grade.py chelyabinsk-2013  # grades the newest run against validation/
 .venv/bin/python scripts/triangulate.py 2 10        # the two-camera solution and the CBET gate
-.venv/bin/python scripts/holdout.py                 # Tyumen as a held-out witness
+.venv/bin/python scripts/holdout.py                 # Tyumen and the cameras oriented after the run, held out
 .venv/bin/python scripts/sam_vs_threshold.py        # SAM 3.1 against a brightness threshold
 .venv/bin/python scripts/mc_stability.py           # Monte Carlo draws that slide, with Tyumen and without it
 .venv/bin/python scripts/drop_criteria.py          # Tyumen's four drop criteria, measured by the agent's code
@@ -366,8 +389,8 @@ credits it to Håskę Bräyãn.
 
 ## Limits
 
-- Orienting a camera is not automated: the lines and landmarks were marked offline during development, and the agent
-  cannot yet do it from OpenStreetMap alone.
+- Orienting a camera is not automated: the lines and landmarks were marked offline, during development and for
+  Yekaterinburg after the run, and the agent cannot yet do it from OpenStreetMap alone.
 - Handheld videos are not supported: the camera must stay still while the fireball crosses. Night videos are untested
   for orientation and trajectory; SAM 3.1 tracked the one night clip (Medellín, 79 of 132 frames).
 - The verifier checks every figure, the kind of quantity of those printed with a unit, the hemispheres and the verdict;

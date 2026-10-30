@@ -53,6 +53,27 @@ published answer, so it lives in `validation/chelyabinsk-2013/calibration-vs-cbe
 from Overpass with curl; the annotators' notes are in `events/chelyabinsk-2013/lines-*.json` and `plumb-48.json`. The
 superseded fits and solutions, most of them graded against CBET as the work went, are in `validation/chelyabinsk-2013/history/`.
 
+After the run was signed, on 29 October, one more camera was oriented blind. Annotators (Claude Code subagents) were
+each given one of the cameras the run had not oriented, and worked from the frames, OpenStreetMap, SRTM terrain
+(OpenTopoData) and the Sun's position only, with CBET 3423, the fitted path and the files that hold them out of bounds
+and the fireball's track unused; each froze its camera before comparing its lines of sight with the path.
+Yekaterinburg's security camera, a fisheye on a yard fence, was oriented from four OpenStreetMap landmarks (x only: a
+220 kV tower 229 m away, two 110 kV towers at 466 and 692 m, and the bearing of the fence it is mounted on), 36 plumb
+lines in two passes, the fence top as a straight edge, and the far skyline, each pixel shifted by SRTM's skyline
+elevation at its azimuth so that all stand for one elevation. The landmarks fit to 0.31° RMS and the lines to 0.06 to
+0.07°; leaving any landmark out moves the yaw by at most 0.14° and the field of view by 0.35°, and a fit to the skyline
+alone is best at a yaw of 183° (182.65° with the landmarks), though nearly as good anywhere from 176° to 184°.
+`stations.yekaterinburg_camera` refits it from `validation/chelyabinsk-2013/after-run/`. Its 207 lines of sight then
+missed the two-camera line by 0.26° (median) and its plane by 0.32° RMS, against Tyumen's 0.43°, and its own clock gives
+19.50 ± 0.08 km/s (`scripts/holdout.py`, `validation/chelyabinsk-2013/holdout-after-run.json`). Its planes cross
+Kamensk-Uralskiy's at 7.7°, so the check mostly bears on that camera: across Korkino's field of view from 76 to 95°,
+which turns the heading from 283.7° to 274.2°, its miss runs from 0.29° to 0.56° RMS. Plast, Chebarkul and Magnitogorsk
+were judged rough before the check (Plast on a chimney and on a road OpenStreetMap maps only since 2019; Chebarkul and
+Magnitogorsk on one landmark each, with a field of view that could not be measured), and their own clocks give 11.4,
+10.1 and 36.8 km/s along the path. Beloretsk's car turns through the first 5 s of its clip and stands still for the last
+6 s of the fireball; the attempt on those still frames was not finished. None of this reaches the agent: `validation/`
+is outside its inputs, and the signed run replays unchanged.
+
 ## 4. The fireball in the image (`src/testigos/track.py`, `scripts/sam_probe.py`)
 
 Each clip is trimmed to the fireball's window and sent to SAM 3.1 in video mode with the phrase "bright light" (on Beloretsk
@@ -103,6 +124,9 @@ through the camera.
    the rest less widely, may leave the fit; of the four drop criteria, it is the only one that holds for Tyumen
    (`scripts/drop_criteria.py`, `validation/chelyabinsk-2013/drop-48-criteria.json`). Tyumen stays a check
    (`scripts/holdout.py`: its rays miss the two-camera line by 0.45°, median, and its own clock gives 19.17 ± 0.08 km/s).
+   Yekaterinburg, oriented after the run (section 3), crosses Kamensk-Uralskiy's planes at 7.7°, so it would form such
+   a pair too, and by that rule the one to leave would be Kamensk-Uralskiy, which crosses Korkino's at 66.3° against
+   Yekaterinburg's 74.0°.
 
 ## 6. Uncertainty (`scripts/montecarlo.py`)
 
@@ -182,7 +206,7 @@ CBET's major flare within 5 km, and CBET's end point within 15 km of the line. A
 1.5 km/s of CBET's 17.5 km/s, was added to `grade.py` on 27 October at 12:14, when every camera was calibrated and the
 19.65 km/s fit was on record; it fails. A fifth criterion in `truth.json`, a calibration residual under 0.3°, is not
 graded: the internal fits pass it, and Korkino's 3.39° from CBET's plane would not. The four geometric criteria were
-fixed before the work, but the camera fits were not made blind to CBET (section 3). The refereed solutions that followed CBET are compared
+fixed before the work, but the fits of the run's cameras were not made blind to CBET (section 3). The refereed solutions that followed CBET are compared
 separately (`validation/chelyabinsk-2013/refereed.json`, which names the source each value was read in), and that
 comparison never changes the grade.
 

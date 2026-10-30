@@ -9,6 +9,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 
 from testigos.camera import Camera, calibrate, fit  # noqa: E402
+from testigos.geo import enu_to_azel  # noqa: E402
 from testigos.solve import Station  # noqa: E402
 
 EVENT = ROOT / 'events' / 'chelyabinsk-2013'
@@ -138,4 +139,32 @@ def tyumen_camera(rng=None, line_px_sigma=0.0, vp_px_sigma=0.0, tower_px_sigma=0
     c = e['camera']
     seed = Camera(1280, 720, yaw=c['yaw'], pitch=c['pitch'], roll=c['roll'], hfov=c['hfov'], k1=c['k1'])
     cam, report = fit(seed, pos, points=[(('azel', vp_az, 0.0), vp_px)], x_only=[((57.2026, 65.6031095, 38.0), tower_x)], plumb=lines)
+    return (cam, pos, report) if with_report else (cam, pos)
+
+
+# Cameras oriented after the signed run (validation/: scripts only, never the agent); export_web.after_run reads them.
+AFTER_RUN_DIR = ROOT / 'validation' / 'chelyabinsk-2013' / 'after-run'
+
+
+def yekaterinburg_camera(seed=None, iters=3, with_report=False):
+    """Yekaterinburg's camera, oriented after the run, refitted from the evidence committed with it: four landmarks (x only),
+    the plumb lines, the fence top as a straight line and the skyline. Each skyline pixel is shifted to stand for el_ref_deg
+    by SRTM's skyline at its azimuth, which depends on the camera, so the fit runs `iters` times; from the neutral seed it
+    lands on the stored camera."""
+    e = json.loads((AFTER_RUN_DIR / 'cameras.json').read_text())['chelyabinsk-2013-81']
+    pos = tuple(e['camera_pos'])
+    lines = json.loads((AFTER_RUN_DIR / 'lines-81.json').read_text())
+    sky = json.loads((AFTER_RUN_DIR / 'horizon-81.json').read_text())
+    sky_az, sky_el = np.array(sky['skyline_deg']).T
+    plumb = [np.array(l['points'], float) for k in ('a', 'b') for l in lines[k]['lines']]
+    x_only = [(('azel', *l['azel']) if 'azel' in l else tuple(l['pos']), l['px_x']) for l in e['landmarks']]
+    cam = seed or Camera(1280, 720, yaw=190.0, pitch=-15.0, roll=0.0, hfov=90.0, k1=0.0, fisheye=True)
+    for _ in range(iters):
+        horizon = []
+        for x, y in sky['a'] + sky['b']:
+            az = enu_to_azel(cam.unproject((x, y)))[0]
+            ref, seen = cam.project_azel(az, sky['el_ref_deg']), cam.project_azel(az, float(np.interp(az, sky_az, sky_el)))
+            horizon.append((x, y + ref[1] - seen[1]) if ref is not None and seen is not None else (x, y))
+        cam, report = fit(cam, pos, x_only=x_only, plumb=plumb, horizon=horizon, horizon_el=sky['el_ref_deg'],
+                          straight=[np.array(e['straight']['points'], float)])
     return (cam, pos, report) if with_report else (cam, pos)

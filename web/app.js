@@ -532,8 +532,13 @@ const TIP = {background: 'rgba(8, 16, 29, 0.96)', color: '#e6edf6', border: '1px
 
 function status(s) {
   return {used: 'used in the final solution', dropped: `dropped by the agent${s.reason ? `: ${s.reason}` : ''}`,
-    'not calibrated': 'not oriented: no confirmed landmark or line set', calibrated: 'oriented, not used'}[s.status] || s.status;
+    'not calibrated': 'not oriented: no confirmed landmark or line set', calibrated: 'oriented, not used',
+    'after run': 'oriented after the run was signed: a check on the fit, not part of it'}[s.status] || s.status;
 }
+
+const checks = d => d.stations.filter(x => x.status === 'dropped' || x.status === 'after run');  // drawn dashed: not in the fit
+const laterText = (s, cbetName) => `${esc(s.site)}'s camera was oriented after the run was signed, from ${esc(s.after_run.from)},
+  by an annotator that saw neither the fitted path nor ${cbetName}`;
 
 function tooltip({object, layer}) {
   if (!object || !layer) return null;
@@ -567,7 +572,8 @@ const count = n => COUNT[n] ?? String(n);
 function leadSolved(d) {
   const s = d.solution, cat = d.catalogue;
   const [a, b] = s.clips.map(id => d.stations.find(x => x.id === id));
-  const oriented = d.stations.filter(x => x.rays).length, dropped = d.stations.filter(x => x.status === 'dropped');
+  const oriented = d.stations.filter(x => x.rays && x.status !== 'after run').length, dropped = d.stations.filter(x => x.status === 'dropped');
+  const later = d.stations.filter(x => x.status === 'after run');
   const top = s.path[0][2] / 1000, low = s.path[s.path.length - 1][2] / 1000;
   return `<p class="when">Validation case: ${esc(d.when)}</p>
     <p>${d.stations.length} witness videos${cat ? `, chosen from the ${esc(cat.name)} of ${esc(d.title.split(' ')[0])} videos
@@ -577,7 +583,9 @@ function leadSolved(d) {
       ? 'solved one combination' : `tried ${count(d.tried.length)} combinations`}${dropped.length ? `, left out
     ${esc(list(dropped.map(x => x.site)))} on a criterion the code measured` : ''},
     and chose <b>${esc(a.site)}</b> and <b>${esc(b.site)}</b>, ${Math.round(km(a.lonlat, b.lonlat))} km apart, whose planes cross at
-    ${fmt(s.q_deg, 0)}°. The code re-solved that choice before accepting it.</p>
+    ${fmt(s.q_deg, 0)}°. The code re-solved that choice before accepting it.${later.length ? ` After the run was signed,
+    ${esc(list(later.map(x => x.site)))} ${later.length > 1 ? 'were' : 'was'} oriented too, without the path or ${esc(cbet(d))} in view:
+    a check on the fit, drawn dashed, not part of it.` : ''}</p>
     <p class="big">Heading <span class="num">${fmt(s.azimuth_deg, 1)}°</span> (${dir(s.azimuth_deg)}), descending at
     <span class="num">${fmt(s.slope_deg, 1)}°</span>, from <span class="num">${fmt(top, 0)}</span> km down to
     <span class="num">${fmt(low, 0)}</span> km${s.seen_for_s ? `; one camera tracked it for <span class="num">${fmt(s.seen_for_s, 1)}</span> s` : ''}.</p>
@@ -646,7 +654,7 @@ function gradeNote(d) {
   const out = [`The agent never saw these published values: a separate script graded the run afterwards, and it meets
     ${esc(g.passed)} criteria.`];
   if (d.calibration_history) {
-    out.push(`The camera fits were made while comparing them with ${esc(cbet(d))} (${esc(d.calibration_history)} in the
+    out.push(`The fits of the run's cameras were made while comparing them with ${esc(cbet(d))} (${esc(d.calibration_history)} in the
       repository), so this check is blind for the agent but not for the calibration.`);
   }
   const w = d.montecarlo && d.montecarlo.widened;
@@ -706,6 +714,8 @@ function compareSolved(d) {
     notes.push(`${esc(held.site)}, left out of the fit, is a check on it: its lines of sight miss the path by ${fmt(held.miss_deg, 2)}°
       RMS, and its own clock gives ${fmt(held.speed_kms, 2)} km/s along it.`);
   }
+  d.stations.filter(x => x.status === 'after run').forEach(x => notes.push(`${laterText(x, name)}. Its lines of sight miss the path by
+    ${fmt(x.miss_deg, 2)}° RMS, and its own clock gives ${fmt(x.speed_kms, 2)} km/s along it.`));
   const sam = d.sam_vs_threshold && d.sam_vs_threshold.solutions[s.clips.join('+')];
   if (sam && sam.threshold && !sam.threshold.error) {
     notes.push(`Without SAM 3.1, a plain brightness threshold on the same frames gives a heading of ${fmt(sam.threshold.azimuth_deg, 1)}°
@@ -828,8 +838,10 @@ function cameraTable(d) {
     const i = d.solution.clips.indexOf(s.id);
     const dot = i >= 0 ? `<span class="dot" style="background:${rgb(SERIES[i])}"></span>` : '<span class="dot dashed"></span>';
     const h0 = s.track[0][1], h1 = s.track[s.track.length - 1][1];
-    const drop = d.agent_log.find(x => x.action === 'drop_clip' && x.clip === s.id);
-    const how = s.status === 'used' ? s.camera : drop ? `dropped by the agent at step ${drop.step}` : status(s);
+    // the agent also dropped the cameras it had no orientation for, one oriented after the run among them
+    const drop = s.status === 'dropped' && d.agent_log.find(x => x.action === 'drop_clip' && x.clip === s.id);
+    const how = s.status === 'used' ? s.camera : drop ? `dropped by the agent at step ${drop.step}`
+      : s.status === 'after run' ? 'oriented after the run was signed' : status(s);
     return `<tr><td>${dot}${esc(s.site)}<span class="how">${esc(how)}</span></td>
       <td class="num">${span(h0, h1, 0)} km</td><td class="num">${fmt(s.speed_kms, 2)}</td><td class="num">${fmt(s.miss_deg, 2)}°</td></tr>`;
   }).join('');
@@ -949,10 +961,10 @@ function drawLegend(d) {
     <span class="sw ${sw}"></span><span>${label}</span></label>`;
   if (d.solution) {
     const used = d.solution.clips.map(id => d.stations.find(s => s.id === id));
-    const dropped = d.stations.filter(s => s.status === 'dropped').map(s => esc(s.site));
+    const dashed = checks(d).map(s => `${esc(s.site)} ${s.status === 'dropped' ? 'dropped' : 'oriented after the run'}`);
     $('#legend').innerHTML = `<details ${narrow.matches ? '' : 'open'}><summary>Map key</summary>
       <div class="key"><span class="sw glow"></span>Trajectory found by the agent</div>
-      ${toggle('sight', '" style="border-top-color:' + rgb(SERIES[0]), `Lines of sight from ${used.map((s, k) => `<span class="dot" style="background:${rgb(SERIES[k])};margin:0 3px 0 0"></span>${esc(s.site)}`).join(' and ')}${dropped.length ? `; ${dropped.join(', ')} dropped, dashed` : ''}`)}
+      ${toggle('sight', '" style="border-top-color:' + rgb(SERIES[0]), `Lines of sight from ${used.map((s, k) => `<span class="dot" style="background:${rgb(SERIES[k])};margin:0 3px 0 0"></span>${esc(s.site)}`).join(' and ')}${dashed.length ? `; ${list(dashed)}, dashed` : ''}`)}
       ${d.montecarlo ? toggle('mc', 'faint', `Monte Carlo, ${d.montecarlo.draws} draws`) : ''}
       ${toggle('published', 'dash" style="border-top-color:' + rgb(PUBLISHED), `Published path, ${esc(cbet(d))}`)}</details>`;
   } else {
@@ -1003,13 +1015,21 @@ const wallFits = () => !narrow.matches && innerWidth >= 1100
   && innerHeight >= (oneRow() ? (tracksOnly ? 520 : 620) : (tracksOnly ? 760 : 840));
 
 function role(d, v) {  // a camera's part in the solution, in a few words
-  return v.status === 'used' ? 'in the fit' : v.status === 'left out' ? 'left out' : v.oriented ? 'oriented' : '≈ not oriented';
+  return v.status === 'used' ? 'in the fit' : v.status === 'left out' ? 'left out' : v.status === 'after run' ? 'oriented after the run'
+    : v.oriented ? 'oriented' : '≈ not oriented';
 }
 
-function swatch(d, id) {  // the camera's colour on the map: the fit's cameras in theirs, a dropped one dashed, the rest hollow
+// How far off lining a video up on SAM's largest box can be, measured where a camera oriented after the run knows its clock.
+function glowOff(d) {
+  const [site, s] = Object.entries(d.videos.glow_check_s || {})[0] || [];
+  return site ? `seconds off: lined up this way, ${esc(site)}'s video, whose camera was oriented after the run, would run
+    ${fmt(s, 1)} s ahead of the replay` : 'a second or more off';
+}
+
+function swatch(d, id) {  // the camera's colour on the map: the fit's cameras in theirs, the checks dashed, the rest hollow
   const i = d.solution.clips.indexOf(id), st = d.stations.find(x => x.id === id);
   return i >= 0 ? `<span class="dot" style="background:${rgb(SERIES[i])}"></span>`
-    : st && st.status === 'dropped' ? '<span class="dot dashed"></span>' : '<span class="dot hollow"></span>';
+    : st && checks(d).includes(st) ? '<span class="dot dashed"></span>' : '<span class="dot hollow"></span>';
 }
 
 function clipText(d, v) {  // what one video shows, and whose it is
@@ -1023,16 +1043,20 @@ function clipText(d, v) {  // what one video shows, and whose it is
     const part = out ? `The agent left this camera out of the fit${pair ? ` (its planes cross ${esc(pair.site)}'s at ${fmt(pair.q_deg, 1)}°)` : ''},
       so it is a check on the fit: its lines of sight miss the fitted path by ${fmt(st.miss_deg, 2)}° RMS.`
       : v.status === 'used' ? `It is one of the ${count(d.solution.clips.length)} cameras of the fit; its lines of sight miss the fitted
-      path by ${fmt(st.miss_deg, 2)}° RMS.` : '';
+      path by ${fmt(st.miss_deg, 2)}° RMS.`
+      : v.status === 'after run' ? `${laterText(st, esc(cbet(d)))}, so it is a check on the fit: its lines of sight miss the fitted path
+      by ${fmt(st.miss_deg, 2)}° RMS, and its own clock gives ${fmt(st.speed_kms, 2)} km/s along it.` : '';
     what = `${part} Its video runs with the replay by its own clock: the replay's start is ${clock(v.start_s)} in the video, the instant
       that clock puts at the top of the path; ${sam}. The fireball slowed and the replay flies the fitted line at one speed, so
       toward the end the replay's dot runs ahead of the video.`;
   } else {
     const refs = Object.entries(g.glow_from || {}).map(([site, at]) => `${esc(site)}'s (${fmt(at, 1)} s)`);
-    what = `This camera was not oriented${v.camera_moves ? ' (Muse Spark reported that it moves)' : ''}, so it adds nothing to the
-      path, and its own clock is not known. Its video is lined up on the instant SAM's box around the fireball is largest, put at
-      ${fmt(g.glow_replay_s, 1)} s into the replay, between where that instant falls in ${list(refs)} videos; in this video the
-      largest box may mark another moment, so it can be a second or more off. ${sam}.`;
+    const moves = v.camera_moves ? ` (Muse Spark reported that it moves${v.moves_measured === false
+      ? '; its frames, compared after the run, show it does not' : ''})` : '';
+    what = `This camera was not oriented${moves}, so it adds nothing to the path, and its own clock is not known. Its video is lined
+      up on the instant SAM's box around the fireball is largest, put at ${fmt(g.glow_replay_s, 1)} s into the replay, between where
+      that instant falls in ${list(refs)} videos; in this video the largest box may mark another moment, so it can be
+      ${glowOff(d)}. ${sam}.`;
   }
   return `<p class="note">${where} ${what}</p>
     <p class="clip-credit">${external(v.url, `“${esc(v.title)}”`)}, uploaded by ${esc(v.uploader)} (${esc(v.channel)}) on
@@ -1101,25 +1125,25 @@ const poster = (label, note) => `<div class="clip-frame"><button type="button" c
 function drawClip(d) {
   dropClip();
   if (clip.wall) exitWall(false);
-  const el = $('#clip'), list = videos(d);
-  if (!clipOn || !list.length) { el.innerHTML = ''; return; }
+  const el = $('#clip'), vids = videos(d);
+  if (!clipOn || !vids.length) { el.innerHTML = ''; return; }
   clip.pick = d.videos.first;
   const kept = recall(), open = kept === null || kept === '1';
-  const head = `<summary><span class="dot dashed"></span>Witness videos · the fireball from ${count(list.length)} places</summary>`;
+  const head = `<summary><span class="dot dashed"></span>Witness videos · the fireball from ${count(vids.length)} places</summary>`;
   clip.mode = wallFits() ? 'wall' : 'one';
   if (clip.mode === 'wall') {  // a large window: one press plays them all together, above the map
     el.innerHTML = `<details${open ? ' open' : ''}>${head}
-      ${poster(`Play the ${count(list.length)} videos together with the replay`, `The map makes room for them. YouTube's player loads
+      ${poster(`Play the ${count(vids.length)} videos together with the replay`, `The map makes room for them. YouTube's player loads
         when you press play.`)}
-      <p class="note">${list.filter(v => v.oriented).map(v => esc(v.site)).join(' and ')} run by their own clocks, beside their lines of
+      <p class="note">${esc(list(vids.filter(v => v.oriented).map(v => v.site)))} run by their own clocks, beside their lines of
       sight on the map, which appear as the replay's point reaches them and run ahead of the videos toward the end, as the
-      fireball slowed. The ${count(list.filter(v => !v.oriented).length)} others come from cameras not oriented: they add nothing to the
-      path, and each is lined up on SAM's largest box around the fireball, which can be a second or more off.</p>
+      fireball slowed. The ${count(vids.filter(v => !v.oriented).length)} others come from cameras not oriented: they add nothing to the
+      path, and each is lined up on SAM's largest box around the fireball, which can be ${glowOff(d)}.</p>
       ${linkedText(d)}</details>`;
     el.querySelector('.clip-poster').addEventListener('click', () => enterWall(d));
   } else {  // a phone: one at a time, in the panel
     const chip = v => `<button type="button" data-clip="${esc(v.clip)}" aria-pressed="${v.clip === clip.pick}">${esc(v.site)}</button>`;
-    const oriented = list.filter(v => v.oriented), others = list.filter(v => !v.oriented);
+    const oriented = vids.filter(v => v.oriented), others = vids.filter(v => !v.oriented);
     el.innerHTML = `<details${open ? ' open' : ''}>${head}
       <div class="clip-views" role="group" aria-label="Witness videos">${oriented.length ? `<span>By their own clocks</span>${oriented.map(chip).join('')}` : ''}
         ${others.length ? `<span>Not oriented, lined up on SAM's box</span>${others.map(chip).join('')}` : ''}</div>
@@ -1128,7 +1152,7 @@ function drawClip(d) {
         press play.`)}
       <p class="clip-hint" role="status"></p>
       <div class="clip-text">${clipText(d, picked())}</div>
-      <p class="note">In a window at least 1100 by 800 px (full screen helps), or 1840 px wide, all ${count(list.length)} play
+      <p class="note">In a window at least 1100 by 800 px (full screen helps), or 1840 px wide, all ${count(vids.length)} play
       together above the map.</p></details>`;
     el.querySelectorAll('.clip-views button').forEach(b => b.addEventListener('click', () => pickClip(d, b.dataset.clip)));
     bindPoster(d);
@@ -1197,16 +1221,16 @@ function enterWall(d) {
       <span class="more">How they line up</span></summary>
       <p>${esc(list(oriented))} run by their own clocks; their lines of sight appear as the replay's point reaches them and run ahead of
       the tracks toward the end, as the fireball slowed. The ${count(glowed.length)} marked ≈ are each lined up on SAM's largest box around
-      the fireball (${fmt(g.glow_replay_s, 1)} s, between ${list(refs)}), which can be a second or more off. The videos belong to their
+      the fireball (${fmt(g.glow_replay_s, 1)} s, between ${list(refs)}), which can be ${glowOff(d)}. The videos belong to their
       uploaders, credited under each track.</p></details>
       <button type="button" class="wall-close">Close</button></div>`
     : `<div class="tiles">${tiles.map(tile).join('')}</div>
     <div class="bar"><details><summary>${cap(count(vids.length))} witness videos with the replay; ≈ marks a camera not oriented, which adds
       nothing to the path. Until a video plays, its tile draws SAM's track. <span class="more">How they line up</span></summary>
-      <p>${vids.filter(v => v.oriented).map(v => esc(v.site)).join(' and ')} run by their own clocks; their lines of sight appear as the
+      <p>${esc(list(vids.filter(v => v.oriented).map(v => v.site)))} run by their own clocks; their lines of sight appear as the
       replay's point reaches them and run ahead of the videos toward the end, as the fireball slowed. The ${count(glowed.length)} marked ≈
-      are each lined up on SAM's largest box around the fireball (${fmt(g.glow_replay_s, 1)} s, between ${list(refs)}), which can be a
-      second or more off. Each is its uploader's video in YouTube's player; no frame or sound of them is stored here.</p></details>
+      are each lined up on SAM's largest box around the fireball (${fmt(g.glow_replay_s, 1)} s, between ${list(refs)}), which can be
+      ${glowOff(d)}. Each is its uploader's video in YouTube's player; no frame or sound of them is stored here.</p></details>
       <span class="wall-hint" role="status"></span>
       <button type="button" class="wall-close">Close</button></div>`;
   document.body.append(wall);
