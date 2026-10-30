@@ -64,8 +64,11 @@ document.body.classList.toggle('video', video);
 // ?video=1 (the demo's screen recording), so neither carries witness footage; ?clip=0 turns them off anywhere.
 // ?clip=tracks opens the wall with SAM's tracks only and loads nothing from YouTube: for recordings (the demo video, a clip
 // for X), which then carry no frame of any witness video.
+// ?clip=wall opens the wall with the videos at once, loading YouTube's player without a press, and starts the replay
+// when the players are ready: for recordings that show the videos above SAM's tracks.
 const tracksOnly = params.get('clip') === 'tracks';
-const clipOn = !bare && (video ? params.get('clip') === '1' || tracksOnly : params.get('clip') !== '0');
+const wallOpen = params.get('clip') === 'wall';
+const clipOn = !bare && (video ? params.get('clip') === '1' || tracksOnly || wallOpen : params.get('clip') !== '0');
 const narrow = matchMedia('(max-width: 760px)');
 const short = matchMedia('(max-width: 760px) and (max-height: 500px)');  // a phone on its side: the sheet takes 65%
 const padding = () => (document.body.classList.contains('wall') ? {top: ($('#wall') ? $('#wall').getBoundingClientRect().bottom : 0) + 10, bottom: 0, left: 0, right: 0}
@@ -1017,8 +1020,8 @@ const WALL_H = [760, 970];  // the window's least height for the full wall: one 
 const TRACED = 'Traced by AI (SAM 3.1)';  // the label on each track, for readers who know neither the model nor the method
 
 function role(d, v) {  // a camera's part in the solution, in a few plain words
-  return v.status === 'used' ? 'used for the path' : v.status === 'left out' ? 'a check, left out of the path'
-    : v.status === 'after run' ? 'a check, added after the run' : v.oriented ? 'oriented' : '≈ shown, direction unknown';
+  return v.status === 'used' ? 'used for the path' : v.status === 'left out' ? 'a check, left out'
+    : v.status === 'after run' ? 'a check, added later' : v.oriented ? 'oriented' : '≈ direction unknown';
 }
 
 // How far off lining a video up on SAM's largest box can be, measured where a camera oriented after the run knows its clock.
@@ -1332,14 +1335,26 @@ async function startPlayers(d, list, boxes) {
   });
   if (state.playing) stop(false);
   state.t = null;
-  play();
+  if (!wallOpen) play();
   try { await loadYouTube(); } catch (e) {
     boxes.forEach((b, i) => b && b.isConnected && boxFail(d, list[i], b, "YouTube's player could not load here."));
+    if (wallOpen && state.data === d && !state.playing) play();
     return;  // the replay runs on its own, with SAM's tracks
   }
   if (state.data !== d || !boxes.some(b => b && b.isConnected)) return;
   list.forEach((v, i) => { if (boxes[i] && boxes[i].isConnected) clip.players.set(v.clip, makePlayer(d, v, boxes[i])); });
   follow();
+  if (wallOpen) startWhenReady(d, performance.now());
+}
+
+// ?clip=wall: the replay starts from 0 once every player is ready (or after 10 s), so a recording does not open on
+// players still loading; each video then joins at its second (follow()).
+function startWhenReady(d, since) {
+  if (state.data !== d || !clip.wall || state.playing) return;
+  const all = [...clip.players.values()];
+  if (all.some(r => !r.ready) && performance.now() - since < 10000) { setTimeout(() => startWhenReady(d, since), 200); return; }
+  state.t = null;
+  play();
 }
 
 function makePlayer(d, v, box) {
@@ -1614,12 +1629,12 @@ async function show(id) {
     map.jumpTo(view);
     // the replay runs once, when the map has drawn the case; a case switch before then cancels it
     if (autoplay && d.solution) {
-      map.once('idle', () => { if (state.data === d && state.t === null && !state.playing && !clip.players.size) play(); });
+      map.once('idle', () => { if (!wallOpen && state.data === d && state.t === null && !state.playing && !clip.players.size) play(); });
     }
   } else map.flyTo({...view, duration: 2200, essential: true});
   firstView = false;
   redraw();
-  if (tracksOnly && clip.mode === 'wall') enterWall(d);
+  if ((tracksOnly || wallOpen) && clip.mode === 'wall') enterWall(d);
 }
 
 map.on('moveend', () => {  // after a pan, zoom, turn or resize the labels find their spots again

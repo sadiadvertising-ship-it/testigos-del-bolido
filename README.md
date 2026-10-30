@@ -42,8 +42,8 @@ the replay, between where that instant falls in Kamensk-Uralskiy's video (6.8 s)
 largest box is the fireball's longest streak, 45 km up on the fitted line. In Yekaterinburg's, whose clock is known, it
 comes 21 km up: lined up this way, that video would run 4.0 s ahead of the replay. In Beloretsk and Chebarkul it is a
 glare that may also be lower down, so these four can be seconds off (`witness_videos` in `scripts/export_web.py`).
-Kamensk-Uralskiy's uploader does not allow the video on other sites, so the viewer links to it. The GIF above and the
-demo video leave the videos out.
+Kamensk-Uralskiy's uploader does not allow the video on other sites, so the viewer links to it. The GIF above leaves the
+videos out; the demo video shows the wall, each video in its uploader's YouTube player with SAM 3.1's track below it.
 
 ```mermaid
 flowchart TD
@@ -371,7 +371,8 @@ three short transcripts were in commits f88a059 to 54d2875 and remain in the his
 are the Ondřejov catalogue's as published (cars on public roads and security cameras), and the viewer rounds them to
 about 100 m. For new witnesses, the filming spot is published rounded to about 100 m, and the exact spot used to orient
 the camera stays out of the repository. The demo video shows cards drawn from the measurements
-(`scripts/track_cards.py`, `scripts/title_cards.py`), not frames of the witness videos.
+(`scripts/track_cards.py`, `scripts/title_cards.py`) and the viewer's wall, where the witness videos play in their
+uploaders' YouTube players; no frame of them is stored in the repository.
 
 The 3D viewer can play seven of the Chelyabinsk videos, as their uploaders' YouTube videos in YouTube's own player
 (youtube-nocookie.com, run by YouTube's IFrame API script from www.youtube.com, which can set youtube.com cookies),
@@ -379,10 +380,11 @@ which their uploaders allow (checked on 29 October 2026): the page loads nothing
 play, and it keeps no frame or sound. Until a video plays, and in Kamensk-Uralskiy's place, a tile draws SAM's track of
 the fireball from the measurements: its position as a share of the frame and the size of SAM's box. Kamensk-Uralskiy's
 uploader does not allow embedding, so the viewer only links to that video, and it links to the Medellín post on X
-without loading anything from X. The README's GIF (`?panel=0`) and the demo video (`?video=1`) show no witness footage:
-the videos are off in both, unless `&clip=1` is added in video mode. For recordings, `?video=1&clip=tracks` opens the
-wall with SAM's tracks only: the eight cameras drawn from the measurements beside the replay, with each video's credit,
-and nothing loaded from YouTube.
+without loading anything from X. The README's GIF (`?panel=0`) shows no witness footage, and in video mode
+(`?video=1`) the videos are off unless `&clip=1` is added. For recordings, `?video=1&clip=wall` opens the wall at once,
+loading YouTube's players without a press, and starts the replay when they are ready, each video above SAM's track of
+it (this is what the demo video shows); `?video=1&clip=tracks` opens it with SAM's tracks only: the eight cameras drawn
+from the measurements beside the replay, with each video's credit, and nothing loaded from YouTube.
 
 Chelyabinsk videos, by YouTube uploader: Aleksandr Ivanov (Kamensk-Uralskiy), Никита Зенкович (Korkino), Alexander
 Voronov (Tyumen), MrKuzaman (Beloretsk), 🫐 голубика🫐 (Chebarkul), Мясников Сергей (Yekaterinburg), Сергей Давлеткулов
