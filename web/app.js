@@ -1007,16 +1007,18 @@ const external = (url, text) => `<a href="${esc(url)}" target="_blank" rel="noop
 const videos = d => (d && d.videos && d.videos.shown) || [];
 const picked = () => videos(state.data).find(v => v.clip === clip.pick) || null;
 const flight = d => d.solution.times[d.solution.times.length - 1];
-// The wall needs players of YouTube's 200 px minimum, eight in a row from 1840 px wide, else four in two rows, and room
-// for the map below them.
+// The wall needs players of YouTube's 200 px minimum, eight in a row from 1840 px wide, else four in two rows, each with
+// SAM's track below it, and room for the map below them.
 // SAM's tracks alone have no minimum size, so their wall takes one row from 1200 px wide.
 const oneRow = () => innerWidth >= (tracksOnly ? 1200 : 1840);
 const wallFits = () => !narrow.matches && innerWidth >= 1100
-  && innerHeight >= (oneRow() ? (tracksOnly ? 520 : 620) : (tracksOnly ? 760 : 840));
+  && innerHeight >= (oneRow() ? (tracksOnly ? 520 : WALL_H[0]) : (tracksOnly ? 760 : WALL_H[1]));
+const WALL_H = [760, 970];  // the window's least height for the full wall: one row, two rows
+const TRACED = 'Traced by AI (SAM 3.1)';  // the label on each track, for readers who know neither the model nor the method
 
-function role(d, v) {  // a camera's part in the solution, in a few words
-  return v.status === 'used' ? 'in the fit' : v.status === 'left out' ? 'left out' : v.status === 'after run' ? 'oriented after the run'
-    : v.oriented ? 'oriented' : '≈ not oriented';
+function role(d, v) {  // a camera's part in the solution, in a few plain words
+  return v.status === 'used' ? 'used for the path' : v.status === 'left out' ? 'a check, left out of the path'
+    : v.status === 'after run' ? 'a check, added after the run' : v.oriented ? 'oriented' : '≈ shown, direction unknown';
 }
 
 // How far off lining a video up on SAM's largest box can be, measured where a camera oriented after the run knows its clock.
@@ -1152,8 +1154,8 @@ function drawClip(d) {
         press play.`)}
       <p class="clip-hint" role="status"></p>
       <div class="clip-text">${clipText(d, picked())}</div>
-      <p class="note">In a window at least 1100 by 800 px (full screen helps), or 1840 px wide, all ${count(vids.length)} play
-      together above the map.</p></details>`;
+      <p class="note">With the page at least 1100 by 970 px (full screen helps), or 1840 by 760 px, all ${count(vids.length)} play
+      together above the map, each above the fireball as the AI traced it.</p></details>`;
     el.querySelectorAll('.clip-views button').forEach(b => b.addEventListener('click', () => pickClip(d, b.dataset.clip)));
     bindPoster(d);
   }
@@ -1197,14 +1199,16 @@ function enterWall(d) {
   const vids = videos(d), byRole = v => (d.solution.clips.includes(v.clip) ? 0 : v.oriented ? 1 : 2);
   const tiles = [...(d.videos.linked || []).map(l => ({linked: l, rank: 0, id: (d.stations.find(x => x.site === l.site) || {}).id})),
     ...vids.map(v => ({v, rank: byRole(v), id: v.clip}))].sort((a, b) => a.rank - b.rank);
+  const under = tracksOnly ? '' : '<div class="tile-track"></div>';  // SAM's track, below the video
   const tile = x => x.linked
-    ? `<div class="tile" data-site="${esc(x.linked.site)}"><p class="tile-head">${swatch(d, x.id)}<b>${esc(x.linked.site)}</b><span class="role"><span class="sep">· </span>in the fit</span></p>
-        <div class="tile-box">${tracksOnly ? '' : '<p class="tile-strip">Its uploader does not allow the video on other sites.</p>'}</div>
+    ? `<div class="tile" data-site="${esc(x.linked.site)}"><p class="tile-head">${swatch(d, x.id)}<b>${esc(x.linked.site)}</b><span class="role"><span class="sep">· </span>used for the path</span></p>
+        <div class="tile-box">${tracksOnly ? '' : `<p class="tile-note">Its uploader does not allow the video on other sites.
+          ${external(x.linked.url, `Watch it on YouTube from ${clock(x.linked.at_s)}`)}</p>`}</div>${under}
         <p class="tile-credit">${esc(x.linked.uploader)} (${esc(x.linked.channel)}), ${esc(x.linked.uploaded)} ·
         ${external(x.linked.url, `its video on YouTube, from ${clock(x.linked.at_s)}`)}</p></div>`
     : `<div class="tile" data-clip="${esc(x.v.clip)}"><p class="tile-head">${swatch(d, x.v.clip)}<b>${esc(x.v.site)}</b><span
         class="role"><span class="sep">· </span>${role(d, x.v)}</span></p>
-        <div class="tile-box"></div>
+        <div class="tile-box"></div>${under}
         <p class="tile-credit" title="“${esc(x.v.title)}”, uploaded by ${esc(x.v.uploader)} (${esc(x.v.channel)}) on ${esc(x.v.uploaded)} (UTC)">${esc(x.v.uploader)},
         ${esc(x.v.uploaded)} · ${external(x.v.url, `“${esc(x.v.title)}”`)}</p></div>`;
   const g = d.videos, glowed = vids.filter(v => !v.oriented);
@@ -1212,21 +1216,22 @@ function enterWall(d) {
   const wall = document.createElement('div');
   wall.id = 'wall';
   wall.setAttribute('aria-label', 'Witness videos with the replay');
-  const cap = x => x.charAt(0).toUpperCase() + x.slice(1);
   wall.className = [oneRow() ? 'one-row' : '', tracksOnly ? 'tracks' : ''].join(' ').trim();
   const oriented = [...(d.videos.linked || []).map(l => l.site), ...vids.filter(v => v.oriented).map(v => v.site)];
+  const paths = `The path on the map comes from the traces of the ${count(d.solution.clips.length)} cameras with a coloured dot${
+    checks(d).length ? `; the ${count(checks(d).length)} dashed check it` : ''}; ≈ marks a camera whose direction is not known: shown,
+    but not used.`;
   wall.innerHTML = tracksOnly ? `<div class="tiles">${tiles.map(tile).join('')}</div>
-    <div class="bar"><details><summary>${cap(count(tiles.length))} witness cameras with the replay, each drawn from what SAM 3.1 measured
-      in its video: no frame of any video is shown. ≈ marks a camera not oriented, which adds nothing to the path.
-      <span class="more">How they line up</span></summary>
+    <div class="bar"><details><summary>The fireball in ${count(tiles.length)} witnesses' videos, as an AI model, SAM 3.1, traced it frame
+      by frame, with the replay: no frame of any video is shown. ${paths} <span class="more">How they line up</span></summary>
       <p>${esc(list(oriented))} run by their own clocks; their lines of sight appear as the replay's point reaches them and run ahead of
       the tracks toward the end, as the fireball slowed. The ${count(glowed.length)} marked ≈ are each lined up on SAM's largest box around
       the fireball (${fmt(g.glow_replay_s, 1)} s, between ${list(refs)}), which can be ${glowOff(d)}. The videos belong to their
       uploaders, credited under each track.</p></details>
       <button type="button" class="wall-close">Close</button></div>`
     : `<div class="tiles">${tiles.map(tile).join('')}</div>
-    <div class="bar"><details><summary>${cap(count(vids.length))} witness videos with the replay; ≈ marks a camera not oriented, which adds
-      nothing to the path. Until a video plays, its tile draws SAM's track. <span class="more">How they line up</span></summary>
+    <div class="bar"><details><summary>Top: each witness's own video, in YouTube's player. Below it: the fireball as an AI model, SAM 3.1,
+      traced it frame by frame. ${paths} <span class="more">How they line up</span></summary>
       <p>${esc(list(vids.filter(v => v.oriented).map(v => v.site)))} run by their own clocks; their lines of sight appear as the
       replay's point reaches them and run ahead of the videos toward the end, as the fireball slowed. The ${count(glowed.length)} marked ≈
       are each lined up on SAM's largest box around the fireball (${fmt(g.glow_replay_s, 1)} s, between ${list(refs)}), which can be
@@ -1236,8 +1241,8 @@ function enterWall(d) {
   document.body.append(wall);
   document.body.classList.add('wall');
   (d.videos.linked || []).forEach(l => {  // the camera whose video cannot be shown: its track, always
-    const box = wall.querySelector(`.tile[data-site="${CSS.escape(l.site)}"] .tile-box`);
-    if (box && l.track) { samCanvas(box, l, "SAM 3.1's track of its video"); clip.sams[clip.sams.length - 1].top = !tracksOnly; drawSams(); }
+    const box = wall.querySelector(`.tile[data-site="${CSS.escape(l.site)}"] ${tracksOnly ? '.tile-box' : '.tile-track'}`);
+    if (box && l.track) { samCanvas(box, l, TRACED); drawSams(); }
   });
   wall.querySelector('.wall-close').addEventListener('click', () => exitWall(true));
   const key = $('#legend details');
@@ -1246,10 +1251,11 @@ function enterWall(d) {
   placeHud();
   fitWall(d);
   if (tracksOnly) {  // no player: each tile draws its track, and the replay runs as it would without the wall
-    vids.forEach(v => { const box = wall.querySelector(`.tile[data-clip="${CSS.escape(v.clip)}"] .tile-box`); if (box && v.track) samCanvas(box, v, "SAM 3.1's track"); });
+    vids.forEach(v => { const box = wall.querySelector(`.tile[data-clip="${CSS.escape(v.clip)}"] .tile-box`); if (box && v.track) samCanvas(box, v, TRACED); });
     drawSams();
     return;
   }
+  vids.forEach(v => { const box = wall.querySelector(`.tile[data-clip="${CSS.escape(v.clip)}"] .tile-track`); if (box && v.track) samCanvas(box, v, TRACED); });
   drawSams();
   startPlayers(d, vids, vids.map(v => wall.querySelector(`.tile[data-clip="${CSS.escape(v.clip)}"] .tile-box`)));
 }
@@ -1314,14 +1320,15 @@ function loadYouTube() {  // YouTube's IFrame API, once, with a time limit
 }
 
 // Start the players for these videos in these boxes. The replay starts from 0 at once: until a video is ready, its box
-// draws SAM's track at the replay's pace, and each video joins in step when it plays (follow()).
+// draws SAM's track at the replay's pace (in the wall, where the track is drawn below, it says the video is loading), and
+// each video joins in step when it plays (follow()).
 async function startPlayers(d, list, boxes) {
   if (!list.length || clip.players.size) return;
   boxes.forEach((b, i) => {
     if (!b) return;
     b.innerHTML = '';
-    if (list[i].track) samCanvas(b, list[i], "SAM 3.1's track, while YouTube's player loads");
-    else b.innerHTML = '<p class="clip-wait">Loading YouTube\'s player…</p>';
+    if (list[i].track && !clip.wall) samCanvas(b, list[i], `${TRACED}, while the video loads`);
+    else b.innerHTML = '<p class="clip-wait">Loading the video…</p>';
   });
   if (state.playing) stop(false);
   state.t = null;
@@ -1343,9 +1350,9 @@ function makePlayer(d, v, box) {
   f.title = `${v.site}: “${v.title}”, by ${v.uploader}, in YouTube's player`;
   f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
   f.referrerPolicy = 'strict-origin-when-cross-origin';  // YouTube refuses to play for a page that sends no address
-  f.style.opacity = '0';  // transparent until it plays: SAM's track shows meanwhile; nothing is ever drawn over the player
+  f.style.opacity = '0';  // transparent until it plays: SAM's track, or a line saying it loads, shows meanwhile; nothing is ever drawn over the player
   const wait = box.querySelector('.clip-wait');
-  if (wait) wait.remove();
+  if (wait && !clip.wall) wait.remove();  // in the wall it stays under the transparent player until the video plays
   box.append(f);
   const rec = {v, box, player: null, ready: false, ours: 0, want: 0, lastSeek: 0,
     timer: setTimeout(() => { if (!rec.ready) boxFail(d, v, box, "YouTube's player did not answer."); }, 15000)};
@@ -1375,9 +1382,10 @@ function makePlayer(d, v, box) {
 
 function reveal(rec) {  // the video plays: it shows, and SAM's track behind it steps aside
   rec.shown = true;
-  const f = rec.box.querySelector('iframe'), cv = rec.box.querySelector('canvas.sam');
+  const f = rec.box.querySelector('iframe'), cv = rec.box.querySelector('canvas.sam'), wait = rec.box.querySelector('.clip-wait');
   if (f) f.style.opacity = '1';
   if (cv) cv.style.visibility = 'hidden';
+  if (wait) wait.remove();
 }
 
 function onPlayerState(d, rec, e) {
@@ -1450,12 +1458,9 @@ function boxFail(d, v, box, why) {
     clip.players.delete(v.clip);
   }
   const html = `${esc(why)} ${external(`${v.url}&t=${Math.max(0, Math.floor(v.start_s))}s`, `Watch it on YouTube from ${clock(Math.max(0, v.start_s))}`)}.`;
-  if (clip.wall) {  // the tile keeps drawing SAM's track, with the reason and the link along its foot
+  if (clip.wall) {  // the video's place keeps the reason and the link; SAM's track goes on below it
     if (box.isConnected) {
-      const f = box.querySelector('iframe'), cv = box.querySelector('canvas.sam');
-      if (f) f.remove();
-      if (cv) cv.style.visibility = '';
-      clip.sams.filter(x => x.cv === cv).forEach(x => { x.label = "SAM 3.1's track"; x.top = true; drawSam(x); });
+      box.querySelectorAll('iframe, .clip-wait').forEach(x => x.remove());
       const strip = box.querySelector('.tile-strip') || box.appendChild(document.createElement('p'));
       strip.className = 'tile-strip';
       strip.innerHTML = html;

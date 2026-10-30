@@ -25,9 +25,11 @@ agent's white path beside the dashed yellow path of CBET 3423, the published sol
 with the 500 Monte Carlo lines as a pale blue band.
 
 In the viewer, the side panel opens with the witness videos whose uploaders allow them on other sites, each its
-uploader's own video in YouTube's player, which loads only when you press play. In a browser window at least 1100 px
-wide and 800 px tall (or 1840 px wide and 600 px tall), one press plays all seven together, in a wall above the map,
-with the 3D replay; in a smaller window or on a phone they play one at a time. Korkino's, Tyumen's and Yekaterinburg's
+uploader's own video in YouTube's player, which loads only when you press play. With the page at least 1100 px wide
+and 970 px tall (full screen helps on a laptop), or 1840 px wide and 760 px tall, one press plays all seven together, in
+a wall above the map, with the 3D replay, and below each video SAM 3.1's track of the fireball in it, drawn from the
+measurements, so what was filmed and what was measured sit one above the other; in a smaller window or on a phone they
+play one at a time. Korkino's, Tyumen's and Yekaterinburg's
 videos run by their own clocks, beside each camera's lines of sight, which appear on the map as the replay's point
 reaches them; the replay flies the fitted line at one speed and the fireball slowed, so toward the end the lines run
 ahead of the videos (Tyumen's last by about 2 s). Korkino is one of the two cameras of the fit. Tyumen, which the agent

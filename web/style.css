@@ -145,7 +145,8 @@ canvas.sam { position: absolute; inset: 0; width: 100%; height: 100%; display: b
 .clip-fail { color: var(--ink-2); font-size: calc(13px * var(--k)); }
 .clip-credit { color: var(--ink-3); font-size: calc(12px * var(--k)); }
 
-/* The wall: the witness videos above the map, four to a row; each player at least 200 px tall, with nothing over it. */
+/* The wall: the witness videos above the map, eight or four to a row, each with SAM's track below it; each player at least
+   200 px tall, with nothing over it. */
 body.wall #panel { display: none; }
 body.wall #hud { left: 50%; }
 #wall { position: fixed; top: 12px; left: 12px; right: 12px; background: var(--bg); border-radius: 12px; }
@@ -164,6 +165,11 @@ body.wall #hud { left: 50%; }
 #wall .tile-head .role { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 #wall .tile-box { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; background: #000; }
 #wall.tracks .tile-box { min-height: 0; }  /* SAM's tracks have no minimum size; YouTube's players do */
+/* below each video, SAM's track of it, drawn from the measurements; never over the player */
+#wall .tile-track { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: calc(118px * var(--k)); margin-top: 4px; background: #03070d; }
+/* two rows: players at YouTube's 200 px and a lower strip for the track, so the map keeps room */
+#wall:not(.one-row) .tile-box { max-height: 200px; }
+#wall:not(.one-row) .tile-track { max-height: calc(64px * var(--k)); }
 /* eight to a row: the camera's part on a second line, and the credit (uploader first) on up to two */
 #wall.one-row .tile-head { flex-wrap: wrap; row-gap: 0; }
 #wall.one-row .tile-head .role { flex-basis: 100%; padding-left: calc(14px * var(--k)); }
