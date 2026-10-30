@@ -41,7 +41,7 @@ const dash = new deck.PathStyleExtension({dash: true});
 
 // stage: in video mode, how much of the Colombia map shows (keys 1 to 3); 0 shows everything, as it always does outside it.
 // spots: where each town label of the open case sits, by town (placeTowns).
-const state = {data: null, t: null, playing: false, highlight: null, stage: 0, spots: new Map(), show: {sight: true, mc: true, published: true}};
+const state = {data: null, t: null, playing: false, highlight: null, stage: 0, spots: new Map(), show: {sight: true, guess: true, mc: true, published: true}};
 const cache = {};
 let cases = [];
 
@@ -222,6 +222,11 @@ function solvedLayers(d) {
     layers.push(new deck.PathLayer({id: 'rays', data: rays, getPath: r => r.path, widthUnits: 'pixels', billboard: true,
       getColor: r => [...camColor(d, r.s), r.s.status === 'used' ? 115 : 95], getWidth: 1,
       getDashArray: r => (r.s.status === 'used' ? [0, 0] : [4, 3]), extensions: [dash]}));
+  }
+  if (state.show.guess) {  // directions estimated after the run: dotted, faint, and part of nothing
+    const guessed = d.stations.filter(s => s.guess).flatMap(s => s.guess.rays.filter(r => !live || r[0] <= t).map(r => ({s, path: [at(s), r.slice(1)]})));
+    layers.push(new deck.PathLayer({id: 'guess-rays', data: guessed, getPath: r => r.path, widthUnits: 'pixels', billboard: true,
+      getColor: [...GRAY, 80], getWidth: 1, getDashArray: [1, 4], extensions: [dash]}));
   }
   layers.push(new deck.PathLayer({id: 'ground-track', data: [sol.path.map(p => [p[0], p[1], 0])], getPath: p => p,
     getColor: [...GLOW, 110], getWidth: 1.5, widthUnits: 'pixels', getDashArray: [3, 3], extensions: [dash]}));
@@ -535,10 +540,13 @@ const TIP = {background: 'rgba(8, 16, 29, 0.96)', color: '#e6edf6', border: '1px
 
 function status(s) {
   return {used: 'used in the final solution', dropped: `dropped by the agent${s.reason ? `: ${s.reason}` : ''}`,
-    'not calibrated': 'not oriented: no confirmed landmark or line set', calibrated: 'oriented, not used',
-    'after run': 'oriented after the run was signed: a check on the fit, not part of it'}[s.status] || s.status;
+    'not calibrated': `not oriented: no confirmed landmark or line set${s.guess ? `; ${guessText(s.guess)}, drawn dotted` : ''}`,
+    calibrated: 'oriented, not used', 'after run': 'oriented after the run was signed: a check on the fit, not part of it'}[s.status] || s.status;
 }
 
+// a direction estimated after the run, in words: roughly, from one landmark, without the path in view; or aimed with the path
+const guessText = g => (g.kind === 'aimed' ? 'its direction was aimed with the fitted path after the run, so it checks nothing'
+  : 'its direction was estimated roughly after the run, from one landmark, without the path in view');
 const checks = d => d.stations.filter(x => x.status === 'dropped' || x.status === 'after run');  // drawn dashed: not in the fit
 const laterText = (s, cbetName) => `${esc(s.site)}'s camera was oriented after the run was signed, from ${esc(s.after_run.from)},
   by an annotator that saw neither the fitted path nor ${cbetName}`;
@@ -960,6 +968,11 @@ function md(src) {
 }
 
 function drawLegend(d) {
+  const rough = d.solution ? d.stations.filter(s => s.guess && s.guess.kind === 'rough').map(s => s.site) : [];
+  const aimed = d.solution ? d.stations.filter(s => s.guess && s.guess.kind === 'aimed').map(s => s.site) : [];
+  const guesses = () => (rough.length || aimed.length ? toggle('guess', 'dot-line', `Directions only estimated, used in nothing: ${[
+    rough.length ? `${esc(list(rough))} roughly` : '', aimed.length ? `${esc(list(aimed))} aimed with the path` : ''].filter(Boolean).join('; ')},
+    dotted`) : '');
   const toggle = (key, sw, label) => `<label><input type="checkbox" data-key="${key}" ${state.show[key] ? 'checked' : ''}>
     <span class="sw ${sw}"></span><span>${label}</span></label>`;
   if (d.solution) {
@@ -968,6 +981,7 @@ function drawLegend(d) {
     $('#legend').innerHTML = `<details ${narrow.matches ? '' : 'open'}><summary>Map key</summary>
       <div class="key"><span class="sw glow"></span>Trajectory found by the agent</div>
       ${toggle('sight', '" style="border-top-color:' + rgb(SERIES[0]), `Lines of sight from ${used.map((s, k) => `<span class="dot" style="background:${rgb(SERIES[k])};margin:0 3px 0 0"></span>${esc(s.site)}`).join(' and ')}${dashed.length ? `; ${list(dashed)}, dashed` : ''}`)}
+      ${guesses(d)}
       ${d.montecarlo ? toggle('mc', 'faint', `Monte Carlo, ${d.montecarlo.draws} draws`) : ''}
       ${toggle('published', 'dash" style="border-top-color:' + rgb(PUBLISHED), `Published path, ${esc(cbet(d))}`)}</details>`;
   } else {
@@ -1021,7 +1035,8 @@ const TRACED = 'Traced by AI (SAM 3.1)';  // the label on each track, for reader
 
 function role(d, v) {  // a camera's part in the solution, in a few plain words
   return v.status === 'used' ? 'used for the path' : v.status === 'left out' ? 'a check, left out'
-    : v.status === 'after run' ? 'a check, added later' : v.oriented ? 'oriented' : '≈ direction unknown';
+    : v.status === 'after run' ? 'a check, added later' : v.oriented ? 'oriented'
+    : v.estimate === 'rough' ? '≈ rough direction' : v.estimate === 'aimed' ? '≈ aimed with the path' : '≈ direction unknown';
 }
 
 // How far off lining a video up on SAM's largest box can be, measured where a camera oriented after the run knows its clock.
@@ -1058,7 +1073,9 @@ function clipText(d, v) {  // what one video shows, and whose it is
     const refs = Object.entries(g.glow_from || {}).map(([site, at]) => `${esc(site)}'s (${fmt(at, 1)} s)`);
     const moves = v.camera_moves ? ` (Muse Spark reported that it moves${v.moves_measured === false
       ? '; its frames, compared after the run, show it does not' : ''})` : '';
-    what = `This camera was not oriented${moves}, so it adds nothing to the path, and its own clock is not known. Its video is lined
+    const guess = (d.stations.find(x => x.id === v.clip) || {}).guess;
+    what = `This camera was not oriented${moves}${guess ? `; ${guessText(guess)} (dotted on the map)` : ''}, so it adds nothing to the
+      path, and its own clock is not known. Its video is lined
       up on the instant SAM's box around the fireball is largest, put at ${fmt(g.glow_replay_s, 1)} s into the replay, between where
       that instant falls in ${list(refs)} videos; in this video the largest box may mark another moment, so it can be
       ${glowOff(d)}. ${sam}.`;
@@ -1232,8 +1249,8 @@ function enterWall(d) {
   wall.className = [oneRow() ? 'one-row' : '', tracksOnly ? 'tracks' : ''].join(' ').trim();
   const oriented = [...(d.videos.linked || []).map(l => l.site), ...vids.filter(v => v.oriented).map(v => v.site)];
   const paths = `The path on the map comes from the traces of the ${count(d.solution.clips.length)} cameras with a coloured dot${
-    checks(d).length ? `; the ${count(checks(d).length)} dashed check it` : ''}; ≈ marks a camera whose direction is not known: shown,
-    but not used.`;
+    checks(d).length ? `; the ${count(checks(d).length)} dashed check it` : ''}; ≈ marks a camera whose direction is only estimated
+    (dotted on the map): shown, but used in nothing.`;
   wall.innerHTML = tracksOnly ? `<div class="tiles">${tiles.map(tile).join('')}</div>
     <div class="bar"><details><summary>The fireball in ${count(tiles.length)} witnesses' videos, as an AI model, SAM 3.1, traced it frame
       by frame, with the replay: no frame of any video is shown. ${paths} <span class="more">How they line up</span></summary>

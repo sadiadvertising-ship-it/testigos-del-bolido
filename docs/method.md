@@ -71,7 +71,11 @@ which turns the heading from 283.7° to 274.2°, its miss runs from 0.29° to 0.
 were judged rough before the check (Plast on a chimney and on a road OpenStreetMap maps only since 2019; Chebarkul and
 Magnitogorsk on one landmark each, with a field of view that could not be measured), and their own clocks give 11.4,
 10.1 and 36.8 km/s along the path. Beloretsk's car turns through the first 5 s of its clip and stands still for the last
-6 s of the fireball; the attempt on those still frames was not finished. None of this reaches the agent: `validation/`
+6 s of the fireball; the attempt on those still frames was not finished. For the viewer only, Beloretsk's camera was then
+aimed with the fitted path (`scripts/aim_with_path.py`): yaw, pitch, roll, field of view and a clock offset fitted so
+that the line, flown on Kamensk-Uralskiy's clock, falls under SAM's track in the still frames, with the far ridges level at
+0.8° up; it uses the answer, so its dotted lines of sight, like the rough cameras', show only where the camera looked.
+None of this reaches the agent: `validation/`
 is outside its inputs, and the signed run replays unchanged.
 
 ## 4. The fireball in the image (`src/testigos/track.py`, `scripts/sam_probe.py`)

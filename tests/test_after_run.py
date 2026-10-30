@@ -22,6 +22,7 @@ from testigos.camera import Camera  # noqa: E402
 CASE = 'chelyabinsk-2013'
 VAL = ROOT / 'validation' / CASE
 CAMS = json.loads((VAL / 'after-run' / 'cameras.json').read_text())
+AIMED = json.loads((VAL / 'after-run' / 'aimed-with-path.json').read_text())
 
 
 def test_the_agent_never_sees_them_and_the_signed_run_replays_unchanged():
@@ -76,7 +77,24 @@ def test_no_frame_and_no_witness_location_beyond_the_catalogue():
         assert f.suffix == '.json', f.name
         text = f.read_text()
         assert '/Users/' not in text and '/private/' not in text and 'scratchpad' not in text
-    for k, e in CAMS.items():
+    for k, e in {**CAMS, **AIMED}.items():
         if isinstance(e, dict) and 'camera_pos' in e:  # the Ondřejov catalogue's position, as published
             ev = next(c for c in agent.Case(CASE).event['clips'] if f"{CASE}-{c['catalog_no']}" == k)
             assert np.allclose(e['camera_pos'][:2], [ev['lat'], ev['lon']], atol=1e-6), k
+
+
+def test_the_estimated_directions_are_drawn_apart_and_used_in_nothing():
+    """Plast, Chebarkul and Magnitogorsk (rough, oriented without the path) and Beloretsk (aimed with the path) reach the
+    viewer only as dotted lines of sight: no rays, no speed, not in the fit, and the aimed one is held out of nothing."""
+    data = json.loads((ROOT / 'web' / 'data' / f'{CASE}.json').read_text())
+    guessed = {s['id']: s for s in data['stations'] if s.get('guess')}
+    assert {k: s['guess']['kind'] for k, s in guessed.items()} == {'238': 'rough', '15': 'rough', '257': 'rough', '14': 'aimed'}
+    assert all(s['status'] == 'not calibrated' and 'rays' not in s and 'speed_kms' not in s for s in guessed.values())
+    held = json.loads((VAL / 'holdout-after-run.json').read_text())['cameras']
+    for k in ('238', '15', '257'):
+        assert guessed[k]['guess']['miss_deg'] == round(held[k]['plane_rms_deg'], 2)
+    assert '14' not in held
+    aimed = AIMED['chelyabinsk-2013-14']
+    assert aimed['outcome'] == 'aimed' and aimed['fit_rms_px'] < 10 and 'checks nothing' in aimed['how']
+    shown = {v['clip']: v['estimate'] for v in data['videos']['shown']}
+    assert shown == {'48': None, '10': None, '81': None, '14': 'aimed', '15': 'rough', '257': 'rough', '238': 'rough'}

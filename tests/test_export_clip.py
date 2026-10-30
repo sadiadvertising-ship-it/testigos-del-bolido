@@ -16,8 +16,8 @@ _spec.loader.exec_module(ex)
 CASE = 'chelyabinsk-2013'
 WEB = ROOT / 'web' / 'data'
 KEYS = {'clip', 'site', 'camera', 'status', 'oriented', 'aligned', 'youtube_id', 'url', 'title', 'uploader', 'channel',
-        'uploaded', 'trimmed_s', 'start_s', 'end_s', 'fireball_s', 'camera_moves', 'moves_measured', 'left_out', 'frame_px',
-        'track'}
+        'uploaded', 'trimmed_s', 'start_s', 'end_s', 'fireball_s', 'camera_moves', 'moves_measured', 'estimate', 'left_out',
+        'frame_px', 'track'}
 
 
 @pytest.fixture(scope='module')

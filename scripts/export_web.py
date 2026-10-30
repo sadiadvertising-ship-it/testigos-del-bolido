@@ -136,9 +136,11 @@ def sam_rows(case, clip):
 
 def after_run(case, outcome='oriented'):
     """The cameras oriented after the signed run (validation/<case>/after-run/cameras.json, which the agent never reads) with
-    this outcome, 'oriented' or 'rough' (None for both), by clip."""
-    f = ROOT / 'validation' / case.id / 'after-run' / 'cameras.json'
-    cams = json.loads(f.read_text()) if f.exists() else {}
+    this outcome, 'oriented' or 'rough', or aimed with the fitted path ('aimed', aimed-with-path.json), by clip; None for all."""
+    cams = {}
+    for name in ('cameras.json', 'aimed-with-path.json'):
+        f = ROOT / 'validation' / case.id / 'after-run' / name
+        cams.update(json.loads(f.read_text()) if f.exists() else {})
     return {k.rsplit('-', 1)[1]: e for k, e in cams.items() if isinstance(e, dict) and 'camera' in e
             and (outcome is None or e['outcome'] == outcome)}
 
@@ -172,6 +174,9 @@ def sam_track(rows, w0, frame_px, most=160):
              round(((r['box'][2] - r['box'][0]) * (r['box'][3] - r['box'][1])) ** 0.5 / w, 4) if r.get('box') else 0] for r in rows]
 
 
+ESTIMATES = ('rough', 'aimed')  # directions estimated after the run, drawn dotted and used in nothing
+
+
 def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
     """The witness videos the viewer can play with the replay, or None when the case has none: every clip whose credits
     record that its uploader allows embedding, FIRST before the rest, then the oriented ones (those oriented after the run
@@ -186,7 +191,8 @@ def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
     glow_check_s gives, by site, how far ahead of the replay their videos would run if lined up that way (the largest box
     can mark another moment). fireball_s are the seconds where SAM followed the fireball; camera_moves is Muse Spark's
     reading, and moves_measured what comparing the frames after the run found, where it was done; track is SAM's track as
-    sam_track gives it, with frame_px. linked lists the solution's cameras whose uploaders do not allow embedding, as links
+    sam_track gives it, with frame_px; estimate says when the camera's direction was only estimated after the run ('rough'
+    or 'aimed', drawn dotted). linked lists the solution's cameras whose uploaders do not allow embedding, as links
     to YouTube at the second their own clock reads 0, with their tracks too."""
     creds = creds if creds is not None else credits(case)
     first = FIRST.get(case.id)
@@ -238,6 +244,7 @@ def witness_videos(case, sol, s0, dur, final, log, names, creds=None):
                       'fireball_s': [round(float(w0 + times.min()), 2), round(float(w0 + times.max()), 2)],
                       'camera_moves': json.loads(reading.read_text()).get('camera_moves') if reading.exists() else None,
                       'moves_measured': ((tried.get(clip) or {}).get('camera_moves') or {}).get('measured'),
+                      'estimate': (tried.get(clip) or {}).get('outcome') if (tried.get(clip) or {}).get('outcome') in ESTIMATES else None,
                       'frame_px': ev.get('frame_px'), 'track': sam_track(rows, w0, ev['frame_px']) if ev.get('frame_px') else None,
                       'left_out': drop and {'step': drop['step'], 'criterion': drop['result'].get('criterion'),
                                             'pairs': [{'site': names.get(k, k), 'q_deg': r['q_deg_with_it']} for k, r in
@@ -347,6 +354,7 @@ def chelyabinsk():
     v = sol.speed_kms * 1000
 
     stations, later = [], after_run(case)
+    guessed = {k: e for k, e in after_run(case, None).items() if e['outcome'] in ESTIMATES}
     for c in case.event['clips']:
         clip = str(c['catalog_no'])
         calibrated = case.calibration(clip)['calibrated']
@@ -369,6 +377,12 @@ def chelyabinsk():
                        track=[[round(float(tau[i]), 3), round(to_geodetic(sol.point + s[i] * sol.direction)[2] / 1000, 2)]
                               for i in range(0, len(s), 2)],
                        speed_kms=round(k[0] / 1000, 2), miss_deg=round(miss_deg(sol, st), 3))
+        elif clip in guessed:  # a direction estimated after the run: its lines of sight, dotted, and nothing else from it
+            st = station(case, clip)
+            near, s, _, _ = own_clock(sol, s0, st)
+            pick = np.unique(np.linspace(0, len(s) - 1, 12).round().astype(int))
+            row['guess'] = {'kind': guessed[clip]['outcome'], 'miss_deg': round(miss_deg(sol, st), 2),
+                            'rays': [[round(float((s[i] - s0) / v), 2)] + geo(st.origin + near[i][1] * st.rays[i]) for i in pick]}
         stations.append(row)
 
     tried, seen = [], set()

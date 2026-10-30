@@ -60,6 +60,8 @@ def main(fit=('2', '10'), tyumen='48'):
 
     cams = {}
     for clip, e in after_run(case, None).items():
+        if e['outcome'] == 'aimed':  # aimed with the path itself: nothing to hold out
+            continue
         st = station(case, clip)
         row = {'site': e['site'], 'outcome': e['outcome'], **held(sol, st), 'plane_rms_deg': round(miss_deg(sol, st), 3),
                'q_deg_with': {f.name: round(solve([f, st]).q_max, 1) for f in fits}}

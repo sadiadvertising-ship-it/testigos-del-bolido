@@ -232,7 +232,11 @@ Four checks that do not use any published value:
   landmark each, with a field of view that could not be measured. They were judged rough before the check; along the
   path their own clocks give 11.4, 10.1 and 36.8 km/s. Beloretsk's car turns through the first 5 s of its clip and
   stands still for the last 6 s of the fireball; an attempt on those still frames was not finished, so it stays not
-  oriented.
+  oriented. So that a reader sees roughly where these four looked, the viewer draws their lines of sight dotted and grey,
+  used in nothing: the rough cameras of Plast, Chebarkul and Magnitogorsk (1.3°, 2.8° and 1.2° RMS from the path's
+  plane), and Beloretsk's camera aimed with the fitted path itself (`scripts/aim_with_path.py`: the yaw, pitch, roll and
+  field of view that put the line, flown on Kamensk-Uralskiy's clock, under SAM's track in the still frames, with the
+  far Ural ridges level along the horizon; 5.8 px RMS), which therefore checks nothing.
 - **Why Tyumen is out.** Kamensk-Uralskiy's and Tyumen's planes cross at 7.1° in the median Monte Carlo draw and at 3.1°
   in the narrowest, and their rays can pull the fit along their shared plane (the draws that slide have a median of 6.2° between those planes,
   the others 7.7°). With all three cameras, 51 of 200 draws end

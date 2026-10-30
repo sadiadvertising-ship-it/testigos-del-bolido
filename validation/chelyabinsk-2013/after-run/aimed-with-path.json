@@ -1,0 +1,29 @@
+{
+ "note": "Beloretsk's camera aimed with the fitted path: the yaw, pitch, roll and field of view that put the fitted line, flown on\nKamensk-Uralskiy's clock, under SAM's track in the frames where the car stands still (from 5.2 s of the trimmed clip),\ntogether with the clock offset between the two videos. It uses the answer, so it is no check on it: it shows only where\nthe camera most likely pointed, and the viewer draws its lines of sight as such. The lens is taken as a plain dashcam\nlens (k1 = 0), and the far ridges of the Urals along the horizon, which stand level in the still frames at about y = 492 px\n(read by eye at x = 300 to 1200), are taken as 0.8 deg above the horizontal (SRTM ridges some 20 km off); without them\nthe roll is left to the track's slope. Writes validation/chelyabinsk-2013/after-run/aimed-with-path.json, which only scripts read.",
+ "chelyabinsk-2013-14": {
+  "site": "Beloretsk",
+  "outcome": "aimed",
+  "how": "aimed with the fitted path, not oriented: the yaw, pitch, roll and field of view (and the clock offset to Kamensk-Uralskiy's video) that put the fitted line, flown on Kamensk-Uralskiy's clock, under SAM's track in the frames where the car stands still (from 5.2 s of the trimmed clip), with the far ridges level at y = 492 px taken as 0.8 deg up; a plain lens (k1 = 0) and the camera on the ground (SRTM). It uses the answer, so it checks nothing; it shows where the camera most likely pointed (scripts/aim_with_path.py)",
+  "camera_pos": [
+   53.95274,
+   58.41018,
+   532.0
+  ],
+  "image": [
+   1280,
+   720
+  ],
+  "lens": "pinhole",
+  "camera": {
+   "yaw": 39.4416,
+   "pitch": 15.6124,
+   "roll": 1.0646,
+   "hfov": 104.298,
+   "k1": 0.0
+  },
+  "still_from_s": 5.2,
+  "clock_offset_s": -0.098,
+  "rows": 189,
+  "fit_rms_px": 5.76
+ }
+}
