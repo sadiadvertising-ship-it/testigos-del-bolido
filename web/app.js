@@ -1335,16 +1335,17 @@ async function startPlayers(d, list, boxes) {
   });
   if (state.playing) stop(false);
   state.t = null;
-  if (!wallOpen) play();
+  const hold = wallOpen && clip.wall;  // the recording's wall waits for its players; elsewhere the replay starts at once
+  if (!hold) play();
   try { await loadYouTube(); } catch (e) {
     boxes.forEach((b, i) => b && b.isConnected && boxFail(d, list[i], b, "YouTube's player could not load here."));
-    if (wallOpen && state.data === d && !state.playing) play();
+    if (hold && state.data === d && !state.playing) play();
     return;  // the replay runs on its own, with SAM's tracks
   }
   if (state.data !== d || !boxes.some(b => b && b.isConnected)) return;
   list.forEach((v, i) => { if (boxes[i] && boxes[i].isConnected) clip.players.set(v.clip, makePlayer(d, v, boxes[i])); });
   follow();
-  if (wallOpen) startWhenReady(d, performance.now());
+  if (hold) startWhenReady(d, performance.now());
 }
 
 // ?clip=wall: the replay starts from 0 once every player is ready (or after 10 s), so a recording does not open on
