@@ -1,5 +1,5 @@
 // The witness page: every figure comes from the open case's exported data (web/data/colombia-2025-07-30.json).
-const FORM_URL = '';  // the Google Form, once it is published
+const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScIINKmFX7-K-C_0oTt0QubtKbR9DRid-xU8dAs7sMqQOCc2A/viewform';  // the Google Form
 
 const DIRS = ['norte', 'nor-noreste', 'noreste', 'este-noreste', 'este', 'este-sureste', 'sureste', 'sur-sureste', 'sur',
   'sur-suroeste', 'suroeste', 'oeste-suroeste', 'oeste', 'oeste-noroeste', 'noroeste', 'nor-noroeste'];
