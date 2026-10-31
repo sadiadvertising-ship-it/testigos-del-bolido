@@ -89,6 +89,12 @@ The 3D viewer runs from this repository: `python3 -m http.server -d web 8000`, t
 
 ## The viewer
 
+The panel opens with three steps that play the case one at a time: press one and the map shows only what it says (the
+witnesses' cameras, their videos with SAM 3.1's trace, then the lines of sight crossing on the path, with the replay); 1,
+2 and 3 on the keyboard do the same, and 0 or Escape shows everything. The bar under the map scrubs the replay, and so
+does the pointer over the height chart. A click on a camera brings its lines of sight forward and its video up in the
+panel.
+
 The Chelyabinsk validation case in the viewer, recorded by scripts/capture_replay.mjs. The replay's 12.5 s are the
 fitted line flown at the fitted speed, in real time, not how long a camera saw the fireball (Kamensk-Uralskiy tracked it
 for 13.7 s). As the white point descends from 89 km to 11 km, each camera's lines of sight appear: blue from

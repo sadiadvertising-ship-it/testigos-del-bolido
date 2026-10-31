@@ -40,8 +40,10 @@ const latlon = ([lon, lat]) => `${fmt(Math.abs(lat), 2)}° ${lat >= 0 ? 'N' : 'S
 const dash = new deck.PathStyleExtension({dash: true});
 
 // stage: in video mode, how much of the Colombia map shows (keys 1 to 3); 0 shows everything, as it always does outside it.
+// step: the step of the panel's three that is pressed (howTo), or null; picked: the camera clicked on the map, and hover:
+// the one whose tile the pointer is over in the wall, whose lines of sight stand out.
 // spots: where each town label of the open case sits, by town (placeTowns).
-const state = {data: null, t: null, playing: false, highlight: null, stage: 0, spots: new Map(), show: {sight: true, guess: true, mc: true, published: true}};
+const state = {data: null, t: null, playing: false, highlight: null, stage: 0, step: null, picked: null, hover: null, spots: new Map(), show: {sight: true, guess: true, mc: true, published: true}};
 const cache = {};
 let cases = [];
 
@@ -87,7 +89,7 @@ const map = new maplibregl.Map({
 });
 map.addControl(new maplibregl.NavigationControl({visualizePitch: true}), 'top-right');
 map.on('error', e => console.warn('map:', e.error && e.error.message));
-const overlay = new deck.MapboxOverlay({interleaved: false, layers: [], getTooltip: tooltip});
+const overlay = new deck.MapboxOverlay({interleaved: false, layers: [], getTooltip: tooltip, onClick: mapClick});
 map.addControl(overlay);
 
 const placeFilters = {};  // the basemap's own filters on its place names
@@ -211,41 +213,47 @@ function solvedLayers(d) {
   const flown = live ? sol.path.filter((_, i) => sol.times[i] <= t).concat([headAt(d, t)]) : sol.path;
   const tried = state.highlight && d.tried.find(x => x.step === state.highlight);
   const first = sol.path[0], last = sol.path[sol.path.length - 1];
+  // steps 1 and 2 show the cameras alone; a camera picked or hovered stands out, and the others fade
+  const only = state.step === 1 || state.step === 2, pick = state.hover || state.picked;
+  const fade = (s, a) => (!pick ? a : s.id === pick ? Math.min(255, Math.round(a * 2)) : Math.round(a * 0.3));
+  const wide = s => (pick && s.id === pick ? 2 : 1);
   const layers = [];
-  if (state.show.mc && d.montecarlo && !live) {  // faint: with no depth written, every line adds to the band where they overlap
+  if (state.show.mc && d.montecarlo && !live && !only) {  // faint: with no depth written, every line adds to the band where they overlap
     layers.push(new deck.PathLayer({id: 'mc', data: d.montecarlo.lines, getPath: l => l, getColor: [...GLOW, 8], getWidth: 1,
       widthUnits: 'pixels', billboard: true, ...SHEER}));
   }
-  if (state.show.sight) {
+  if (state.show.sight && !only) {
     layers.push(new deck.SolidPolygonLayer({id: 'planes', data: planes, getPolygon: p => p.polygon, _full3d: true,
-      getFillColor: p => [...camColor(d, p.s), p.s.status === 'used' ? 24 : 10], ...SHEER}));
+      getFillColor: p => [...camColor(d, p.s), fade(p.s, p.s.status === 'used' ? 24 : 10)], ...SHEER}));
     layers.push(new deck.PathLayer({id: 'rays', data: rays, getPath: r => r.path, widthUnits: 'pixels', billboard: true,
-      getColor: r => [...camColor(d, r.s), r.s.status === 'used' ? 115 : 95], getWidth: 1,
+      getColor: r => [...camColor(d, r.s), fade(r.s, r.s.status === 'used' ? 115 : 95)], getWidth: r => wide(r.s),
       getDashArray: r => (r.s.status === 'used' ? [0, 0] : [4, 3]), extensions: [dash]}));
   }
-  if (state.show.guess) {  // directions estimated after the run: dotted, faint, and part of nothing
+  if (state.show.guess && !only) {  // directions estimated after the run: dotted, faint, and part of nothing
     const guessed = d.stations.filter(s => s.guess).flatMap(s => s.guess.rays.filter(r => !live || r[0] <= t).map(r => ({s, path: [at(s), r.slice(1)]})));
     layers.push(new deck.PathLayer({id: 'guess-rays', data: guessed, getPath: r => r.path, widthUnits: 'pixels', billboard: true,
-      getColor: [...GRAY, 80], getWidth: 1, getDashArray: [1, 4], extensions: [dash]}));
+      getColor: r => [...GRAY, fade(r.s, 80)], getWidth: r => wide(r.s), getDashArray: [1, 4], extensions: [dash]}));
   }
-  layers.push(new deck.PathLayer({id: 'ground-track', data: [sol.path.map(p => [p[0], p[1], 0])], getPath: p => p,
-    getColor: [...GLOW, 110], getWidth: 1.5, widthUnits: 'pixels', getDashArray: [3, 3], extensions: [dash]}));
-  layers.push(new deck.LineLayer({id: 'curtain', data: sol.path.filter((_, i) => i % 4 === 0), getSourcePosition: p => p,
-    getTargetPosition: p => [p[0], p[1], 0], getColor: [...GLOW, 38], getWidth: 1}));
-  // The paths draw over the planes of sight: the solved line is where those planes meet, and they would hide it.
-  layers.push(new deck.PathLayer({id: 'glow', data: [flown], getPath: p => p, getColor: [...GLOW, LOOK.glow], getWidth: LOOK.glowWidth,
-    widthUnits: 'pixels', billboard: true, capRounded: true, jointRounded: true, ...ON_TOP}));
-  layers.push(new deck.PathLayer({id: 'path', data: [flown], getPath: p => p, getColor: [...LOOK.pathColor, 255], getWidth: LOOK.path,
-    widthUnits: 'pixels', billboard: true, capRounded: true, jointRounded: true, ...ON_TOP}));
-  if (state.show.published && d.published && !live) {
+  if (!only) {  // the path, its glow and its shadow on the ground
+    layers.push(new deck.PathLayer({id: 'ground-track', data: [sol.path.map(p => [p[0], p[1], 0])], getPath: p => p,
+      getColor: [...GLOW, 110], getWidth: 1.5, widthUnits: 'pixels', getDashArray: [3, 3], extensions: [dash]}));
+    layers.push(new deck.LineLayer({id: 'curtain', data: sol.path.filter((_, i) => i % 4 === 0), getSourcePosition: p => p,
+      getTargetPosition: p => [p[0], p[1], 0], getColor: [...GLOW, 38], getWidth: 1}));
+    // The paths draw over the planes of sight: the solved line is where those planes meet, and they would hide it.
+    layers.push(new deck.PathLayer({id: 'glow', data: [flown], getPath: p => p, getColor: [...GLOW, LOOK.glow], getWidth: LOOK.glowWidth,
+      widthUnits: 'pixels', billboard: true, capRounded: true, jointRounded: true, ...ON_TOP}));
+    layers.push(new deck.PathLayer({id: 'path', data: [flown], getPath: p => p, getColor: [...LOOK.pathColor, 255], getWidth: LOOK.path,
+      widthUnits: 'pixels', billboard: true, capRounded: true, jointRounded: true, ...ON_TOP}));
+  }
+  if (state.show.published && d.published && !live && !only) {
     layers.push(new deck.PathLayer({id: 'published', data: [d.published.path], getPath: p => p, getColor: [...PUBLISHED, 235],
       getWidth: LOOK.published, widthUnits: 'pixels', billboard: true, getDashArray: [6, 4], extensions: [dash], ...ON_TOP}));
   }
-  if (tried) {
+  if (tried && !only) {
     layers.push(new deck.PathLayer({id: 'tried', data: [tried.path], getPath: p => p, getColor: [255, 255, 255, 170], getWidth: 2,
       widthUnits: 'pixels', billboard: true, getDashArray: [2, 3], extensions: [dash], ...ON_TOP}));
   }
-  if (live) {
+  if (live && !only) {
     layers.push(new deck.ScatterplotLayer({id: 'head', data: [headAt(d, t)], getPosition: p => p, getRadius: 6 * LOOK.dot,
       radiusUnits: 'pixels', getFillColor: [255, 255, 255], stroked: true, getLineColor: [...GLOW, 150], getLineWidth: 7 * LOOK.dot,
       lineWidthUnits: 'pixels', billboard: true, ...ON_TOP}));
@@ -253,14 +261,15 @@ function solvedLayers(d) {
   layers.push(new deck.ScatterplotLayer({id: 'cams', data: d.stations, pickable: true, getPosition: s => [...s.lonlat, 0],
     getRadius: s => (s.rays ? 5.5 : 4) * LOOK.dot, radiusUnits: 'pixels', radiusMinPixels: 3.5 * LOOK.dot, radiusMaxPixels: 6 * LOOK.dot,
     getFillColor: s => (s.rays ? [...camColor(d, s), 255] : [...NIGHT, 255]),
-    stroked: true, getLineColor: s => (s.rays ? [...NIGHT, 255] : [...GRAY, 255]), getLineWidth: 1.5, lineWidthUnits: 'pixels',
-    billboard: true, ...ON_TOP}));
+    stroked: true, getLineColor: s => (s.id === pick ? [...INK, 255] : s.rays ? [...NIGHT, 255] : [...GRAY, 255]),
+    getLineWidth: s => (s.id === pick ? 3 : 1.5), lineWidthUnits: 'pixels', billboard: true,
+    updateTriggers: {getLineColor: pick, getLineWidth: pick}, ...ON_TOP}));
   const side = camSides(d), sides = JSON.stringify([...side.values()].map(t => t.anchor));
   layers.push(text('cam-labels', d.stations, s => [...s.lonlat, 0], s => s.site, TAG(),
-    {getColor: s => (s.rays ? [...INK, 255] : [...MUTED, 255]), getTextAnchor: s => side.get(s.id).anchor,
-      getPixelOffset: s => side.get(s.id).offset, updateTriggers: {getColor: d.id, getTextAnchor: sides, getPixelOffset: sides}}));
-  layers.push(text('heights', [first, last], p => p, heightText, HEIGHT_TAG()));
-  if (state.show.published && d.published && !live) {  // its border carries the path's colour
+    {getColor: s => (pick && s.id !== pick ? [...FAINT, 255] : s.rays ? [...INK, 255] : [...MUTED, 255]), getTextAnchor: s => side.get(s.id).anchor,
+      getPixelOffset: s => side.get(s.id).offset, updateTriggers: {getColor: [d.id, pick], getTextAnchor: sides, getPixelOffset: sides}}));
+  if (!only) layers.push(text('heights', [first, last], p => p, heightText, HEIGHT_TAG()));
+  if (state.show.published && d.published && !live && !only) {  // its border carries the path's colour
     layers.push(text('published-label', [publishedEnd(d)], p => p, () => publishedText(d), publishedTag(d),
       {getBorderColor: [...PUBLISHED, 255], getBorderWidth: 1}));
   }
@@ -594,23 +603,94 @@ const count = n => COUNT[n] ?? String(n);
 
 // What the case shows, in three plain steps before the figures, for someone who has never heard of a plane of sight.
 function howTo(d) {
-  const li = (head, text) => `<li><b>${head}</b> ${text}</li>`;
+  const li = (head, text, k) => `<li><button type="button" class="step" data-step="${k}" aria-pressed="${state.step === k}"><b>${head}</b>
+    ${text}</button></li>`;
   if (d.solution) {
     const [a, b] = d.solution.clips.map(id => d.stations.find(x => x.id === id)), cars = d.stations.filter(x => /car/.test(x.camera)).length;
     return `<ol class="howto">${li('People filmed it.', `${count(d.stations.length).replace(/^./, c => c.toUpperCase())} videos, from the dashcams of ${count(cars)} cars and
-      ${count(d.stations.length - cars)} security cameras.`)}
-      ${li('AI found the fireball in every frame.', 'SAM 3.1 marked it in each video, frame by frame.')}
+      ${count(d.stations.length - cars)} security cameras.`, 1)}
+      ${li('AI found the fireball in every frame.', 'SAM 3.1 marked it in each video, frame by frame.', 2)}
       ${li('Two cameras’ lines of sight cross on its path.', `${esc(a.site)} and ${esc(b.site)}, ${Math.round(km(a.lonlat, b.lonlat))} km
-      apart, give the white line; the dashed yellow one is the path scientists published.`)}</ol>`;
+      apart, give the white line; the dashed yellow one is the path scientists published.`, 3)}</ol>`;
   }
   const filmed = d.witness.find(w => w.video), req = new Set(d.run?.block?.request?.towns || []);
   const towns = d.towns.filter(t => req.has(t.city)), up = towns.flatMap(t => [t.el_at_40km_deg, t.el_at_80km_deg]);
   return `<ol class="howto">${li('A satellite saw the flash, and people filmed it.', `${esc(satellite(d))} recorded where it lit
-    up${filmed ? `; one video, from ${esc(filmed.site)}, has been analysed` : ''}.`)}
+    up${filmed ? `; one video, from ${esc(filmed.site)}, has been analysed` : ''}.`, 1)}
     ${li('One video is not enough.', `A path takes two still cameras, far apart${filmed ? `. ${esc(filmed.site)}’s was handheld, with
-    cuts, from an unknown spot, so the map shows only where it had to look` : ''}.`)}
+    cuts, from an unknown spot, so the map shows only where it had to look` : ''}.`, 2)}
     ${towns.length ? li(`A video from ${esc(list(towns.map(t => t.city)))} could close it.`, `There the flash stood high in the sky,
-    ${between(Math.min(...up), Math.max(...up), 0)}° up.`) : ''}</ol>`;
+    ${between(Math.min(...up), Math.max(...up), 0)}° up.`, 3) : ''}</ol>`;
+}
+
+const bounds = pts => [[Math.min(...pts.map(p => p[0])), Math.min(...pts.map(p => p[1]))], [Math.max(...pts.map(p => p[0])), Math.max(...pts.map(p => p[1]))]];
+const inset = n => { const p = padding(); return {top: p.top + n, bottom: p.bottom + n, left: p.left + n, right: p.right + n}; };
+
+// A step pressed shows on the map only what it says and moves the camera to it; pressed again, or 0 or Escape, the map
+// shows everything again. Chelyabinsk: 1 the witnesses' cameras, 2 their videos with SAM's trace (the wall where it
+// fits, else the panel's video), 3 the lines of sight and the path, with the replay. Colombia: 1 the flash and the filmed
+// site, 2 the same, closer, 3 the towns that would see it high, through the stages video mode builds with keys 1 to 3.
+function setStep(d, k) {
+  if (state.data !== d) return;
+  state.step = k && k !== state.step ? k : null;
+  const now = state.step;
+  $('#howto').querySelectorAll('.step').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.step) === now)));
+  if (!d.solution) {
+    state.stage = {1: 2, 2: 2, 3: 3}[now] || 0;
+    stageKey();
+    redraw();
+    namesUnderLabels();
+    const filmed = d.witness.find(w => w.video);
+    // room on the right for the flash's label, which stands at the top of its column
+    if (now === 2 && filmed) map.fitBounds(bounds([filmed.lonlat, d.satellite.lonlat]), {padding: {...inset(90), right: inset(90).right + 150}, duration: 1600});
+    else map.flyTo({...caseView(d), duration: 1600, essential: true});
+    return;
+  }
+  if ((now === 1 || now === 2) && state.playing) stop(true);
+  redraw();
+  if (now === 2) showVideos(d);
+  if (!clip.wall) {
+    if (now === 1 || now === 2) map.fitBounds(bounds(d.stations.map(x => x.lonlat)), {padding: inset(70), duration: 1600});
+    else map.flyTo({...caseView(d), duration: 1600, essential: true});
+  }
+  if (now === 3 && !state.playing) {
+    state.t = null;
+    if (clip.wall) play();
+    else map.once('moveend', () => { if (state.step === 3 && state.data === d && !state.playing) play(); });
+  }
+}
+
+function showVideos(d) {  // the wall where it fits; else the panel's video card, opened and scrolled to
+  if (clip.mode === 'wall' && !clip.wall) { enterWall(d); return; }
+  const box = $('#clip details');
+  if (!box) return;
+  box.open = true;
+  $('#clip').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+// A camera clicked on the map: its lines of sight stand out and the others fade, and its video comes up in the panel or
+// lights up in the wall; a click on it again, or on the empty map, lets it go.
+function mapClick(info) {
+  const d = state.data;
+  if (d && d.solution) pickCamera(d, info.layer && info.layer.id === 'cams' ? info.object.id : null);
+}
+
+function pickCamera(d, id) {
+  state.picked = id && id !== state.picked ? id : null;
+  const v = state.picked && videos(d).find(x => x.clip === state.picked);
+  markTiles(d);
+  if (v && !clip.wall && clip.mode === 'one' && $('#clip details')) {
+    $('#clip details').open = true;
+    pickClip(d, v.clip);
+    $('#clip').scrollIntoView({behavior: 'smooth', block: 'start'});
+  }
+  redraw();
+}
+
+function markTiles(d) {
+  if (!clip.wall) return;
+  const site = state.picked && (d.stations.find(x => x.id === state.picked) || {}).site;
+  $('#wall').querySelectorAll('.tile').forEach(el => el.classList.toggle('picked', !!state.picked && (el.dataset.clip === state.picked || el.dataset.site === site)));
 }
 
 function leadSolved(d) {
@@ -620,6 +700,7 @@ function leadSolved(d) {
   const later = d.stations.filter(x => x.status === 'after run');
   const top = s.path[0][2] / 1000, low = s.path[s.path.length - 1][2] / 1000;
   return `<p class="when">Validation case: ${esc(d.when)}</p>
+    <details class="more"><summary>How the agent chose the cameras</summary>
     <p>${d.stations.length} witness videos${cat ? `, chosen from the ${esc(cat.name)} of ${esc(d.title.split(' ')[0])} videos
     (${esc(cat.cite)}), which also gives each camera's position` : ''}. In ${oriented} of them, AI annotators measured street lines
     and poles and matched landmarks to OpenStreetMap during development, so those cameras could be oriented; SAM 3.1 tracked the
@@ -629,7 +710,7 @@ function leadSolved(d) {
     and chose <b>${esc(a.site)}</b> and <b>${esc(b.site)}</b>, ${Math.round(km(a.lonlat, b.lonlat))} km apart, whose planes cross at
     ${fmt(s.q_deg, 0)}°. The code re-solved that choice before accepting it.${later.length ? ` After the run was signed,
     ${esc(list(later.map(x => x.site)))} ${later.length > 1 ? 'were' : 'was'} oriented too, without the path or ${esc(cbet(d))} in view:
-    a check on the fit, drawn dashed, not part of it.` : ''}</p>
+    a check on the fit, drawn dashed, not part of it.` : ''}</p></details>
     <p class="big">Heading <span class="num">${fmt(s.azimuth_deg, 1)}°</span> (${dir(s.azimuth_deg)}), descending at
     <span class="num">${fmt(s.slope_deg, 1)}°</span>, from <span class="num">${fmt(top, 0)}</span> km down to
     <span class="num">${fmt(low, 0)}</span> km${s.seen_for_s ? `; one camera tracked it for <span class="num">${fmt(s.seen_for_s, 1)}</span> s` : ''}.</p>
@@ -772,8 +853,9 @@ function compareSolved(d) {
     ${row('Speed, km/s', 'speed', s.speed_kms, 'speed_kms', '', 2)}
     <tr class="src"><th scope="row">From</th><td class="r">${s.clips.length} cameras${mc ? `, ${d.montecarlo.draws} Monte Carlo draws` : ''}</td>
     <td class="r">${esc(first.how)}</td><td class="r">${esc(zul.how)}</td></tr></tbody></table>
-    <p class="note" style="margin-top:8px">${notes.join(' ')}</p>
-    <p class="note">${d.grade ? gradeNote(d) : 'The agent never saw these published values.'}</p>
+    <p class="note" style="margin-top:8px">${d.grade ? gradeNote(d) : 'The agent never saw these published values.'}</p>
+    ${notes.length ? `<details class="more"><summary>Notes on these numbers: the Monte Carlo, the refereed speeds and the checks</summary>
+    <p class="note">${notes.join(' ')}</p></details>` : ''}
     <p class="note">${d.published.values.map(v => esc(v.who)).join('. ')}.</p>`;
 }
 
@@ -794,6 +876,7 @@ function leadOpen(d) {
     <p>A green fireball crossed the night sky over north-eastern Colombia. The lightning mapper on the ${esc(satellite(d))} weather
     satellite recorded a ${fmt(g.duration_s, 2)} s flash at <span class="num">${latlon(g.lonlat)}</span>, ${nearest.km} km from
     ${esc(nearest.city)}.</p>
+    <details class="more"><summary>NASA's classification, the one video, and what the agent did</summary>
     <p>NASA's analysts classified it as a ${esc(g.classification.toLowerCase())}${g.confidence ? `, with ${esc(g.confidence)} confidence` : ''}${lightning ? `
     and ${lightning}` : ''}.${filmed ? ` The one video analysed so far was filmed in ${esc(filmed.site)}${town ? `, ${town.km} km away` : ''}${filmed.post
     ? ` (${external(filmed.post.url, 'the post on X')})` : ''}: a
@@ -801,12 +884,13 @@ function leadOpen(d) {
     the filming spot is unknown, so the code cannot orient it.${lookText(d, filmed) ? ` ${lookText(d, filmed)}.` : ''}` : ''}${later ? ` ${esc(later.what)}, posted on ${esc(later.where)}
     by ${esc(later.by)} on ${isoDay(later.on)}, have not been analysed yet.` : ''} With fewer than two oriented cameras there is no
     trajectory, and the agent says so instead of guessing${req ? `: it asked for videos from ${esc(list(req.towns || []))}, and
-    the run stays blocked until they arrive` : ''}.</p>
-    ${re ? `<p>Was it space junk? ${re.containing_the_flash.length ? `In ${esc(re.database)}, the predicted window of
+    the run stays blocked until they arrive` : ''}.</p></details>
+    ${re ? `<details class="more"><summary>Was it space junk? ${re.containing_the_flash.length ? 'A tracked re-entry could fit'
+    : 'No tracked re-entry matches the flash'}</summary><p>${re.containing_the_flash.length ? `In ${esc(re.database)}, the predicted window of
     ${esc(list(re.containing_the_flash))} includes the flash.` : `No satellite or rocket re-entry in ${esc(re.database)} has a
     predicted window that includes the flash.`}${re.nearest.length ? ` The ${count(re.nearest.length)} windows nearest the flash:
     ${list(re.nearest.map(r => reentryWindow(d, r, 'it')))}.` : ''} Only tracked objects are listed, so the speed still has to
-    decide${d.everyday ? `: ${escapeText(d.everyday)}` : ''}.</p>` : ''}
+    decide${d.everyday ? `: ${escapeText(d.everyday)}` : ''}.</p></details>` : ''}
     <p class="big">Phones in the towns marked in blue would have seen the flash ${lo}° to ${hi}° above the horizon. Two of those
     videos, from still cameras on different sides, could give its path and its speed.</p>`;
 }
@@ -860,9 +944,23 @@ function drawChart(el, d) {
 
   const svg = el.querySelector('svg'), cross = svg.querySelector('.cross'), tip = el.querySelector('.chart-tip');
   const near = (p, t) => p.reduce((best, q) => (Math.abs(q[0] - t) < Math.abs(best[0] - t) ? q : best), p[0]);
+  // the pointer over the chart moves the replay's point to that instant, while the replay is not running; it goes back on
+  // leaving, and a click leaves it there
+  let held = null, moved = false;
+  const preview = t => {
+    if (state.playing || state.data !== d) return;
+    if (!moved) { held = state.t; moved = true; }
+    state.t = Math.min(t, flight(d));
+    readout();
+    redraw();
+    wallSees();
+    drawSams();
+  };
+  svg.addEventListener('click', () => { if (moved) { moved = false; scrubTo(state.t); } });
   svg.addEventListener('pointermove', e => {
     const box = svg.getBoundingClientRect(), px = (e.clientX - box.left) * (W / box.width);
     const t = Math.max(0, Math.min(tmax, ((px - L) / (W - L - R)) * tmax));
+    preview(t);
     cross.setAttribute('x1', x(t)); cross.setAttribute('x2', x(t)); cross.style.display = '';
     const rows = series.map(s => {
       const q = near(s.pts, t);
@@ -875,7 +973,11 @@ function drawChart(el, d) {
     tip.style.left = `${Math.min(fx + 12, box.width - tip.offsetWidth - 2)}px`;
     tip.style.top = '6px';
   });
-  svg.addEventListener('pointerleave', () => { cross.style.display = 'none'; tip.hidden = true; });
+  svg.addEventListener('pointerleave', () => {
+    cross.style.display = 'none';
+    tip.hidden = true;
+    if (moved && !state.playing && state.data === d) { moved = false; state.t = held; readout(); redraw(); wallSees(); drawSams(); }
+  });
 }
 
 function cameraTable(d) {
@@ -1211,7 +1313,11 @@ function drawClip(d) {
       <div class="clip-text">${clipText(d, picked())}</div>
       <p class="note">With the page at least 1100 by 970 px (full screen helps), or 1840 by 760 px, all ${count(vids.length)} play
       together above the map, each above the fireball as the AI traced it.</p></details>`;
-    el.querySelectorAll('.clip-views button').forEach(b => b.addEventListener('click', () => pickClip(d, b.dataset.clip)));
+    el.querySelectorAll('.clip-views button').forEach(b => b.addEventListener('click', () => {
+      pickClip(d, b.dataset.clip);
+      state.picked = b.dataset.clip;  // its camera stands out on the map
+      redraw();
+    }));
     bindPoster(d);
     panelTrack(picked());
   }
@@ -1309,6 +1415,12 @@ function enterWall(d) {
     if (box && l.track) { samCanvas(box, l, TRACED); drawSams(); }
   });
   wall.querySelector('.wall-close').addEventListener('click', () => exitWall(true));
+  wall.querySelectorAll('.tile').forEach(el => {  // the pointer over a video: its camera stands out on the map
+    const id = el.dataset.clip || (d.stations.find(x => x.site === el.dataset.site) || {}).id;
+    el.addEventListener('pointerenter', () => { state.hover = id; redraw(); });
+    el.addEventListener('pointerleave', () => { state.hover = null; redraw(); });
+  });
+  markTiles(d);
   const key = $('#legend details');
   clip.keyOpen = key ? key.open : null;
   if (key) key.open = false;
@@ -1501,7 +1613,10 @@ function follow() {
       const on = state.playing && shown && at >= 0 && at < last;
       if (!on) {
         if (s === S.PLAYING || s === S.BUFFERING) { rec.ours = performance.now(); p.pauseVideo(); }
-        if (!state.playing && state.t === null && Math.abs(p.getCurrentTime() - Math.max(0, rec.v.start_s)) > 0.5) p.seekTo(Math.max(0, rec.v.start_s), true);
+        // stopped: at its start; paused or moved along the bar: at the replay's instant (a seek may start a cued video:
+        // marked as the page's, it pauses again)
+        const still = state.t === null ? Math.max(0, rec.v.start_s) : Math.max(0, Math.min(at, last));
+        if (!state.playing && Math.abs(p.getCurrentTime() - still) > (state.t === null ? 0.5 : 0.3)) { rec.want = now; p.seekTo(still, true); }
         continue;
       }
       if (Math.abs(p.getCurrentTime() - at) > 0.5 && now - rec.lastSeek > 1500) { rec.want = now; p.seekTo(at, true); rec.lastSeek = now; }
@@ -1565,10 +1680,27 @@ let raf = 0, started = 0;
 function readout() {
   const d = state.data;
   if (!d || !d.solution) return;
-  const dur = d.solution.times[d.solution.times.length - 1];
+  const dur = d.solution.times[d.solution.times.length - 1], scrub = $('#scrub');
+  scrub.max = dur;
+  scrub.value = state.t === null ? 0 : state.t;
   // the replay flies the fitted line at the fitted speed: its seconds are not how long any camera saw the fireball
   $('#readout').textContent = state.t === null ? `${fmt(dur, 1)} s: the fitted line at the fitted speed, in real time`
     : `t ${fmt(state.t, 1)} s, ${fmt(headAt(d, state.t)[2] / 1000, 0)} km up`;
+}
+
+// The bar under the map, or the height chart under the pointer, sets the replay's instant: the replay pauses there, and
+// the videos wait at that instant.
+function scrubTo(t) {
+  const d = state.data;
+  if (!d || !d.solution) return;
+  if (state.playing) stop(false);
+  state.t = Math.max(0, Math.min(t, flight(d)));
+  $('#play').textContent = 'Resume';
+  readout();
+  redraw();
+  wallSees();
+  drawSams();
+  follow();
 }
 
 function play() {
@@ -1649,16 +1781,26 @@ addEventListener('resize', () => {
 
 let firstView = true;
 
+function caseView(d) {
+  const closer = !video ? 0 : !d.solution ? 0.5 : document.body.classList.contains('bare') ? 0 : -0.2;
+  const base = narrow.matches && d.view_narrow ? d.view_narrow : {...d.view, zoom: d.view.zoom - (narrow.matches ? 1.3 : 0)};
+  const asGiven = {...base, zoom: base.zoom + closer, padding: padding()};
+  return d.solution ? asGiven : fitView(d, asGiven);
+}
+
 async function show(id) {
   const known = cases.find(c => c.id === id) || cases[0];
   if (state.playing) stop(false);
   state.t = null;
   state.highlight = null;
+  state.step = state.picked = state.hover = null;
+  if (!video) state.stage = 0;
   const d = cache[known.id] || (cache[known.id] = await (await fetch(`data/${known.id}.json`)).json());
   state.data = d;
   document.querySelectorAll('#cases button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === known.id)));
   drawClip(d);
   $('#howto').innerHTML = howTo(d);
+  $('#howto').querySelectorAll('.step').forEach(b => b.addEventListener('click', () => setStep(d, Number(b.dataset.step))));
   $('#lead').innerHTML = d.solution ? leadSolved(d) : leadOpen(d);
   $('#compare').innerHTML = d.solution ? compareSolved(d) : compareOpen(d);
   if (d.solution) drawChart($('#chart'), d); else $('#chart').innerHTML = '';
@@ -1677,10 +1819,7 @@ async function show(id) {
   // and less tilted, where the requested towns' labels have room beside their dots. In video mode the open case comes
   // closer to the flash, so its larger labels have room, and the solved case steps back beside the wider panel, so every
   // witness site stays in view. Where the map area left free is smaller, the open case's view fits itself to it (fitView).
-  const closer = !video ? 0 : !d.solution ? 0.5 : document.body.classList.contains('bare') ? 0 : -0.2;
-  const base = narrow.matches && d.view_narrow ? d.view_narrow : {...d.view, zoom: d.view.zoom - (narrow.matches ? 1.3 : 0)};
-  const asGiven = {...base, zoom: base.zoom + closer, padding: padding()};
-  const view = d.solution ? asGiven : fitView(d, asGiven);
+  const view = caseView(d);
   state.spots = d.solution ? new Map() : placeTowns(d, view);  // placed for where the camera is going
   under = [];  // the basemap names under the last case's labels; found again once the map has drawn this one
   quietNames();
@@ -1708,11 +1847,19 @@ map.on('moveend', () => {  // after a pan, zoom, turn or resize the labels find 
 addEventListener('keydown', e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (clip.wall && e.key === 'Escape') { exitWall(true); return; }
-  if (video && (/^[0-3]$/.test(e.key) || e.key === 'Escape')) {
+  const d = state.data, digit = /^[0-3]$/.test(e.key) || e.key === 'Escape';
+  if (video && d && !d.solution && digit) {  // video mode, Colombia: the stages the recording builds with keys 1 to 3
     state.stage = e.key === 'Escape' ? 0 : Number(e.key);
     stageKey();
     redraw();
     namesUnderLabels();
+    return;
+  }
+  if (d && digit && !e.target.closest('input, textarea')) {  // the panel's steps; 0 or Escape shows everything again
+    const k = /^[1-3]$/.test(e.key) ? Number(e.key) : null;
+    if (k) setStep(d, k);
+    else if (state.step) setStep(d, null);
+    else if (state.picked) pickCamera(d, null);
     return;
   }
   if (e.target.closest('input, textarea, button, summary, a')) return;
@@ -1730,6 +1877,7 @@ addEventListener('keydown', e => {
   $('#cases').innerHTML = cases.map(c => `<button type="button" data-id="${c.id}" aria-pressed="false">${esc(c.title)}<small>${esc(c.role)}</small></button>`).join('');
   $('#cases').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { location.hash = b.dataset.id; }));
   $('#play').addEventListener('click', play);
+  $('#scrub').addEventListener('input', e => scrubTo(Number(e.target.value)));
   addEventListener('hashchange', () => show(location.hash.slice(1)));
   try { await Promise.all([500, 600].map(w => document.fonts.load(`${w} 12px ${FONT}`))); } catch (e) { /* labels fall back to the system font */ }
   show(location.hash.slice(1));

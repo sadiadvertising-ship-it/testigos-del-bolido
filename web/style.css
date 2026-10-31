@@ -69,9 +69,18 @@ tr.src td, tr.src th { color: var(--ink-3); font-size: calc(12px * var(--k)); }
 .dot.dashed { background: none; border: 1.5px dashed var(--dropped); }
 
 .howto { margin: 0 0 14px; padding-left: calc(20px * var(--k)); color: var(--ink-2); font-size: calc(13.5px * var(--k)); }
-.howto li { margin-bottom: 5px; padding-left: 2px; }
+.howto li { margin-bottom: 3px; padding-left: 2px; }
 .howto li::marker { color: var(--accent); font-weight: 600; }
 .howto b { color: var(--ink); font-weight: 600; }
+/* each step is a button: pressed, the map shows only what it says (setStep in app.js) */
+.howto .step { display: block; width: 100%; text-align: left; font: inherit; color: inherit; background: none; cursor: pointer;
+  border: 0; border-left: 2px solid transparent; border-radius: 0 6px 6px 0; padding: 3px 6px 3px 8px; margin-left: 2px; }
+.howto .step:hover { background: var(--raise); }
+.howto .step[aria-pressed="true"] { background: var(--raise); border-left-color: var(--accent); color: var(--ink); }
+.howto .step:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.more { margin: 0 0 10px; }
+.more > summary { margin-bottom: 0; }
+.more[open] > summary { margin-bottom: 8px; }
 .method { margin: 0; padding-left: calc(18px * var(--k)); color: var(--ink-2); font-size: calc(13px * var(--k)); }
 .method li { margin-bottom: 4px; }
 .method b { color: var(--ink); }
@@ -223,6 +232,12 @@ footer p { margin-bottom: 6px; }
 body.bare #hud { left: 50%; }
 #play { flex: none; font: 600 13px var(--sans); color: #06101e; background: var(--accent); border: 0; border-radius: 999px; padding: 7px 16px; cursor: pointer; }
 #readout { min-width: 13em; }
+/* the replay's instant, to drag */
+#scrub { flex: none; width: 170px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+#scrub:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+body.video #scrub { width: 260px; }
+body.bare #scrub { display: none; }  /* ?panel=0, the GIF's view: the bar shows only the button and the readout */
+#wall .tile.picked { box-shadow: 0 0 0 2px var(--ink-2); }
 body.video #hud { gap: 16px; padding: 7px 22px 7px 7px; font-size: 20px; }
 body.video #play { font-size: 20px; padding: 10px 24px; }
 
@@ -259,6 +274,8 @@ body.video #play { font-size: 20px; padding: 10px 24px; }
   #panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 50vh; border-radius: 14px 14px 0 0; padding: 14px 16px 20px; }
   #hud { left: 50%; bottom: calc(50vh + 10px); max-width: calc(100vw - 32px); }
   #readout { min-width: 0; }
+  #hud { flex-wrap: wrap; border-radius: 18px; }
+  #scrub { order: 3; flex: 1 1 100%; width: auto; }
   body.bare #hud { bottom: 26px; }
   #legend { top: 10px; left: 10px; right: auto; bottom: auto; width: auto; max-width: 230px; padding: 7px 10px; font-size: 12px; }
   .clip-frame { width: min(100%, 356px); margin-inline: auto; }  /* YouTube's 200 px minimum height, no larger */
