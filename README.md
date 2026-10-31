@@ -279,7 +279,9 @@ fireballs of 31 May 2024 (Araujo-Salcedo et al. 2024, a poster at the VIII Colom
 
 The only video analysed so far was filmed in Medellín, 373 km away: a handheld phone video that replays the moment in
 cuts. The agent ran SAM 3.1 on it, which found the flash in 79 of 132 frames, but nothing in view can be located on a
-map and the filming spot is unknown, so the camera cannot be oriented. Security-camera and dashcam clips from Bogotá and
+map and the filming spot is unknown, so the camera cannot be oriented. What the map draws instead comes from the
+satellite, not the video: from the city centre the flash stood east (86°), only 4° to 10° above the horizon if it was
+40 to 80 km up (`city-geometry.json`), a grey wedge from Medellín to the flash's column. Security-camera and dashcam clips from Bogotá and
 Medellín, posted on X by @ColombiaOscura (x.com/ColombiaOscura) on 1 August 2025, have not been analysed yet.
 
 Was it space junk? No satellite or rocket re-entry in the Aerospace Corporation's CORDS database has a predicted window

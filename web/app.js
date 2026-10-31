@@ -282,11 +282,19 @@ const townShows = (d, t) => (filmedSites(d).some(w => w.site === t.city) ? shows
 const townRadius = (d, t) => (asked(d).has(t.city) ? 6 : 4.5) * LOOK.dot;
 // On a phone the dots stand too close for more than a name: the table under the map gives the nearest towns' height in
 // the sky and a tap on a dot gives any town's. The towns the agent asked for still say why they are bright.
-const townLabel = (d, t) => (narrow.matches || !t.sees_it_high ? t.city : `${t.city}  ${span(t.el_at_40km_deg, t.el_at_80km_deg, 0)}° up`)
+const townLabel = (d, t) => (narrow.matches || !(t.sees_it_high || filmedSites(d).some(w => w.site === t.city)) ? t.city : `${t.city}  ${span(t.el_at_40km_deg, t.el_at_80km_deg, 0)}° up`)
   + (!asked(d).has(t.city) ? '' : narrow.matches ? '\nrequested' : '\nrequested by the agent');
 const LINE = 1.15;  // line height of the town labels; a requested town's runs to two lines
 const satellite = d => (/GOES-\d+/.exec(d.satellite.source) || ['the satellite'])[0];  // 'GOES-19'
 const glmText = d => `${satellite(d)} flash`;
+// Where a video filmed in a town had to look for the flash, from the satellite's place and the assumed heights: the
+// town centre stands for the filming spot, which is unknown.
+function lookText(d, w) {
+  const t = d.towns.find(x => x.city === w.site), [h0, h1] = skyKm(d);
+  return t ? `From ${esc(t.city)}'s centre the flash stood ${dir(t.look_az_deg)} (${Math.round(t.look_az_deg)}°), only
+    ${between(t.el_at_40km_deg, t.el_at_80km_deg, 0)}° above the horizon if it was ${h0} to ${h1} km up: worked out from the
+    satellite's flash, not from the video` : '';
+}
 const COLUMN_TOP = 100000;  // the flash's column on the map rises to 100 km
 const skyKm = d => d.sky.heights_km;  // the heights the town geometry assumes for the flash
 
@@ -308,7 +316,10 @@ function openLayers(d) {
     new deck.PathLayer({id: 'sight-edges', data: high, getPath: t => [[lon, lat, h0], [...t.lonlat, 0], [lon, lat, h1]],
       getColor: t => (wanted.has(t.city) ? [...ACCENT, 170] : [...SERIES[0], 85]), getWidth: t => (wanted.has(t.city) ? 1.5 : 1),
       widthUnits: 'pixels', billboard: true}),
-    new deck.PathLayer({id: 'witness', data: witness, getPath: w => [[...w.lonlat, 0], [lon, lat, (h0 + h1) / 2]], getColor: [...GRAY, 200],
+    // where a filmed site had to look: the flash's column between the assumed heights, from the satellite, not the video
+    new deck.SolidPolygonLayer({id: 'witness-sight', data: witness, _full3d: true, getFillColor: [...GRAY, 26],
+      getPolygon: w => [[...w.lonlat, 0], [lon, lat, h0], [lon, lat, h1]], ...SHEER}),
+    new deck.PathLayer({id: 'witness', data: witness, getPath: w => [[lon, lat, h0], [...w.lonlat, 0], [lon, lat, h1]], getColor: [...GRAY, 200],
       getWidth: 1.5 * LOOK.dot, widthUnits: 'pixels', billboard: true, getDashArray: [4, 3], extensions: [dash]}),
     new deck.LineLayer({id: 'column', data: [[lon, lat]], getSourcePosition: p => [...p, 0], getTargetPosition: p => [...p, COLUMN_TOP],
       getColor: [...SERIES[1], 120], getWidth: 1.5 * LOOK.dot, ...ON_TOP}),
@@ -428,7 +439,7 @@ function placeTowns(d, view) {
   const dots = d.towns.map(t => ({t, at: xy(t.lonlat), s: scale(t.lonlat), r: (townRadius(d, t) + 0.75) * scale(t.lonlat)}));
   const flash = {at: xy(g), r: 8 * LOOK.dot * scale(g)};
   dots.push(flash);
-  const lines = [[xy(g), xy(g, COLUMN_TOP), 3], ...filmedSites(d).map(w => [xy(w.lonlat), xy(g, (h0 + h1) / 2), 2.5])];
+  const lines = [[xy(g), xy(g, COLUMN_TOP), 3], ...filmedSites(d).flatMap(w => [h0, h1].map(h => [xy(w.lonlat), xy(g, h), 2.5]))];
   const ui = [];  // the map key and the zoom buttons
   for (const el of [document.body.classList.contains('bare') ? null : $('#legend'), $('.maplibregl-ctrl-top-right')]) {
     const r = el && el.getBoundingClientRect();
@@ -560,7 +571,8 @@ function tooltip({object, layer}) {
   } else if (layer.id === 'towns') {
     const [h0, h1] = skyKm(state.data);
     html = `<b>${esc(object.city)}</b><br>${object.km} km from the flash; look ${dir(object.look_az_deg)} (${Math.round(object.look_az_deg)}°)`
-      + `<br>${fmt(object.el_at_40km_deg, 0)}° up if it was ${h0} km high, ${fmt(object.el_at_80km_deg, 0)}° at ${h1} km`;
+      + `<br>${fmt(object.el_at_40km_deg, 0)}° up if it was ${h0} km high, ${fmt(object.el_at_80km_deg, 0)}° at ${h1} km`
+      + (filmedSites(state.data).some(w => w.site === object.city) ? '<br>where its witness video had to look, from the satellite, not the video' : '');
   } else if (layer.id === 'glm') {
     html = `<b>${esc(satellite(state.data))} GLM bolide</b><br>${esc(object.start_utc.replace('T', ' ').replace('Z', ' UTC'))}, ${fmt(object.duration_s, 2)} s`
       + `<br>${esc(object.source)}; classified ${esc(object.classification)}`;
@@ -765,7 +777,7 @@ function leadOpen(d) {
     and ${lightning}` : ''}.${filmed ? ` The one video analysed so far was filmed in ${esc(filmed.site)}${town ? `, ${town.km} km away` : ''}${filmed.post
     ? ` (${external(filmed.post.url, 'the post on X')})` : ''}: a
     handheld phone video that replays the moment in cuts. Muse judged it usable, but nothing in view can be located on a map and
-    the filming spot is unknown, so the code cannot orient it.` : ''}${later ? ` ${esc(later.what)}, posted on ${esc(later.where)}
+    the filming spot is unknown, so the code cannot orient it.${lookText(d, filmed) ? ` ${lookText(d, filmed)}.` : ''}` : ''}${later ? ` ${esc(later.what)}, posted on ${esc(later.where)}
     by ${esc(later.by)} on ${isoDay(later.on)}, have not been analysed yet.` : ''} With fewer than two oriented cameras there is no
     trajectory, and the agent says so instead of guessing${req ? `: it asked for videos from ${esc(list(req.towns || []))}, and
     the run stays blocked until they arrive` : ''}.</p>
@@ -782,7 +794,8 @@ function compareOpen(d) {
   const rows = d.towns.filter(t => t.sees_it_high).slice(0, 9).map(t => `<tr><td>${esc(t.city)}</td><td class="r num">${t.km}</td>
     <td class="r">${abbr(t.look_az_deg)} <span class="num">${Math.round(t.look_az_deg)}°</span></td>
     <td class="r num">${span(t.el_at_40km_deg, t.el_at_80km_deg, 0)}°</td></tr>`).join('');
-  const seen = d.witness.map(w => `<li><b>${esc(w.site)}</b>: ${esc(w.status)}${w.post ? `; ${external(w.post.url, esc(w.post.credit))}` : ''}</li>`).join('');
+  const seen = d.witness.map(w => `<li><b>${esc(w.site)}</b>: ${esc(w.status)}${w.post ? `; ${external(w.post.url, esc(w.post.credit))}` : ''}${
+    w.video && lookText(d, w) ? `. ${lookText(d, w)}` : ''}</li>`).join('');
   return `<h2>Where a video would close the case</h2>
     <table><thead><tr><th>Town</th><th class="r">km away</th><th class="r">Look toward</th><th class="r">Up in the sky</th></tr></thead><tbody>${rows}</tbody></table>
     <p class="note" style="margin-top:8px">Height above the horizon if the flash was ${between(...skyKm(d), 0)} km up; the satellite
@@ -987,7 +1000,7 @@ function drawLegend(d) {
   } else {
     $('#legend').innerHTML = `<details ${narrow.matches ? '' : 'open'}><summary>Map key</summary>
       <div class="key"><span class="sw box"></span>${esc(glmText(d))} and its extent</div>
-      <div class="key" data-stage="2"><span class="sw dash" style="border-top-color:${rgb(GRAY)}"></span>Witness video, camera not oriented</div>
+      <div class="key" data-stage="2"><span class="sw dash" style="border-top-color:${rgb(GRAY)}"></span>Witness video, not oriented: toward the flash ${span(...skyKm(d), 0)} km up</div>
       ${asked(d).size ? '<div class="key" data-stage="3"><span class="sw dot asked"></span>Towns requested by the agent</div>' : ''}
       <div class="key" data-stage="3"><span class="sw dot" style="background:${rgb(SERIES[0])}"></span>Towns that would see it ${span(...d.sky.high_deg, 0)}° up</div>
       <div class="key" data-stage="4"><span class="sw dot" style="background:${rgb(GRAY)}"></span>Other towns: too low in their sky</div></details>`;
