@@ -10,7 +10,7 @@ for the Chelyabinsk fireball of 2013 and pointed at a green fireball seen over C
 published trajectory. Today it needs cameras that stood still (a dashcam, a security camera, a phone resting on
 something), and its orientation and trajectory steps have only been tested by day.
 
-[3D viewer](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/) (live on 31 October) · demo video (linked here on 3 November) · [Run it](#run-it) · [Method](docs/method.md) · [![Tests](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml/badge.svg)](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml)
+[3D viewer](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/) · demo video (linked here on 3 November) · [Run it](#run-it) · [Method](docs/method.md) · [![Tests](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml/badge.svg)](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml)
 
 [![Replay of the Chelyabinsk fireball on a dark 3D map. A white point flies the agent's fitted line from 89 km down to 11 km, with its time and height in a readout, while lines of sight appear: blue from Kamensk-Uralskiy, green from Korkino, and grey dashed from Tyumen, which was left out, and from Yekaterinburg, a check oriented after the run. Then the still view: the white path beside the dashed yellow path published in CBET 3423, first alone, then over a pale blue band of 500 Monte Carlo lines](docs/replay.gif)](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/)
 
