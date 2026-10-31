@@ -10,40 +10,36 @@ for the Chelyabinsk fireball of 2013 and pointed at a green fireball seen over C
 published trajectory. Today it needs cameras that stood still (a dashcam, a security camera, a phone resting on
 something), and its orientation and trajectory steps have only been tested by day.
 
-The [3D viewer](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/) goes live on 31 October, and the demo
-video's link is added here on 3 November. [![Tests](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml/badge.svg)](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml)
+[3D viewer](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/) (live on 31 October) · demo video (linked here on 3 November) · [Run it](#run-it) · [Method](docs/method.md) · [![Tests](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml/badge.svg)](https://github.com/sadiadvertising-ship-it/testigos-del-bolido/actions/workflows/tests.yml)
 
 [![Replay of the Chelyabinsk fireball on a dark 3D map. A white point flies the agent's fitted line from 89 km down to 11 km, with its time and height in a readout, while lines of sight appear: blue from Kamensk-Uralskiy, green from Korkino, and grey dashed from Tyumen, which was left out, and from Yekaterinburg, a check oriented after the run. Then the still view: the white path beside the dashed yellow path published in CBET 3423, first alone, then over a pale blue band of 500 Monte Carlo lines](docs/replay.gif)](https://sadiadvertising-ship-it.github.io/testigos-del-bolido/)
 
-The Chelyabinsk validation case in the viewer, recorded by scripts/capture_replay.mjs. The replay's 12.5 s are the
-fitted line flown at the fitted speed, in real time, not how long a camera saw the fireball (Kamensk-Uralskiy tracked it
-for 13.7 s). As the white point descends from 89 km to 11 km, each camera's lines of sight appear: blue from
-Kamensk-Uralskiy and green from Korkino, the two cameras of the solution, and grey dashed from Tyumen, which the agent
-left out because its planes cross Kamensk-Uralskiy's at 7.5°, and from Yekaterinburg, a check oriented after the run was
-signed. The cameras not oriented show as hollow dots. The last instant holds for 0.9 s; then the still view shows the
-agent's white path beside the dashed yellow path of CBET 3423, the published solution, for 1.5 s, and for 1.5 s more
-with the 500 Monte Carlo lines as a pale blue band.
+The agent's path for Chelyabinsk (white) beside the published one (dashed yellow), with each camera's lines of sight;
+more under [The viewer](#the-viewer).
 
-In the viewer, the side panel opens with the witness videos whose uploaders allow them on other sites, each its
-uploader's own video in YouTube's player, which loads only when you press play. With the page at least 1100 px wide
-and 970 px tall (full screen helps on a laptop), or 1840 px wide and 760 px tall, one press plays all seven together, in
-a wall above the map, with the 3D replay, and below each video SAM 3.1's track of the fireball in it, drawn from the
-measurements, so what was filmed and what was measured sit one above the other; in a smaller window or on a phone they
-play one at a time. Korkino's, Tyumen's and Yekaterinburg's
-videos run by their own clocks, beside each camera's lines of sight, which appear on the map as the replay's point
-reaches them; the replay flies the fitted line at one speed and the fireball slowed, so toward the end the lines run
-ahead of the videos (Tyumen's last by about 2 s). Korkino is one of the two cameras of the fit. Tyumen, which the agent
-left out of the fit (its planes cross Kamensk-Uralskiy's at 7.5°), is a check on it: its 223 lines of sight miss the
-fitted path by 0.45° (median). Yekaterinburg, oriented after the run was signed, is another, made without the path or
-CBET 3423 in view: its 207 miss it by 0.26° (median; both under Validation, below). The four others, from Beloretsk,
-Chebarkul, Magnitogorsk and Plast, come from cameras that are not oriented: they add nothing to the path, and their
-clocks are not tied to it, so each is lined up on the instant SAM's box around the fireball is largest, put 7.0 s into
-the replay, between where that instant falls in Kamensk-Uralskiy's video (6.8 s) and Tyumen's (7.3 s). In those two the
-largest box is the fireball's longest streak, 45 km up on the fitted line. In Yekaterinburg's, whose clock is known, it
-comes 21 km up: lined up this way, that video would run 4.0 s ahead of the replay. In Beloretsk and Chebarkul it is a
-glare that may also be lower down, so these four can be seconds off (`witness_videos` in `scripts/export_web.py`).
-Kamensk-Uralskiy's uploader does not allow the video on other sites, so the viewer links to it. The GIF above leaves the
-videos out; the demo video shows the wall, each video in its uploader's YouTube player with SAM 3.1's track below it.
+## At a glance
+
+| Chelyabinsk, 2013 | This agent (fit) | CBET 3423, published | Refereed, 2013 |
+|---|---|---|---|
+| Heading | 282.1° | 279.5° | |
+| Slope below the horizontal | 17.5° | 16.5° | 17° at the end, 18.5° at the start (Borovička); 18.3° at entry (Popova) |
+| Speed | 19.65 km/s | 17.5 ± 0.5 km/s | 19.03 ± 0.13 (Borovička) and 19.16 ± 0.15 km/s (Popova) |
+| Height at the major flare | 29.2 km | 31.7 km | peak radiation at 29.7 km (Popova) |
+
+The agent never saw the published values, but the cameras of the fit were calibrated with CBET 3423 in view.
+Yekaterinburg's camera, oriented after the run without the path or CBET 3423 in view, misses the fitted path by 0.26°
+(median). Monte Carlo ranges, the grading and what these numbers do not say are under
+[Validation](#validation-chelyabinsk-15-february-2013). The open case, Colombia, has no trajectory yet: one video, which
+cannot be oriented, and the agent asks for more ([Open case](#open-case-colombia-30-july-2025)).
+
+- **Meta models:** Muse Spark 1.3 plans the case calling tools in a loop and writes the reports; Muse Spark 1.2 reads
+  each witness video; SAM 3.1 tracks the fireball frame by frame ([Meta models](#meta-models)).
+- **A verifiable agent:** the code refuses to drop a camera without a criterion it measures, every figure in a report
+  must match a tool result, and a person signs the report off or sends it back ([The agent](#the-agent)).
+- **Before and during the event:** the method, the published solutions and the videos came before; the code, the camera
+  fits, the agent and the viewer were built during it ([what came before](#built-during-the-hackathon-and-what-came-before)).
+
+How a case runs:
 
 ```mermaid
 flowchart TD
@@ -90,6 +86,38 @@ The 3D viewer runs from this repository: `python3 -m http.server -d web 8000`, t
    the verdict is natural if the speed's 95% range lies above 11 km/s; re-entry if it lies below 8.5 km/s and the passage
    is long; inconclusive otherwise (`verdict.py`). The range is the Monte Carlo's when there is one, else the speed ± 2σ
    with σ at least 10% of the speed.
+
+## The viewer
+
+The Chelyabinsk validation case in the viewer, recorded by scripts/capture_replay.mjs. The replay's 12.5 s are the
+fitted line flown at the fitted speed, in real time, not how long a camera saw the fireball (Kamensk-Uralskiy tracked it
+for 13.7 s). As the white point descends from 89 km to 11 km, each camera's lines of sight appear: blue from
+Kamensk-Uralskiy and green from Korkino, the two cameras of the solution, and grey dashed from Tyumen, which the agent
+left out because its planes cross Kamensk-Uralskiy's at 7.5°, and from Yekaterinburg, a check oriented after the run was
+signed. The cameras not oriented show as hollow dots. The last instant holds for 0.9 s; then the still view shows the
+agent's white path beside the dashed yellow path of CBET 3423, the published solution, for 1.5 s, and for 1.5 s more
+with the 500 Monte Carlo lines as a pale blue band.
+
+In the viewer, the side panel opens with the witness videos whose uploaders allow them on other sites, each its
+uploader's own video in YouTube's player, which loads only when you press play. With the page at least 1100 px wide
+and 970 px tall (full screen helps on a laptop), or 1840 px wide and 760 px tall, one press plays all seven together, in
+a wall above the map, with the 3D replay, and below each video SAM 3.1's track of the fireball in it, drawn from the
+measurements, so what was filmed and what was measured sit one above the other; in a smaller window or on a phone they
+play one at a time. Korkino's, Tyumen's and Yekaterinburg's
+videos run by their own clocks, beside each camera's lines of sight, which appear on the map as the replay's point
+reaches them; the replay flies the fitted line at one speed and the fireball slowed, so toward the end the lines run
+ahead of the videos (Tyumen's last by about 2 s). Korkino is one of the two cameras of the fit. Tyumen, which the agent
+left out of the fit (its planes cross Kamensk-Uralskiy's at 7.5°), is a check on it: its 223 lines of sight miss the
+fitted path by 0.45° (median). Yekaterinburg, oriented after the run was signed, is another, made without the path or
+CBET 3423 in view: its 207 miss it by 0.26° (median; both under Validation, below). The four others, from Beloretsk,
+Chebarkul, Magnitogorsk and Plast, come from cameras that are not oriented: they add nothing to the path, and their
+clocks are not tied to it, so each is lined up on the instant SAM's box around the fireball is largest, put 7.0 s into
+the replay, between where that instant falls in Kamensk-Uralskiy's video (6.8 s) and Tyumen's (7.3 s). In those two the
+largest box is the fireball's longest streak, 45 km up on the fitted line. In Yekaterinburg's, whose clock is known, it
+comes 21 km up: lined up this way, that video would run 4.0 s ahead of the replay. In Beloretsk and Chebarkul it is a
+glare that may also be lower down, so these four can be seconds off (`witness_videos` in `scripts/export_web.py`).
+Kamensk-Uralskiy's uploader does not allow the video on other sites, so the viewer links to it. The GIF above leaves the
+videos out; the demo video shows the wall, each video in its uploader's YouTube player with SAM 3.1's track below it.
 
 ## The agent
 

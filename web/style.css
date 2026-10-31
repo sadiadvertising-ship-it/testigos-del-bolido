@@ -68,6 +68,10 @@ tr.src td, tr.src th { color: var(--ink-3); font-size: calc(12px * var(--k)); }
 .dot.hollow { border: 1.5px solid var(--dropped); }
 .dot.dashed { background: none; border: 1.5px dashed var(--dropped); }
 
+.howto { margin: 0 0 14px; padding-left: calc(20px * var(--k)); color: var(--ink-2); font-size: calc(13.5px * var(--k)); }
+.howto li { margin-bottom: 5px; padding-left: 2px; }
+.howto li::marker { color: var(--accent); font-weight: 600; }
+.howto b { color: var(--ink); font-weight: 600; }
 .method { margin: 0; padding-left: calc(18px * var(--k)); color: var(--ink-2); font-size: calc(13px * var(--k)); }
 .method li { margin-bottom: 4px; }
 .method b { color: var(--ink); }

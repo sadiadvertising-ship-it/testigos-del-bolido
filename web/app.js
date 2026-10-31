@@ -592,6 +592,27 @@ function name(d, id) {
 const COUNT = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
 const count = n => COUNT[n] ?? String(n);
 
+// What the case shows, in three plain steps before the figures, for someone who has never heard of a plane of sight.
+function howTo(d) {
+  const li = (head, text) => `<li><b>${head}</b> ${text}</li>`;
+  if (d.solution) {
+    const [a, b] = d.solution.clips.map(id => d.stations.find(x => x.id === id)), cars = d.stations.filter(x => /car/.test(x.camera)).length;
+    return `<ol class="howto">${li('People filmed it.', `${count(d.stations.length).replace(/^./, c => c.toUpperCase())} videos, from the dashcams of ${count(cars)} cars and
+      ${count(d.stations.length - cars)} security cameras.`)}
+      ${li('AI found the fireball in every frame.', 'SAM 3.1 marked it in each video, frame by frame.')}
+      ${li('Two cameras’ lines of sight cross on its path.', `${esc(a.site)} and ${esc(b.site)}, ${Math.round(km(a.lonlat, b.lonlat))} km
+      apart, give the white line; the dashed yellow one is the path scientists published.`)}</ol>`;
+  }
+  const filmed = d.witness.find(w => w.video), req = new Set(d.run?.block?.request?.towns || []);
+  const towns = d.towns.filter(t => req.has(t.city)), up = towns.flatMap(t => [t.el_at_40km_deg, t.el_at_80km_deg]);
+  return `<ol class="howto">${li('A satellite saw the flash, and people filmed it.', `${esc(satellite(d))} recorded where it lit
+    up${filmed ? `; one video, from ${esc(filmed.site)}, has been analysed` : ''}.`)}
+    ${li('One video is not enough.', `A path takes two still cameras, far apart${filmed ? `. ${esc(filmed.site)}’s was handheld, with
+    cuts, from an unknown spot, so the map shows only where it had to look` : ''}.`)}
+    ${towns.length ? li(`A video from ${esc(list(towns.map(t => t.city)))} could close it.`, `There the flash stood high in the sky,
+    ${between(Math.min(...up), Math.max(...up), 0)}° up.`) : ''}</ol>`;
+}
+
 function leadSolved(d) {
   const s = d.solution, cat = d.catalogue;
   const [a, b] = s.clips.map(id => d.stations.find(x => x.id === id));
@@ -1637,6 +1658,7 @@ async function show(id) {
   state.data = d;
   document.querySelectorAll('#cases button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === known.id)));
   drawClip(d);
+  $('#howto').innerHTML = howTo(d);
   $('#lead').innerHTML = d.solution ? leadSolved(d) : leadOpen(d);
   $('#compare').innerHTML = d.solution ? compareSolved(d) : compareOpen(d);
   if (d.solution) drawChart($('#chart'), d); else $('#chart').innerHTML = '';
