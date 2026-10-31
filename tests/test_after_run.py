@@ -25,6 +25,17 @@ CAMS = json.loads((VAL / 'after-run' / 'cameras.json').read_text())
 AIMED = json.loads((VAL / 'after-run' / 'aimed-with-path.json').read_text())
 
 
+def to_last_digit(got, kept):
+    """Equal up to one unit in the last decimal the committed file keeps: on another machine's floating point a value
+    near a rounding boundary can round either way (2.806 or 2.807)."""
+    if isinstance(kept, dict):
+        return got.keys() == kept.keys() and all(to_last_digit(got[k], kept[k]) for k in kept)
+    if isinstance(kept, float):
+        places = len(repr(kept).split('.')[1])
+        return abs(got - kept) <= 10 ** -places + 1e-9
+    return got == kept
+
+
 def test_the_agent_never_sees_them_and_the_signed_run_replays_unchanged():
     case = agent.Case(CASE)
     assert not any(case.calibration(k)['calibrated'] for k in ('81', '238', '15', '257', '14'))
@@ -51,8 +62,8 @@ def test_the_held_out_numbers_are_current():
     assert set(committed['cameras']) == {'81', '238', '15', '257'}
     for clip, row in committed['cameras'].items():
         st = ex.station(case, clip)
-        assert {**holdout.held(sol, st), 'plane_rms_deg': round(ex.miss_deg(sol, st), 3)} == \
-            {k: row[k] for k in ('rays', 'miss_deg', 'own_clock_speed_kms', 'own_clock_speed_sigma_kms', 'plane_rms_deg')}
+        assert to_last_digit({**holdout.held(sol, st), 'plane_rms_deg': round(ex.miss_deg(sol, st), 3)},
+                             {k: row[k] for k in ('rays', 'miss_deg', 'own_clock_speed_kms', 'own_clock_speed_sigma_kms', 'plane_rms_deg')}), clip
     yek = committed['cameras']['81']
     assert yek['outcome'] == 'oriented' and yek['plane_rms_deg'] < 0.43  # Tyumen's, a camera curated with CBET in view
     assert abs(yek['own_clock_speed_kms'] - committed['fit_speed_kms']) < 0.5
