@@ -122,8 +122,8 @@ the replay, between where that instant falls in Kamensk-Uralskiy's video (6.8 s)
 largest box is the fireball's longest streak, 45 km up on the fitted line. In Yekaterinburg's, whose clock is known, it
 comes 21 km up: lined up this way, that video would run 4.0 s ahead of the replay. In Beloretsk and Chebarkul it is a
 glare that may also be lower down, so these four can be seconds off (`witness_videos` in `scripts/export_web.py`).
-Kamensk-Uralskiy's uploader does not allow the video on other sites, so the viewer links to it. The GIF above leaves the
-videos out; the demo video shows the wall, each video in its uploader's YouTube player with SAM 3.1's track below it.
+Kamensk-Uralskiy's uploader does not allow the video on other sites, so the viewer links to it. The GIF above and the
+demo video leave the videos out: the demo shows the wall with SAM 3.1's tracks only, each with its video's credit.
 
 ## The agent
 
@@ -424,7 +424,7 @@ uploader does not allow embedding, so the viewer only links to that video, and i
 without loading anything from X. The README's GIF (`?panel=0`) shows no witness footage, and in video mode
 (`?video=1`) the videos are off unless `&clip=1` is added. For recordings, `?video=1&clip=wall` opens the wall at once,
 loading YouTube's players without a press, and starts the replay when they are ready, each video above SAM's track of
-it (this is what the demo video shows); `?video=1&clip=tracks` opens it with SAM's tracks only: the eight cameras drawn
+it; `?video=1&clip=tracks` opens it with SAM's tracks only (this is what the demo video shows): the eight cameras drawn
 from the measurements beside the replay, with each video's credit, and nothing loaded from YouTube.
 
 Chelyabinsk videos, by YouTube uploader: Aleksandr Ivanov (Kamensk-Uralskiy), Никита Зенкович (Korkino), Alexander
