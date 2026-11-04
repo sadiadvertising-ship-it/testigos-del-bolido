@@ -367,6 +367,9 @@ their authors.
 | `muse-spark-1.2` | reading the witness videos under a strict JSON schema |
 | `sam-3.1` | tracking the fireball through each video, inside the agent's loop when a clip is new |
 
+All three run on the Meta Model API (`https://api.meta.ai/v1`: videos go up through `/files`, every call goes through
+`/responses`), called from [`src/testigos/api.py`](src/testigos/api.py); no model runs locally.
+
 What Muse saw, against what was measured later: in Kamensk-Uralskiy it named the chapel the orientation depends on and
 put it at 0.89 of the frame's width, where the point matched to OpenStreetMap sits at 0.884, about 7 pixels away (only
 the column compares: the marked point is the chapel's base); it read the dashcam clock as 09:20:18 at the start of the
